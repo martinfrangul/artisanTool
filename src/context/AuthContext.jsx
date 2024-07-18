@@ -14,6 +14,7 @@ const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState({});
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
@@ -31,9 +32,11 @@ const AuthProvider = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
+        setLoading(false);
         navigate("/");
       } else {
         setUser(null);
+        setLoading(true)
         navigate("/login");
 
       }
@@ -46,7 +49,7 @@ const AuthProvider = ({ children }) => {
 
 
   return (
-    <AuthContext.Provider value={{ googleLogIn, user, logOut }}>
+    <AuthContext.Provider value={{ googleLogIn, user, logOut, loading }}>
       {children}
     </AuthContext.Provider>
   );

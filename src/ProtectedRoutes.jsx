@@ -6,9 +6,13 @@ import { useContext } from "react";
 const ProtectedRoutes = ({ children }) => {
   const context = useContext(AuthContext);
 
-  const { user } = context;
+  const { user, loading } = context;
 
-  if (user === null) {
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
     return <Navigate to="/" />;
   }
 

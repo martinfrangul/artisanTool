@@ -2,9 +2,15 @@ import { NavLink } from "react-router-dom";
 
 const Home = () => {
   return (
-    <NavLink className="font-bold"
-    to="/create-inventory">Create Inventory</NavLink>
-  )
+    <div>
+      <NavLink className="font-bold" to="/create-inventory">
+        Create Inventory
+      </NavLink>
+      <NavLink className="font-bold" to="/inventory">
+        Inventory
+      </NavLink>
+    </div>
+  );
 };
 
 export default Home;

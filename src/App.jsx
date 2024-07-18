@@ -2,6 +2,7 @@
 import Login from "./components/Login";
 import Home from "./components/Home";
 import Register from "./components/Register";
+import Inventory from "./components/Inventory";
 import ProtectedRoutes from "./ProtectedRoutes";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
@@ -20,12 +21,26 @@ function App() {
             path="/"
             element={
               <ProtectedRoutes>
-                <Home>
-                </Home>
+                <Home></Home>
               </ProtectedRoutes>
             }
           />
-            <Route path="/create-inventory" element={<CreateInventory />} />
+          <Route
+            path="/create-inventory"
+            element={
+              <ProtectedRoutes>
+                <CreateInventory />
+              </ProtectedRoutes>
+            }
+          />
+          <Route
+            path="/inventory"
+            element={
+              <ProtectedRoutes>
+                <Inventory />
+              </ProtectedRoutes>
+            }
+          />
         </Routes>
       </AuthProvider>
     </Router>
