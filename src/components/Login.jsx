@@ -28,7 +28,7 @@ const Login = () => {
           id="logo-container"
           className="flex justify-center w-44 items-center"
         >
-          <img src={logo} />
+          <img src={logo} alt="logo-artisan-tool" />
         </div>
         <form className="flex flex-col justify-center items-center h-1/3">
           <input
