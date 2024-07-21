@@ -16,29 +16,29 @@ const Navbar = () => {
         <div className="flex flex-row justify-around items-center">
           {/* BUTTON 1 - Home */}
 
-          <div className="p-3 rounded-full bg-orange-300 w-14 h-14 flex justify-center items-center">
+          <div className="p-3 rounded-full bg-orange-300 w-10 h-10 flex justify-center items-center">
             <NavLink to="/">
-              <img src={homeIcon} className="w-7 h-7" alt="home-icon" />
+              <img src={homeIcon} className="w-5 h-5" alt="home-icon" />
             </NavLink>
           </div>
 
           {/* BUTTON 2 - Sells */}
-          <div className="p-3 rounded-full bg-orange-300 w-14 h-14 flex justify-center items-center">
+          <div className="p-3 rounded-full bg-orange-300 w-10 h-10 flex justify-center items-center">
             <NavLink to="/sells">
-              <img src={sellsIcon} className="w-7 h-7" alt="sells-icon" />
+              <img src={sellsIcon} className="w-5 h-5" alt="sells-icon" />
             </NavLink>
           </div>
           {/* BUTTON 3 - Registry*/}
-          <div className="p-3 rounded-full bg-orange-300 w-14 h-14 flex justify-center items-center">
+          <div className="p-3 rounded-full bg-orange-300 w-10 h-10 flex justify-center items-center">
             <NavLink to="/history">
-              <img src={historyIcon} className="w-7 h-7" alt="register-icon" />
+              <img src={historyIcon} className="w-5 h-5" alt="register-icon" />
             </NavLink>
           </div>
 
           {/* BUTTON 4 - Logout */}
-          <div className="p-3 rounded-full bg-orange-300 w-14 h-14 flex justify-center items-center">
+          <div className="p-3 rounded-full bg-orange-300 w-10 h-10 flex justify-center items-center">
             <button onClick={logOut}>
-              <img src={logoutIcon} className="w-7 h-7" alt="logout-icon" />
+              <img src={logoutIcon} className="w-5 h-5" alt="logout-icon" />
             </button>
           </div>
         </div>

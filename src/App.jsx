@@ -17,7 +17,7 @@ import "./App.css";
 
 function App() {
   return (
-    <div className="background ">
+    <div className="background min-h-screen h-full">
       <Router>
         <AuthProvider>
           <Routes>
