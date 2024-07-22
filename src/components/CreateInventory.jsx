@@ -1,11 +1,12 @@
 import { useState } from "react";
 import app from "../../firebase/firebaseConfig";
+import '../styles/CreateInventory.css'
 import { getDatabase, ref, set, push } from "firebase/database";
 import addIcon from "../assets/addIcon.png";
-import "../styles/CreateInventory.css";
 import Navbar from "./Navbar";
 import Banner from "./Banner";
-import { motion } from "framer-motion";
+import PropertyInput from "./PropertyInput";
+import PropertySpecs from "./PropertySpecs";
 
 const CreateInventory = () => {
   // USESTATE
@@ -13,31 +14,29 @@ const CreateInventory = () => {
   const [productStock, setProductStock] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [properties, setProperties] = useState([{ property: "", option: "" }]);
-  // const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-
-  // useEffect(() => {
-  //   const handleResize = () => {
-  //     // Aquí asumimos que si la altura de la ventana se reduce significativamente, el teclado está abierto
-  //     if (window.innerHeight < 500) {
-  //       setIsKeyboardOpen(true);
-  //     } else {
-  //       setIsKeyboardOpen(false);
-  //     }
-  //   };
-
-  //   window.addEventListener("resize", handleResize);
-
-  //   return () => {
-  //     window.removeEventListener("resize", handleResize);
-  //   };
-  // }, []);
 
   // SUBMIT DATA
   const saveData = () => {
+
+    // CHECK INPUT VALIDITY
+
+
     if (!productName) {
       alert("El nombre del producto es obligatorio.");
-      return; // Salir de la función si productName está vacío
+      return;
     }
+
+    if (!productPrice) {
+      alert("El precio inicial es obligatorio.");
+      return;
+    }
+
+    if (!productStock) {
+      alert("El stock inicial es obligatorio.");
+      return;
+    }
+
+    // POST IN DB
 
     const db = getDatabase(app);
     const productsRef = ref(db, "products");
@@ -77,9 +76,16 @@ const CreateInventory = () => {
         alert("Error: " + error);
       });
   };
+  console.log(properties);
 
-  const createInputs = () => {
+  const createInput = () => {
     setProperties((prev) => [...prev, { property: "", option: "" }]);
+  };
+
+  const deleteInput = (index) => {
+    if (properties.length > 1) {
+      setProperties((prev) => prev.filter((_, i) => i !== index));
+    }
   };
 
   const handleInputChange = (index, field, value) => {
@@ -91,8 +97,8 @@ const CreateInventory = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-between">
-      <div>
+    <div className="min-h-screen w-full flex flex-col">
+      <div className="flex-grow overflow-y-auto">
         <Banner></Banner>
         <div className="flex flex-col justify-center items-center p-3 w-full">
           <label htmlFor="product">Product</label>
@@ -104,65 +110,32 @@ const CreateInventory = () => {
           />
         </div>
         {properties.map((input, index) => (
-          <div
-            className="flex flex-row gap-4 p-2 justify-center items-center"
+          <PropertyInput
             key={index}
-          >
-            <div className="flex flex-col justify-center items-center p-3 gap-2 w-1/2">
-              <label htmlFor="property">Property</label>
-              <input
-                id="property"
-                className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700"
-                onChange={(event) =>
-                  handleInputChange(index, "property", event.target.value)
-                }
-                type="text"
-                value={input.property}
-              />
-            </div>
-            <div className="flex flex-col justify-center items-center p-3 gap-2 w-1/2">
-              <label htmlFor="option">Option</label>
-              <input
-                id="option"
-                className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700"
-                onChange={(event) =>
-                  handleInputChange(index, "option", event.target.value)
-                }
-                type="text"
-                value={input.option}
-              />
-            </div>
-          </div>
+            index={index}
+            input={input}
+            handleInputChange={handleInputChange}
+            deleteInput={deleteInput}
+          />
         ))}
         <button
           className="p-2 w-10 h-10 text-white rounded"
-          onClick={createInputs}
+          onClick={createInput}
         >
           <img src={addIcon} alt="add-inputs" />
         </button>
 
-        <div className="flex flex-col justify-around h-full">
-          <div className="w-1/2 flex flex-row justify-center items-center p-3 m-auto">
-            <div className="flex flex-col justify-center items-center">
-              <label htmlFor="product">Initial stock</label>
-              <input
-                className="custom-input-appearance w-1/2 border-1 border-solid border-black rounded-md p-2 shadow-inner shadow-slate-700"
-                onChange={(event) => setProductStock(event.target.value)}
-                type="number"
-                value={productStock}
-              />
-            </div>
-            <div className="flex flex-col justify-center items-center">
-              <label htmlFor="product">Price</label>
-              <input
-                className="custom-input-appearance w-1/2 border-1 border-solid border-black rounded-md p-2 shadow-inner shadow-slate-700"
-                onChange={(event) => setProductPrice(event.target.value)}
-                type="number"
-                value={productPrice}
-              />
-            </div>
-          </div>
-        </div>
+        <PropertySpecs
+          setProductStock={setProductStock}
+          setProductPrice={setProductPrice}
+          productPrice={productPrice}
+          productStock={productStock}
+
+
+        ></PropertySpecs>
+        
+        {/* Línea divisoria */}
+
         <hr className="bg-black h-[2px] w-3/4 mx-auto mt-5" />
         <div className="flex w-full justify-center">
           <button
@@ -173,20 +146,10 @@ const CreateInventory = () => {
           </button>
         </div>
       </div>
-      {/* Línea divisoria */}
 
-      <div className="mt-auto">
-        {/* {!isKeyboardOpen && ( */}
-        {/* <motion.div */}
-        <div className="mx-auto mb-4 w-[90%] rounded-xl shadow-xl shadow-slate-700 bg-gray-800 text-white p-3">
-          {/* initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }} */}
-          {/* > */}
-          <Navbar></Navbar>
-          {/* </motion.div> */}
-          {/* )} */}
-        </div>
+      {/* <div className="mt-auto "> */}
+      <div className="flex-shrink-0 bg-gray-800 text-white p-3 mx-auto w-[90%] rounded-xl shadow-xl shadow-slate-700 my-4">
+        <Navbar></Navbar>
       </div>
     </div>
   );
