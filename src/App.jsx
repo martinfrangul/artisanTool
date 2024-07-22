@@ -1,12 +1,14 @@
-//COMPONENTS
+// COMPONENTS
 import Login from "./components/Login";
 import Home from "./components/Home";
 import Register from "./components/Register";
 import Inventory from "./components/Inventory";
 import CreateInventory from "./components/CreateInventory";
+import Navbar from "./components/Navbar";
 
 // UTILS
 import ProtectedRoutes from "./ProtectedRoutes";
+import PublicRoute from "./PublicRoutes";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 // CONTEXT
@@ -14,40 +16,66 @@ import { AuthProvider } from "./context/AuthContext";
 
 // STYLES
 import "./App.css";
+import Banner from "./components/Banner";
 
 function App() {
   return (
-    <div className="background min-h-screen h-full">
+    <div className="background min-h-screen flex flex-col justify-between">
       <Router>
         <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoutes>
-                  <Home></Home>
-                </ProtectedRoutes>
-              }
-            />
-            <Route
-              path="/create-inventory"
-              element={
-                <ProtectedRoutes>
-                  <CreateInventory />
-                </ProtectedRoutes>
-              }
-            />
-            <Route
-              path="/inventory"
-              element={
-                <ProtectedRoutes>
-                  <Inventory />
-                </ProtectedRoutes>
-              }
-            />
-          </Routes>
+          <div className="flex-grow">
+            <ProtectedRoutes>
+              <Banner />
+            </ProtectedRoutes>
+
+            <Routes>
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/register"
+                element={
+                  <PublicRoute>
+                    <Register />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoutes>
+                    <Home />
+                  </ProtectedRoutes>
+                }
+              />
+              <Route
+                path="/create-inventory"
+                element={
+                  <ProtectedRoutes>
+                    <CreateInventory />
+                  </ProtectedRoutes>
+                }
+              />
+              <Route
+                path="/inventory"
+                element={
+                  <ProtectedRoutes>
+                    <Inventory />
+                  </ProtectedRoutes>
+                }
+              />
+            </Routes>
+          </div>
+          <ProtectedRoutes>
+            <div className="bg-gray-800 text-white p-3 mx-auto w-[90%] rounded-xl shadow-xl shadow-slate-700 mb-5">
+              <Navbar />
+            </div>
+          </ProtectedRoutes>
         </AuthProvider>
       </Router>
     </div>

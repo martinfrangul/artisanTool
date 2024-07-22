@@ -3,8 +3,6 @@ import app from "../../firebase/firebaseConfig";
 import '../styles/CreateInventory.css'
 import { getDatabase, ref, set, push } from "firebase/database";
 import addIcon from "../assets/addIcon.png";
-import Navbar from "./Navbar";
-import Banner from "./Banner";
 import PropertyInput from "./PropertyInput";
 import PropertySpecs from "./PropertySpecs";
 
@@ -97,9 +95,8 @@ const CreateInventory = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col">
+    <div className="flex flex-col">
       <div className="flex-grow overflow-y-auto">
-        <Banner></Banner>
         <div className="flex flex-col justify-center items-center p-3 w-full">
           <label htmlFor="product">Product</label>
           <input
@@ -145,11 +142,6 @@ const CreateInventory = () => {
             Create
           </button>
         </div>
-      </div>
-
-      {/* <div className="mt-auto "> */}
-      <div className="flex-shrink-0 bg-gray-800 text-white p-3 mx-auto w-[90%] rounded-xl shadow-xl shadow-slate-700 my-4">
-        <Navbar></Navbar>
       </div>
     </div>
   );
