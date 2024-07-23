@@ -1,20 +1,36 @@
 /* eslint-disable react/prop-types */
-import { createContext, useState } from "react";
-// import app from '../../firebase/firebaseConfig'
-// import {getDatabase, ref, set, push} from "firebase/database";
+import { createContext, useState, useEffect } from "react";
+import { database } from "../../firebase/firebaseConfig";
+import { ref, onValue } from "firebase/database";
 
 const InventoryContext = createContext();
 
 const InventoryContextProvider = ({ children }) => {
-    const [data, setData] = useState({})
-    const [input1, setInput1] = useState("")
-    const [input2, setInput2] = useState("")
+  const [data, setData] = useState({});
 
+  useEffect(() => {
+    const dataRef = ref(database, "products");
 
-
+    onValue(
+      dataRef,
+      (snapshot) => {
+        const data = snapshot.val();
+        const dataArray = data
+          ? Object.keys(data).map((key) => ({
+              id: key,
+              ...data[key],
+            }))
+          : [];
+        setData(dataArray);
+      },
+      (error) => {
+        console.error("Error al leer los datos: ", error);
+      }
+    );
+  }, []);
 
   return (
-    <InventoryContext.Provider value={{ data, setData, input1, setInput1, input2, setInput2 }}>
+    <InventoryContext.Provider value={{ data }}>
       {children}
     </InventoryContext.Provider>
   );

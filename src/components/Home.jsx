@@ -36,7 +36,7 @@ const Home = () => {
         </NavLink>
         <NavLink
           className="w-1/2 flex flex-col justify-center items-center my-3"
-          to="/create-inventory"
+          to="/sells"
         >
           <div className="text-md p-3 font-thin">Sells</div>
           <div className="w-20">
@@ -49,7 +49,7 @@ const Home = () => {
         </NavLink>
         <NavLink
           className="w-1/2 flex flex-col justify-center items-center my-3"
-          to="/inventory"
+          to="/history"
         >
           <div className="text-md p-3 font-thin">History</div>
           <div className="w-20">
@@ -62,7 +62,7 @@ const Home = () => {
         </NavLink>
         <NavLink
           className="w-full flex flex-col justify-center items-center my-3"
-          to="/inventory"
+          to="/expenses"
         >
           <div className="text-md p-3 font-thin">Expenses</div>
           <div className="w-20">

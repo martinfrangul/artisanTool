@@ -5,6 +5,7 @@ import Register from "./components/Register";
 import Inventory from "./components/Inventory";
 import CreateInventory from "./components/CreateInventory";
 import Navbar from "./components/Navbar";
+import { InventoryContextProvider } from "./context/InventoryContext";
 
 // UTILS
 import ProtectedRoutes from "./ProtectedRoutes";
@@ -23,59 +24,62 @@ function App() {
     <div className="background min-h-screen flex flex-col justify-between">
       <Router>
         <AuthProvider>
-          <div className="flex-grow">
-            <ProtectedRoutes>
-              <Banner />
-            </ProtectedRoutes>
+          <InventoryContextProvider>
+            <div className="flex-grow">
+              <ProtectedRoutes>
+                <Banner />
+              </ProtectedRoutes>
 
-            <Routes>
-              <Route
-                path="/login"
-                element={
-                  <PublicRoute>
-                    <Login />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path="/register"
-                element={
-                  <PublicRoute>
-                    <Register />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoutes>
-                    <Home />
-                  </ProtectedRoutes>
-                }
-              />
-              <Route
-                path="/create-inventory"
-                element={
-                  <ProtectedRoutes>
-                    <CreateInventory />
-                  </ProtectedRoutes>
-                }
-              />
-              <Route
-                path="/inventory"
-                element={
-                  <ProtectedRoutes>
-                    <Inventory />
-                  </ProtectedRoutes>
-                }
-              />
-            </Routes>
-          </div>
-          <ProtectedRoutes>
-            <div className="bg-gray-800 text-white p-3 mx-auto w-[90%] rounded-xl shadow-xl shadow-slate-700 mb-5">
-              <Navbar />
+              <Routes>
+                <Route
+                  path="/login"
+                  element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  path="/register"
+                  element={
+                    <PublicRoute>
+                      <Register />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoutes>
+                      <Home />
+                    </ProtectedRoutes>
+                  }
+                />
+
+                <Route
+                  path="/create-inventory"
+                  element={
+                    <ProtectedRoutes>
+                      <CreateInventory />
+                    </ProtectedRoutes>
+                  }
+                />
+                <Route
+                  path="/inventory"
+                  element={
+                    <ProtectedRoutes>
+                      <Inventory />
+                    </ProtectedRoutes>
+                  }
+                />
+              </Routes>
             </div>
-          </ProtectedRoutes>
+            <ProtectedRoutes>
+              <div className="bg-gray-800 text-white p-3 mx-auto w-[90%] rounded-xl shadow-xl shadow-slate-700 mb-5">
+                <Navbar />
+              </div>
+            </ProtectedRoutes>
+          </InventoryContextProvider>
         </AuthProvider>
       </Router>
     </div>
