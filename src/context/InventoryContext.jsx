@@ -1,50 +1,45 @@
 import { createContext, useState, useEffect } from "react";
-import { database } from "../../firebase/firebaseConfig";
-import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { useAuth } from "../hooks/useAuth"; // Importa el hook personalizado
 
 const InventoryContext = createContext();
 
 const InventoryContextProvider = ({ children }) => {
   const [data, setData] = useState([]);
+  const [reload, setReload] = useState(false); // Estado para controlar la recarga
+  const { user, loading: authLoading } = useAuth(); // Usa el hook de autenticación
+  const db = getFirestore();
+
+  const fetchData = async () => {
+    if (!user) return; // No hacer nada si el usuario no está autenticado
+
+    try {
+      const querySnapshot = await getDocs(collection(db, `users/${user.uid}/products`));
+      const dataArray = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setData(dataArray);
+    } catch (error) {
+      console.error("Error al leer los datos: ", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(database, "products"));
-        const dataArray = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setData(dataArray);
-      } catch (error) {
-        console.error("Error al leer los datos: ", error);
-      }
-    };
-
     fetchData();
+  }, [user, db, reload]); // Añadir reload como dependencia
 
+  if (authLoading) {
+    return <p>Loading...</p>;
+  }
 
-      // Configuración de suscripción a cambios en tiempo real
-      const unsubscribe = onSnapshot(collection(database, "products"), (snapshot) => {
-        const dataArray = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setData(dataArray);
-      }, (error) => {
-        console.error("Error al leer los datos en tiempo real: ", error);
-      });
-  
-      // Limpiar suscripción al desmontar el componente
-      return () => unsubscribe();
-
-
-
-  }, []);
-  
+  // Función para recargar los datos
+  const reloadData = () => {
+    setReload(prev => !prev); // Cambiar el estado para desencadenar la recarga
+  };
 
   return (
-    <InventoryContext.Provider value={{ data }}>
+    <InventoryContext.Provider value={{ data, reloadData }}>
       {children}
     </InventoryContext.Provider>
   );

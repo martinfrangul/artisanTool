@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { database } from "../../firebase/firebaseConfig";
-import { collection, addDoc } from "firebase/firestore";
+import { useState, useContext } from "react";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { useAuth } from "../hooks/useAuth"; // Importa el hook personalizado
+import { InventoryContext } from "../context/InventoryContext"; // Importa el contexto
 import addIcon from "../assets/addIcon.png";
 import PropertyInput from "./PropertyInput";
 import PropertySpecs from "./PropertySpecs";
@@ -10,6 +11,10 @@ const CreateInventory = () => {
   const [productStock, setProductStock] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [properties, setProperties] = useState([{ property: "", option: "" }]);
+
+  const { user } = useAuth(); // Obtén el usuario actual
+  const { reloadData } = useContext(InventoryContext); // Obtén la función reloadData del contexto
+  const db = getFirestore();
 
   const updatePropertyField = (index, field, value) => {
     setProperties((prev) => {
@@ -30,8 +35,13 @@ const CreateInventory = () => {
   };
 
   const saveData = async () => {
+    if (!user) {
+      alert("User is not authenticated");
+      return;
+    }
+
     if (!productName || !productPrice || !productStock) {
-      alert("Nombre, precio y stock son obligatiorios");
+      alert("Nombre, precio y stock son obligatorios");
       return;
     }
 
@@ -40,20 +50,10 @@ const CreateInventory = () => {
       return acc;
     }, {});
 
-
-    // Convertir productPrice y productStock a números
-    const price = parseFloat(productPrice);
-    const stock = parseInt(productStock, 10);
-
-    if (isNaN(price) || isNaN(stock)) {
-      alert("El precio y el stock deben ser números válidos");
-      return;
-    }
-
     const productData = {
       productName,
-      productPrice: price,
-      productStock: stock,
+      productPrice: parseFloat(productPrice),
+      productStock: parseInt(productStock, 10),
       ...inputsObject,
     };
 
@@ -63,14 +63,14 @@ const CreateInventory = () => {
       )
     );
 
-
     try {
-      await addDoc(collection(database, "products"), filteredProductData);
+      await addDoc(collection(db, `users/${user.uid}/products`), filteredProductData);
       alert("Guardado correctamente");
       setProductName("");
       setProductStock("");
       setProductPrice("");
       setProperties([{ property: "", option: "" }]);
+      reloadData(); // Llama a reloadData para recargar el inventario
     } catch (error) {
       alert("Error: " + error);
     }
