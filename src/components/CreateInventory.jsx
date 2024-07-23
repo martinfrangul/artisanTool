@@ -1,80 +1,23 @@
 import { useState } from "react";
-import app from "../../firebase/firebaseConfig";
-import '../styles/CreateInventory.css'
-import { getDatabase, ref, set, push } from "firebase/database";
+import { database } from "../../firebase/firebaseConfig";
+import { collection, addDoc } from "firebase/firestore";
 import addIcon from "../assets/addIcon.png";
 import PropertyInput from "./PropertyInput";
 import PropertySpecs from "./PropertySpecs";
 
 const CreateInventory = () => {
-  // USESTATE
   const [productName, setProductName] = useState("");
   const [productStock, setProductStock] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [properties, setProperties] = useState([{ property: "", option: "" }]);
 
-  // SUBMIT DATA
-  const saveData = () => {
-
-    // CHECK INPUT VALIDITY
-
-
-    if (!productName) {
-      alert("El nombre del producto es obligatorio.");
-      return;
-    }
-
-    if (!productPrice) {
-      alert("El precio inicial es obligatorio.");
-      return;
-    }
-
-    if (!productStock) {
-      alert("El stock inicial es obligatorio.");
-      return;
-    }
-
-    // POST IN DB
-
-    const db = getDatabase(app);
-    const productsRef = ref(db, "products");
-    const newProductRef = push(productsRef); // Crear un nuevo ID único para cada producto
-
-    // Transformar los inputs a un objeto con propiedades dinámicas
-    const inputsObject = properties.reduce((acc, input) => {
-      acc[input.property] = input.option;
-      return acc;
-    }, {});
-
-    const productData = {
-      productName: productName,
-      ...(productPrice && { productPrice }), // Incluye productPrice solo si no está vacío
-      ...(productStock && { productStock }), // Incluye productStock solo si no está vacío
-      ...inputsObject,
-    };
-
-    const filteredProductData = Object.fromEntries(
-      Object.entries(productData).filter(
-        ([key, value]) => key && value !== undefined && value !== ""
-      )
-    );
-    console.log("Datos a guardar:", productData); // Imprime los datos para verificar
-
-    set(newProductRef, filteredProductData)
-      .then(() => {
-        alert("Guardado correctamente");
-        // RESET
-        // LIMPIO LOS INPUTS Y DEJO SÓLO PRODUCTO Y UN PAR DE PROPIEDAD Y OPCIÓN
-        setProductName("");
-        setProductStock("");
-        setProductPrice("");
-        setProperties([{ property: "", option: "" }]);
-      })
-      .catch((error) => {
-        alert("Error: " + error);
-      });
+  const updatePropertyField = (index, field, value) => {
+    setProperties((prev) => {
+      const newProperties = [...prev];
+      newProperties[index] = { ...newProperties[index], [field]: value };
+      return newProperties;
+    });
   };
-  console.log(properties);
 
   const createInput = () => {
     setProperties((prev) => [...prev, { property: "", option: "" }]);
@@ -86,12 +29,51 @@ const CreateInventory = () => {
     }
   };
 
-  const handleInputChange = (index, field, value) => {
-    setProperties((prev) =>
-      prev.map((input, i) =>
-        i === index ? { ...input, [field]: value } : input
+  const saveData = async () => {
+    if (!productName || !productPrice || !productStock) {
+      alert("Nombre, precio y stock son obligatiorios");
+      return;
+    }
+
+    const inputsObject = properties.reduce((acc, input) => {
+      acc[input.property] = input.option;
+      return acc;
+    }, {});
+
+
+    // Convertir productPrice y productStock a números
+    const price = parseFloat(productPrice);
+    const stock = parseInt(productStock, 10);
+
+    if (isNaN(price) || isNaN(stock)) {
+      alert("El precio y el stock deben ser números válidos");
+      return;
+    }
+
+    const productData = {
+      productName,
+      productPrice: price,
+      productStock: stock,
+      ...inputsObject,
+    };
+
+    const filteredProductData = Object.fromEntries(
+      Object.entries(productData).filter(
+        ([, value]) => value !== "" && value !== undefined && value !== null
       )
     );
+
+
+    try {
+      await addDoc(collection(database, "products"), filteredProductData);
+      alert("Guardado correctamente");
+      setProductName("");
+      setProductStock("");
+      setProductPrice("");
+      setProperties([{ property: "", option: "" }]);
+    } catch (error) {
+      alert("Error: " + error);
+    }
   };
 
   return (
@@ -111,7 +93,7 @@ const CreateInventory = () => {
             key={index}
             index={index}
             input={input}
-            handleInputChange={handleInputChange}
+            updatePropertyField={updatePropertyField}
             deleteInput={deleteInput}
           />
         ))}
@@ -121,18 +103,12 @@ const CreateInventory = () => {
         >
           <img src={addIcon} alt="add-inputs" />
         </button>
-
         <PropertySpecs
           setProductStock={setProductStock}
           setProductPrice={setProductPrice}
           productPrice={productPrice}
           productStock={productStock}
-
-
-        ></PropertySpecs>
-        
-        {/* Línea divisoria */}
-
+        />
         <hr className="bg-black h-[2px] w-3/4 mx-auto mt-5" />
         <div className="flex w-full justify-center">
           <button

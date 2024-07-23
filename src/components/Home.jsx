@@ -7,7 +7,7 @@ import expensesImage from "../assets/expensesImage.jpeg";
 
 const Home = () => {
   return (
-      <div className=" w-4/5 mx-auto flex flex-wrap justify-between">
+      <div className="w-4/5 mx-auto flex flex-wrap justify-between">
         <NavLink
           className="w-1/2 flex flex-col justify-center items-center my-3"
           to="/create-inventory"

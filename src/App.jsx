@@ -75,7 +75,7 @@ function App() {
               </Routes>
             </div>
             <ProtectedRoutes>
-              <div className="bg-gray-800 text-white p-3 mx-auto w-[90%] rounded-xl shadow-xl shadow-slate-700 mb-5">
+              <div className="bg-gray-800 text-white p-3 mx-auto w-[90%] rounded-xl shadow-xl shadow-slate-700 my-5">
                 <Navbar />
               </div>
             </ProtectedRoutes>
