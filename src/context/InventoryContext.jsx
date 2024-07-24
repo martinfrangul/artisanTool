@@ -10,22 +10,24 @@ const InventoryContextProvider = ({ children }) => {
   const { user, loading: authLoading } = useAuth(); // Usa el hook de autenticación
   const db = getFirestore();
 
-  const fetchData = async () => {
-    if (!user) return; // No hacer nada si el usuario no está autenticado
-
-    try {
-      const querySnapshot = await getDocs(collection(db, `users/${user.uid}/products`));
-      const dataArray = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setData(dataArray);
-    } catch (error) {
-      console.error("Error al leer los datos: ", error);
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return; // No hacer nada si el usuario no está autenticado
+
+      try {
+        const querySnapshot = await getDocs(
+          collection(db, `users/${user.uid}/products`)
+        );
+        const dataArray = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setData(dataArray);
+      } catch (error) {
+        console.error("Error al leer los datos: ", error);
+      }
+    };
+
     fetchData();
   }, [user, db, reload]); // Añadir reload como dependencia
 
@@ -35,7 +37,7 @@ const InventoryContextProvider = ({ children }) => {
 
   // Función para recargar los datos
   const reloadData = () => {
-    setReload(prev => !prev); // Cambiar el estado para desencadenar la recarga
+    setReload((prev) => !prev); // Cambiar el estado para desencadenar la recarga
   };
 
   return (

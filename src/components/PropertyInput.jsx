@@ -15,7 +15,7 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput }) => {
       <div className="flex flex-col justify-center items-center p-3 gap-2 w-1/2">
         <label htmlFor="property">Property</label>
         <select
-          className="h-fit border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700 ml-2"
+          className="h-fit border-1 border-solid w- border-black rounded-md shadow-inner p-2 shadow-slate-700 ml-2"
           name="properties"
           id={index}
           onChange={(event) => updatePropertyField(index, "property", event.target.value)}
