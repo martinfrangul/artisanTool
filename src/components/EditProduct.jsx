@@ -131,7 +131,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
 };
 
 EditProduct.propTypes = {
-    handleModalToggle: PropTypes.boolean.isRequired,
+    handleModalToggle: PropTypes.bool.isRequired,
     productIdForEdit: PropTypes.string.isRequired,
   };
 
