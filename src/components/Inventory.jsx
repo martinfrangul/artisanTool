@@ -78,7 +78,7 @@ const Inventory = () => {
   
     return (
       <div className="flex flex-col justify-start items-start">
-        <h1 className="text-xl font-bold">{item.productName}</h1>
+        <h1 className="text-xl font-bold text-logo">{item.productName}</h1>
         {filteredProperties.map(([key, value]) => 
           value ? (
             <h1 key={key}>

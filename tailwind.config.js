@@ -11,6 +11,7 @@ export default {
         navbar: "#2A3D45",
         marron: "#7A6C5D",
         khaki: "#BCAC9B",
+        logo: "#B62361",
       },
       fontFamily: {
         AA: ["AccordAlternate", "sans-serif"],
