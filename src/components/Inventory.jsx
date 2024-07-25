@@ -70,7 +70,27 @@ const Inventory = () => {
     }
   };
 
- 
+
+  const renderProductDetails = (item) => {
+    // Filtrar las propiedades para excluir 'productName', 'productStock' y 'productPrice'
+    const filteredProperties = Object.entries(item)
+      .filter(([key]) => key !== "productName" && key !== "productStock" && key !== "productPrice" && key !== "id");
+  
+    return (
+      <div className="flex flex-col justify-start items-start">
+        <h1 className="text-xl font-bold">{item.productName}</h1>
+        {filteredProperties.map(([key, value]) => 
+          value ? (
+            <h1 key={key}>
+              <strong>{propertyLabels[key] || key}: </strong>
+              {value}
+            </h1>
+          ) : null
+        )}
+      </div>
+    );
+  };
+  
 
 
   const handleModalToggle = (closeModal) => {
@@ -111,7 +131,7 @@ const Inventory = () => {
           Ordenar por:
         </label>
         <select
-          className="p-1"
+          className="p-1 rounded-md"
           id="sort-property"
           onChange={handleSortChange}
           value={sortProperty}
@@ -131,37 +151,8 @@ const Inventory = () => {
             className="flex flex-row justify-between items-start pb-5 px-2 pt-2 border-b-[1px] border-solid border-black"
           >
             <div className="flex flex-col justify-start items-start">
-              <h1 className="text-xl font-bold">{item.productName}</h1>
-              {item.design && (
-                <h1>
-                  <strong>{propertyLabels.design}: </strong>
-                  {item.design}
-                </h1>
-              )}
-              {item.size && (
-                <h1>
-                  <strong>{propertyLabels.size}: </strong>
-                  {item.size}
-                </h1>
-              )}
-              {item.color && (
-                <h1>
-                  <strong>{propertyLabels.color}: </strong>
-                  {item.color}
-                </h1>
-              )}
-              {item.type && (
-                <h1>
-                  <strong>{propertyLabels.type}: </strong>
-                  {item.type}
-                </h1>
-              )}
-              {item.model && (
-                <h1>
-                  <strong>{propertyLabels.model}: </strong>
-                  {item.model}
-                </h1>
-              )}
+            {renderProductDetails(item)}
+             
             </div>
 
             <div className="flex flex-col">

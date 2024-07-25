@@ -5,7 +5,7 @@ import Register from "./components/Register";
 import Inventory from "./components/Inventory";
 import CreateInventory from "./components/CreateInventory";
 import Navbar from "./components/Navbar";
-import { InventoryContextProvider } from "./context/InventoryContext";
+import Sells from "./components/Sells";
 
 // UTILS
 import ProtectedRoutes from "./ProtectedRoutes";
@@ -14,6 +14,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 // CONTEXT
 import { AuthProvider } from "./context/AuthContext";
+import { InventoryContextProvider } from "./context/InventoryContext";
 
 // STYLES
 import "./App.css";
@@ -69,6 +70,14 @@ function App() {
                   element={
                     <ProtectedRoutes>
                       <Inventory />
+                    </ProtectedRoutes>
+                  }
+                />
+                <Route
+                  path="/sells"
+                  element={
+                    <ProtectedRoutes>
+                      <Sells />
                     </ProtectedRoutes>
                   }
                 />

@@ -29,7 +29,7 @@ const InventoryContextProvider = ({ children }) => {
     };
 
     fetchData();
-  }, [user, db, reload]); // Añadir reload como dependencia
+  }, [user, db, reload]);
 
   if (authLoading) {
     return <p>Loading...</p>;
