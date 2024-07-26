@@ -1,8 +1,8 @@
 import { NavLink } from "react-router-dom";
 import createInventoryImage from "../assets/createInventoryImage.jpeg";
 import inventoryImage from "../assets/inventoryImage.jpeg";
-import sellsImage from "../assets/sellsImage.jpeg";
-import historyImage from "../assets/historyImage.jpeg";
+import salesImage from "../assets/salesImage.jpeg";
+import salesRegistryImage from "../assets/salesRegistryImage.jpeg";
 import expensesImage from "../assets/expensesImage.jpeg";
 
 const Home = () => {
@@ -36,26 +36,26 @@ const Home = () => {
         </NavLink>
         <NavLink
           className="w-1/2 flex flex-col justify-center items-center my-3"
-          to="/sells"
+          to="/sales-manager"
         >
-          <div className="text-md p-3 font-thin">Sells</div>
+          <div className="text-md p-3 font-thin">Sales manager</div>
           <div className="w-20">
             <img
               className="rounded-xl border-[1px] border-solid border-black"
-              src={sellsImage}
+              src={salesImage}
               alt="creat-inventory-seccion"
             />
           </div>
         </NavLink>
         <NavLink
           className="w-1/2 flex flex-col justify-center items-center my-3"
-          to="/history"
+          to="/sales-registry"
         >
-          <div className="text-md p-3 font-thin">History</div>
+          <div className="text-md p-3 font-thin">Sales registry</div>
           <div className="w-20">
             <img
               className="rounded-xl border-[1px] border-solid border-gray-600"
-              src={historyImage}
+              src={salesRegistryImage}
               alt="creat-inventory-seccion"
             />
           </div>

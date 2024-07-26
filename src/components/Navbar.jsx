@@ -1,9 +1,9 @@
 import { AuthContext } from "../context/AuthContext";
 import { useContext} from "react";
 import logoutIcon from "../assets/logoutIcon.png";
-import sellsIcon from "../assets/sellsIcon.png";
+import salesIcon from "../assets/salesIcon.png";
 import homeIcon from "../assets/homeIcon.png";
-import historyIcon from "../assets/historyIcon.png";
+import salesRegistryIcon from "../assets/salesRegistryIcon.png";
 import { NavLink } from "react-router-dom";
 
 
@@ -22,16 +22,16 @@ const Navbar = () => {
             </NavLink>
           </div>
 
-          {/* BUTTON 2 - Sells */}
+          {/* BUTTON 2 - Sales */}
           <div className="p-3 rounded-full bg-banner w-10 h-10 flex justify-center items-center">
-            <NavLink to="/sells">
-              <img src={sellsIcon} className="w-5 h-5" alt="sells-icon" />
+            <NavLink to="/sales-manager">
+              <img src={salesIcon} className="w-5 h-5" alt="sales-icon" />
             </NavLink>
           </div>
-          {/* BUTTON 3 - Registry*/}
+          {/* BUTTON 3 - Sales registry*/}
           <div className="p-3 rounded-full bg-banner w-10 h-10 flex justify-center items-center">
-            <NavLink to="/history">
-              <img src={historyIcon} className="w-5 h-5" alt="register-icon" />
+            <NavLink to="/sales-registry">
+              <img src={salesRegistryIcon} className="w-5 h-5" alt="register-icon" />
             </NavLink>
           </div>
 

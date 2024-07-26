@@ -3,10 +3,11 @@ import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { useAuth } from "../hooks/useAuth";
 import PropTypes from "prop-types";
 
-const InventoryContext = createContext();
 
-const InventoryContextProvider = ({ children }) => {
-  const [data, setData] = useState([]);
+const SellContext = createContext();
+
+const SellContextProvider = ({ children }) => {
+  const [sellData, setSellData] = useState([]);
   const [reload, setReload] = useState(false); // Estado para controlar la recarga
   const { user, loading: authLoading } = useAuth();
   const db = getFirestore();
@@ -17,13 +18,13 @@ const InventoryContextProvider = ({ children }) => {
 
       try {
         const querySnapshot = await getDocs(
-          collection(db, `users/${user.uid}/products`)
+          collection(db, `users/${user.uid}/sales`)
         );
         const dataArray = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setData(dataArray);
+        setSellData(dataArray);
       } catch (error) {
         console.error("Error al leer los datos: ", error);
       }
@@ -42,14 +43,14 @@ const InventoryContextProvider = ({ children }) => {
   };
 
   return (
-    <InventoryContext.Provider value={{ data, reloadData }}>
+    <SellContext.Provider value={{ sellData, reloadData }}>
       {children}
-    </InventoryContext.Provider>
+    </SellContext.Provider>
   );
 };
 
-InventoryContextProvider.propTypes = {
+SellContextProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-export { InventoryContext, InventoryContextProvider };
+export { SellContext, SellContextProvider };
