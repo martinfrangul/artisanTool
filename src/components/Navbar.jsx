@@ -11,7 +11,7 @@ const Navbar = () => {
   const { logOut } = AuthContextCall;
 
   return (
-    <nav className="fixed bottom-4 h-24 w-full bg-transparent p-3 shadow-xl shadow-slate-700">
+    <nav className="fixed bottom-4 h-24 w-full bg-transparent p-3">
       <div className="bg-gray-800 text-white w-[90%] mx-auto p-3 rounded-xl flex justify-around items-center shadow-xl shadow-slate-700">
         {/* BUTTON 1 - Home */}
         <div className="p-3 rounded-full bg-banner w-10 h-10 flex justify-center items-center">

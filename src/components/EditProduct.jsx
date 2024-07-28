@@ -9,7 +9,16 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   // STATES
   const [itemData, setItemData] = useState({});
   const [errors, setErrors] = useState({});
-  const customOrder = ["productName", "design", "size", "type", "color", "model", "productPrice", "productStock"];
+  const customOrder = [
+    "productName",
+    "design",
+    "size",
+    "type",
+    "color",
+    "model",
+    "productPrice",
+    "productStock",
+  ];
   const propertyLabels = {
     design: "Diseño",
     size: "Tamaño",
@@ -60,19 +69,19 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   const validateFields = () => {
     let isValid = true;
     let validationErrors = {};
-  
+
     Object.entries(itemData).forEach(([key, value]) => {
       // Solo llamar a trim si value es una cadena
-      if (typeof value === 'string' && !value.trim()) {
+      if (typeof value === "string" && !value.trim()) {
         validationErrors[key] = "Este campo no puede estar vacío";
         isValid = false;
-      } else if (typeof value !== 'string' && !value) {
+      } else if (typeof value !== "string" && !value) {
         // Maneja el caso donde el valor no es una cadena pero es falsy (ej., null o undefined)
         validationErrors[key] = "Este campo no puede estar vacío";
         isValid = false;
       }
     });
-  
+
     setErrors(validationErrors);
     return isValid;
   };
@@ -101,33 +110,38 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
       id="default-modal"
       tabIndex="-1"
       aria-hidden="true"
-      className="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full bg-gray-800 bg-opacity-50"
+      className="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full backdrop-blur-sm"
     >
-      <div className="relative p-4 w-full max-w-2xl max-h-full bg-white rounded-lg shadow">
-        <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
-          <button
-            type="button"
-            className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
-            onClick={() => handleModalToggle(false)}
-          >
-            <svg
-              className="w-3 h-3"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 14 14"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-              />
-            </svg>
-            <span className="sr-only">Close modal</span>
-          </button>
+      <div className="relative p-4 w-11/12 max-w-2xl max-h-full bg-white rounded-lg border-solid border-[1px] border-gray-700">
+        <div className="w-full flex justify-center border-b items-center">
+          <div className="w-1/4">{/* DIV ESTRUCTURAL PARA DIVIDIR EN 3 */}</div>
+          <div className="w-2/4 text-center font-semibold">EDITA EL PRODUCTO</div>
+            <div className="w-1/4 flex items-center justify-end py-2 md:p-5 rounded-t">
+              <button
+                type="button"
+                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
+                onClick={() => handleModalToggle(false)}
+              >
+                <svg
+                  className="w-3 h-3"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 14 14"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                  />
+                </svg>
+                <span className="sr-only">Close modal</span>
+              </button>
+            </div>
         </div>
+
         <div className="p-4 md:p-5 space-y-4">
           {Object.entries(itemData)
             .sort(([keyA], [keyB]) => {
@@ -141,13 +155,14 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
             .map(([key, value]) => (
               <div key={key} className="space-y-2">
                 <label
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700"
                   htmlFor={key}
                 >
                   {propertyLabels[key] || key} {/* Usa la etiqueta amigable */}
                 </label>
+
                 <input
-                  className={`block w-full text-black border-2 rounded-md ${
+                  className={`input input-bordered w-full max-w-xs ${
                     errors[key] ? "border-red-500" : "border-gray-300"
                   }`}
                   id={key}

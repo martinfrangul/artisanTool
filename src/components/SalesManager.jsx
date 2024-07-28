@@ -4,16 +4,18 @@ import { getFirestore, collection, addDoc } from "firebase/firestore";
 import { useAuth } from "../hooks/useAuth";
 import PropTypes from "prop-types";
 
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { FaCalendarAlt } from "react-icons/fa";
 
 const SalesManager = () => {
   const context = useContext(InventoryContext);
   const { data } = context;
 
   const { user } = useAuth();
-  const { reloadData } = useContext(InventoryContext); 
+  const { reloadData } = useContext(InventoryContext);
   const db = getFirestore();
 
-  // Map of readable names
   const propertyLabels = {
     design: "Diseño",
     size: "Tamaño",
@@ -27,6 +29,8 @@ const SalesManager = () => {
 
   const [enteredData, setEnteredData] = useState("");
   const [tags, setTags] = useState([]);
+  const [selectedDates, setSelectedDates] = useState({});
+  const [openPickerId, setOpenPickerId] = useState(null);
 
   const handleAddTag = (event) => {
     event.preventDefault();
@@ -59,24 +63,37 @@ const SalesManager = () => {
       return;
     }
 
-    const selectedItem = data.find((item) => item.id === id);
+    const selectedDate = selectedDates[id] || new Date(); // Usa la fecha seleccionada o la fecha actual por defecto
+    let selectedItem = data.find((item) => item.id === id);
+    selectedItem = { ...selectedItem, date: selectedDate.toLocaleDateString() };
 
     if (selectedItem) {
       try {
         await addDoc(collection(db, `users/${user.uid}/sales`), selectedItem);
         alert("Venta agregada correctamente");
         reloadData();
+        setTags([]);
+        setEnteredData("");
+        setSelectedDates({})
       } catch (error) {
         alert("Error: " + error.message);
       }
     }
   };
 
+  const handleDateChange = (date, id) => {
+    setSelectedDates((prevDates) => ({
+      ...prevDates,
+      [id]: date,
+    }));
+    setOpenPickerId(null);
+  };
+
   const renderProductDetails = (item) => {
-    // Filtrar y ordenar las propiedades
     const filteredProperties = Object.entries(item)
-      .filter(([key]) =>
-        !["productName", "productStock", "productPrice", "id"].includes(key)
+      .filter(
+        ([key]) =>
+          !["productName", "productStock", "productPrice", "id"].includes(key)
       )
       .sort(
         ([a], [b]) =>
@@ -106,8 +123,6 @@ const SalesManager = () => {
         onSubmit={handleAddTag}
         className="max-w-md mt-5 mx-auto w-4/5 mb-5"
       >
-        {/* SEARCH */}
-
         <label
           htmlFor="default-search"
           className="mb-2 text-sm font-medium text-gray-900 sr-only"
@@ -117,7 +132,7 @@ const SalesManager = () => {
         <div className="relative">
           <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
             <svg
-              className="w-4 h-4 text-gray-500 dark:text-gray-400"
+              className="w-4 h-4 text-gray-500"
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -144,8 +159,6 @@ const SalesManager = () => {
         </div>
       </form>
 
-      {/* TAGS */}
-
       <div className="w-11/12 m-auto">
         <div className="flex flex-row gap-3 mb-3">
           {tags.map((tag, index) => (
@@ -160,28 +173,53 @@ const SalesManager = () => {
           ))}
         </div>
 
-        {/* ITEMS */}
-
         <div>
           {filteredData.map((item) => (
             <div
-              className="flex flex-row w-full justify-between items-start py-3 border-b-[1px] border-solid border-black"
               key={item.id}
+              className="border-b-[1px] border-solid border-black"
             >
-              <div className="w-1/2 flex flex-col justify-center items-start">
-                {renderProductDetails(item)}
+              <div className="flex flex-row w-full justify-between items-start pt-3">
+                <div className="w-1/2 flex flex-col justify-center items-start">
+                  {renderProductDetails(item)}
+                </div>
+                <div className="flex flex-col items-end">
+                  <h3 className="text-md font-semibold">
+                    {propertyLabels.productPrice}:{" "}
+                    <strong>€{item.productPrice}</strong>
+                  </h3>
+                  <button
+                    onClick={() => handleSell(item.id)}
+                    className="bg-success bg-opacity-75 px-2 py-1 rounded-md text-white font-semibold"
+                  >
+                    Vender
+                  </button>
+                </div>
               </div>
-              <div className="flex flex-col items-end">
-                <h3 className="text-md font-semibold">
-                  {propertyLabels.productPrice}:{" "}
-                  <strong>€{item.productPrice}</strong>
-                </h3>
-                <button
-                  onClick={() => handleSell(item.id)}
-                  className="bg-success bg-opacity-75 px-2 py-1 rounded-md text-white font-semibold"
-                >
-                  Vender
-                </button>
+              <div className="flex flex-row items-center justify-between w-full pb-3">
+                <div className="w-1/2 flex justify-start">
+                  {selectedDates[item.id] && (
+                    <h3 className="text-md font-semibold mt-2">
+                      Fecha seleccionada:{" "}
+                      {selectedDates[item.id].toLocaleDateString()}
+                    </h3>
+                  )}
+                </div>
+                <div className="flex justify-end relative mt-2">
+                  <FaCalendarAlt
+                    className="text-gray-600 cursor-pointer"
+                    onClick={() => setOpenPickerId(item.id)}
+                  />
+                  {openPickerId === item.id && (
+                    <div className="absolute top-8 right-0 z-10 bg-white p-2 shadow-lg">
+                      <DatePicker
+                        selected={selectedDates[item.id] || new Date()} // Usa la fecha actual por defecto
+                        onChange={(date) => handleDateChange(date, item.id)}
+                        inline
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -191,9 +229,8 @@ const SalesManager = () => {
   );
 };
 
-
 SalesManager.propTypes = {
-    children: PropTypes.node,
-  };
+  children: PropTypes.node,
+};
 
 export default SalesManager;
