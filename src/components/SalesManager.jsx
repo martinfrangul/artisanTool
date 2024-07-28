@@ -5,7 +5,7 @@ import { useAuth } from "../hooks/useAuth";
 import PropTypes from "prop-types";
 
 
-const Sales = () => {
+const SalesManager = () => {
   const context = useContext(InventoryContext);
   const { data } = context;
 
@@ -192,8 +192,8 @@ const Sales = () => {
 };
 
 
-Sales.propTypes = {
+SalesManager.propTypes = {
     children: PropTypes.node,
   };
 
-export default Sales;
+export default SalesManager;

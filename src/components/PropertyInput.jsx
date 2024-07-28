@@ -9,13 +9,13 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-row gap-4 p-2 justify-center items-start"
+      className="flex flex-row gap-4 p-x2 justify-center items-start"
       key={index}
     >
-      <div className="flex flex-col justify-center items-center p-3 gap-2 w-1/2">
+      <div className="flex flex-col justify-center items-center px-3 gap-2 w-full">
         <label htmlFor="property">Property</label>
         <select
-          className="h-fit border-1 border-solid w- border-black rounded-md shadow-inner p-2 shadow-slate-700 ml-2"
+          className="h-fit border-1 border-solid w- border-black rounded-md shadow-inner p-2 shadow-slate-700"
           name="properties"
           id={index}
           onChange={(event) => updatePropertyField(index, "property", event.target.value)}
@@ -35,11 +35,11 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput }) => {
           value={input.property}
         /> */}
       </div>
-      <div className="flex flex-col justify-center items-center p-3 gap-2 w-1/2">
+      <div className="flex flex-col justify-center items-center px-3 gap-2 w-full">
         <label htmlFor="option">Option</label>
         <input
           id={index}
-          className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700 mr-2"
+          className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700"
           onChange={(event) =>
             updatePropertyField(index, "option", event.target.value)
           }
@@ -48,7 +48,7 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput }) => {
         />
         <div className="flex justify-end w-full">
           <button
-            className="p-2 w-10 h-10 text-white rounded"
+            className="w-8 h-8 text-white rounded"
             onClick={() => deleteInput(index)}
           >
             <img src={deleteIcon} alt="delete-inputs" />

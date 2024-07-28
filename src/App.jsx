@@ -23,11 +23,11 @@ import Banner from "./components/Banner";
 
 function App() {
   return (
-    <div className="background min-h-screen flex flex-col justify-between">
+    <div className="background min-h-screen flex flex-col">
       <Router>
         <AuthProvider>
           <InventoryContextProvider>
-            <div className="flex-grow">
+            <div className="flex-grow pb-28">
               <ProtectedRoutes>
                 <Banner />
               </ProtectedRoutes>
@@ -57,7 +57,6 @@ function App() {
                     </ProtectedRoutes>
                   }
                 />
-
                 <Route
                   path="/create-inventory"
                   element={
@@ -78,7 +77,7 @@ function App() {
                   path="/sales-manager"
                   element={
                     <ProtectedRoutes>
-                      <SalesManager/>
+                      <SalesManager />
                     </ProtectedRoutes>
                   }
                 />
@@ -86,16 +85,14 @@ function App() {
                   path="/sales-registry"
                   element={
                     <ProtectedRoutes>
-                      <SalesRegistry/>
+                      <SalesRegistry />
                     </ProtectedRoutes>
                   }
                 />
               </Routes>
             </div>
             <ProtectedRoutes>
-              <div className="bg-gray-800 text-white p-3 mx-auto w-[90%] rounded-xl shadow-xl shadow-slate-700 my-5">
-                <Navbar />
-              </div>
+               <Navbar />
             </ProtectedRoutes>
           </InventoryContextProvider>
         </AuthProvider>

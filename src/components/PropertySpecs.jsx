@@ -7,28 +7,26 @@ const PropertySpecs = ({
   productPrice,
 }) => {
   return (
-    <div className="flex flex-col justify-around h-full">
-      <div className="w-1/2 flex flex-row justify-center items-center p-3 m-auto">
-        <div className="flex flex-col justify-center items-center">
-          <label htmlFor="product">Initial stock</label>
+      <div className="w-full flex flex-row justify-center items-center p-3 m-auto gap-4">
+        <div className="flex flex-col w-24 justify-center items-center">
+          <label className="text-center" htmlFor="product">Initial stock</label>
           <input
-            className="custom-input-appearance w-1/2 border-1 border-solid border-black rounded-md p-2 shadow-inner shadow-slate-700"
+            className="custom-input-appearance w-10 border-1 border-solid border-black rounded-md p-2 shadow-inner shadow-slate-700"
             onChange={(event) => setProductStock(event.target.value)}
             type="number"
             value={productStock}
           />
         </div>
-        <div className="flex flex-col justify-center items-center">
-          <label htmlFor="product">Price</label>
+        <div className="flex flex-col w-24 justify-center items-center">
+          <label className="text-center" htmlFor="product">Price</label>
           <input
-            className="custom-input-appearance w-1/2 border-1 border-solid border-black rounded-md p-2 shadow-inner shadow-slate-700"
+            className="custom-input-appearance w-10 border-1 border-solid border-black rounded-md p-2 shadow-inner shadow-slate-700"
             onChange={(event) => setProductPrice(event.target.value)}
             type="number"
             value={productPrice}
           />
         </div>
       </div>
-    </div>
   );
 };
 

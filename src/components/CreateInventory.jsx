@@ -97,12 +97,14 @@ const CreateInventory = () => {
             deleteInput={deleteInput}
           />
         ))}
-        <button
-          className="p-2 w-10 h-10 text-white rounded"
-          onClick={createInput}
-        >
-          <img src={addIcon} alt="add-inputs" />
-        </button>
+        <div className="w-full flex justify-start items-start">
+          <button
+            className="w-8 h-8 text-white rounded"
+            onClick={createInput}
+          >
+            <img src={addIcon} alt="add-inputs" />
+          </button>
+        </div>
         <PropertySpecs
           setProductStock={setProductStock}
           setProductPrice={setProductPrice}
