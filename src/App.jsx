@@ -27,11 +27,10 @@ function App() {
       <Router>
         <AuthProvider>
           <InventoryContextProvider>
-            <div className="flex-grow pb-28">
+            <div className="flex-grow">
               <ProtectedRoutes>
                 <Banner />
               </ProtectedRoutes>
-
               <Routes>
                 <Route
                   path="/login"
@@ -92,7 +91,7 @@ function App() {
               </Routes>
             </div>
             <ProtectedRoutes>
-               <Navbar />
+              <Navbar />
             </ProtectedRoutes>
           </InventoryContextProvider>
         </AuthProvider>

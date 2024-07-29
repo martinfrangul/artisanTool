@@ -1,9 +1,8 @@
 import { useContext, useState } from "react";
 import { InventoryContext } from "../context/InventoryContext";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { useAuth } from "../hooks/useAuth";
 import PropTypes from "prop-types";
-
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
@@ -63,21 +62,41 @@ const SalesManager = () => {
       return;
     }
 
-    const selectedDate = selectedDates[id] || new Date(); // Usa la fecha seleccionada o la fecha actual por defecto
     let selectedItem = data.find((item) => item.id === id);
-    selectedItem = { ...selectedItem, date: selectedDate.toLocaleDateString() };
 
-    if (selectedItem) {
-      try {
-        await addDoc(collection(db, `users/${user.uid}/sales`), selectedItem);
-        alert("Venta agregada correctamente");
-        reloadData();
-        setTags([]);
-        setEnteredData("");
-        setSelectedDates({})
-      } catch (error) {
-        alert("Error: " + error.message);
-      }
+    if (!selectedItem) {
+      alert("Producto no encontrado.");
+      return;
+    }
+
+    if (selectedItem.productStock < 1) {
+      alert("No se puede vender este producto. Stock insuficiente.");
+      return;
+    }
+
+    // Reducir el stock localmente
+    const updatedItem = { ...selectedItem, productStock: selectedItem.productStock - 1 };
+
+    const selectedDate = selectedDates[id] || new Date();
+    const { productStock, ...selectedItemToSell } = updatedItem;
+    selectedItemToSell.date = selectedDate.toLocaleDateString();
+
+    try {
+      // Actualizar el stock en Firestore
+      const docRef = doc(db, `users/${user.uid}/products`, id);
+      await updateDoc(docRef, { productStock: updatedItem.productStock });
+
+      // Registrar la venta en Firestore
+      await addDoc(collection(db, `users/${user.uid}/sales`), selectedItemToSell);
+
+      alert("Venta agregada correctamente");
+      reloadData();
+      setTags([]);
+      setEnteredData("");
+      setSelectedDates({});
+    } catch (error) {
+      console.error("Error al procesar la venta: ", error);
+      alert("Error: " + error.message);
     }
   };
 
@@ -118,7 +137,7 @@ const SalesManager = () => {
   };
 
   return (
-    <div>
+    <div className="pb-28">
       <form
         onSubmit={handleAddTag}
         className="max-w-md mt-5 mx-auto w-4/5 mb-5"

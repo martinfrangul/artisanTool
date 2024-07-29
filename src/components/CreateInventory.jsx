@@ -77,7 +77,7 @@ const CreateInventory = () => {
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col pb-28">
       <div className="flex-grow overflow-y-auto">
         <div className="flex flex-col justify-center items-center p-3 w-full">
           <label htmlFor="product">Product</label>

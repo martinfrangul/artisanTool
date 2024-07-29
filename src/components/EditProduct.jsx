@@ -55,10 +55,14 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   }, [user, productIdForEdit]);
 
   const handleInputChange = (key, value) => {
+    if (key === "productStock" && value !== "") {
+      value = parseInt(value);
+    }
     setItemData((prevItemData) => ({
       ...prevItemData,
       [key]: value,
     }));
+
     // Clear the error for the field if it's being modified
     setErrors((prevErrors) => ({
       ...prevErrors,
@@ -71,12 +75,10 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     let validationErrors = {};
 
     Object.entries(itemData).forEach(([key, value]) => {
-      // Solo llamar a trim si value es una cadena
       if (typeof value === "string" && !value.trim()) {
         validationErrors[key] = "Este campo no puede estar vacío";
         isValid = false;
-      } else if (typeof value !== "string" && !value) {
-        // Maneja el caso donde el valor no es una cadena pero es falsy (ej., null o undefined)
+      } else if (typeof value !== "string" && value === null) {
         validationErrors[key] = "Este campo no puede estar vacío";
         isValid = false;
       }
@@ -115,35 +117,38 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
       <div className="relative p-4 w-11/12 max-w-2xl max-h-full bg-white rounded-lg border-solid border-[1px] border-gray-700">
         <div className="w-full flex justify-center border-b items-center">
           <div className="w-1/4">{/* DIV ESTRUCTURAL PARA DIVIDIR EN 3 */}</div>
-          <div className="w-2/4 text-center font-semibold">EDITA EL PRODUCTO</div>
-            <div className="w-1/4 flex items-center justify-end py-2 md:p-5 rounded-t">
-              <button
-                type="button"
-                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
-                onClick={() => handleModalToggle(false)}
+          <div className="w-2/4 text-center font-semibold">
+            EDITA EL PRODUCTO
+          </div>
+          <div className="w-1/4 flex items-center justify-end py-2 md:p-5 rounded-t">
+            <button
+              type="button"
+              className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
+              onClick={() => handleModalToggle(false)}
+            >
+              <svg
+                className="w-3 h-3"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 14 14"
               >
-                <svg
-                  className="w-3 h-3"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 14 14"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                  />
-                </svg>
-                <span className="sr-only">Close modal</span>
-              </button>
-            </div>
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                />
+              </svg>
+              <span className="sr-only">Close modal</span>
+            </button>
+          </div>
         </div>
 
         <div className="p-4 md:p-5 space-y-4">
           {Object.entries(itemData)
+            .filter(([key]) => key !== "id")
             .sort(([keyA], [keyB]) => {
               const indexA = customOrder.indexOf(keyA);
               const indexB = customOrder.indexOf(keyB);
