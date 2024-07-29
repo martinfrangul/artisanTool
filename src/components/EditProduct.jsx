@@ -201,7 +201,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
           </button>
           <button
             type="button"
-            className="py-2 px-4 ms-3 text-sm font-medium text-white focus:outline-none bg-marron rounded-lg focus:z-10"
+            className="py-2 px-4 ms-3 text-sm font-medium text-white focus:outline-none bg-danger rounded-lg focus:z-10"
             onClick={() => handleModalToggle(false)}
           >
             Cancel

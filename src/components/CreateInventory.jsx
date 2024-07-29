@@ -40,7 +40,7 @@ const CreateInventory = () => {
       return;
     }
 
-    if (!productName || !productPrice || !productStock) {
+    if (!productName || isNaN(!productPrice) || isNaN(!productStock)) {
       alert("Nombre, precio y stock son obligatorios");
       return;
     }
@@ -80,7 +80,7 @@ const CreateInventory = () => {
     <div className="flex flex-col pb-28">
       <div className="flex-grow overflow-y-auto">
         <div className="flex flex-col justify-center items-center p-3 w-full">
-          <label htmlFor="product">Product</label>
+          <label htmlFor="product">Producto</label>
           <input
             className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700"
             onChange={(event) => setProductName(event.target.value)}
@@ -97,7 +97,7 @@ const CreateInventory = () => {
             deleteInput={deleteInput}
           />
         ))}
-        <div className="w-full flex justify-start items-start">
+        <div className="w-full flex justify-start items-start px-3">
           <button
             className="w-8 h-8 text-white rounded"
             onClick={createInput}
@@ -117,7 +117,7 @@ const CreateInventory = () => {
             className="m-2 p-2 bg-success text-white rounded"
             onClick={saveData}
           >
-            Create
+            Crear
           </button>
         </div>
       </div>

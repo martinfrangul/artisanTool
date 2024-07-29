@@ -13,31 +13,27 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput }) => {
       key={index}
     >
       <div className="flex flex-col justify-center items-center px-3 gap-2 w-full">
-        <label htmlFor="property">Property</label>
+        <label htmlFor="property">Propiedad</label>
         <select
-          className="h-fit border-1 border-solid w- border-black rounded-md shadow-inner p-2 shadow-slate-700"
+          className="h-fit border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700"
           name="properties"
           id={index}
+          value={input.property}
+
           onChange={(event) => updatePropertyField(index, "property", event.target.value)}
         >
-          <option value=""></option> {/* Opción vacía por defecto */}
+          <option value="" disabled>(Opcional)</option>
           <option value="model">Modelo</option>
           <option value="size">Tamaño</option>
           <option value="design">Diseño</option>
           <option value="color">Color</option>
           <option value="type">Tipo</option>
         </select>
-        {/* <input
-          id={index}
-          className="h-fit border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700 ml-2"
-          onChange={(event) => handleInputChange(index, "property", event.target.value)}
-          type="text"
-          value={input.property}
-        /> */}
       </div>
       <div className="flex flex-col justify-center items-center px-3 gap-2 w-full">
-        <label htmlFor="option">Option</label>
+        <label htmlFor="option">Opción</label>
         <input
+        placeholder="(Opcional)"
           id={index}
           className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700"
           onChange={(event) =>

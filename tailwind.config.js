@@ -10,7 +10,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        success: "#316140",
+        success: "#8fc29f",
         danger: "#C17C74",
         primary: "#121063",
         banner: "#DDC9B4",

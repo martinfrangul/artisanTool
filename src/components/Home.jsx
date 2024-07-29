@@ -12,7 +12,7 @@ const Home = () => {
             className="w-1/2 flex flex-col justify-end items-center my-3"
             to="/create-inventory"
           >
-            <div className="text-md text-center p-3 font-thin">Create Inventory</div>
+            <div className="text-md text-center p-3 font-thin">Crear inventario</div>
             <div className="w-20">
               <img
                 className="rounded-xl border-[1px] border-solid border-black"
@@ -25,7 +25,7 @@ const Home = () => {
             className="w-1/2 flex flex-col justify-center items-center my-3"
             to="/inventory"
           >
-            <div className="text-md text-center p-3 font-thin">Inventory</div>
+            <div className="text-md text-center p-3 font-thin">Inventario</div>
             <div className="w-20">
               <img
                 className="rounded-xl border-[1px] border-solid border-gray-600"
@@ -38,7 +38,7 @@ const Home = () => {
           className="w-1/2 flex flex-col justify-center items-center my-3"
           to="/sales-manager"
         >
-          <div className="text-md text-center p-3 font-thin">Sales manager</div>
+          <div className="text-md text-center p-3 font-thin">Gestor de ventas</div>
           <div className="w-20">
             <img
               className="rounded-xl border-[1px] border-solid border-black"
@@ -51,7 +51,7 @@ const Home = () => {
           className="w-1/2 flex flex-col justify-center items-center my-3"
           to="/sales-registry"
         >
-          <div className="text-md p-3 text-center font-thin">Sales registry</div>
+          <div className="text-md p-3 text-center font-thin">Registro de ventas</div>
           <div className="w-20">
             <img
               className="rounded-xl border-[1px] border-solid border-gray-600"
@@ -64,7 +64,7 @@ const Home = () => {
           className="w-full flex flex-col justify-center items-center my-3"
           to="/expenses"
         >
-          <div className="text-md text-center p-3 font-thin">Expenses</div>
+          <div className="text-md text-center p-3 font-thin">Gastos</div>
           <div className="w-20">
             <img
               className="rounded-xl border-[1px] border-solid border-gray-600"

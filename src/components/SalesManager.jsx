@@ -13,6 +13,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
 import editIcon from "../assets/editIcon.png";
+import sellIcon from "../assets/sellIcon.svg";
+import sellIconGray from "../assets/sellIconGray.svg";
 import cancelIcon from "../assets/cancelIcon.png";
 
 const SalesManager = () => {
@@ -103,7 +105,10 @@ const SalesManager = () => {
       // Registrar la venta en Firestore
       await addDoc(
         collection(db, `users/${user.uid}/sales`),
-        { ...selectedItemToSell, productPrice: parseInt(prices[id]) || selectedItem.productPrice } // Use temporary price if set
+        {
+          ...selectedItemToSell,
+          productPrice: parseInt(prices[id]) || selectedItem.productPrice,
+        } // Use temporary price if set
       );
 
       alert("Venta agregada correctamente");
@@ -118,6 +123,10 @@ const SalesManager = () => {
       console.error("Error al procesar la venta: ", error);
       alert("Error: " + error.message);
     }
+  };
+
+  const toggleDatePicker = (id) => {
+    setOpenPickerId((prevId) => (prevId === id ? null : id));
   };
 
   const handleDateChange = (date, id) => {
@@ -137,9 +146,15 @@ const SalesManager = () => {
     setEditingItemId(id);
     const selectedItem = data.find((item) => item.id === id);
     if (!prices[id]) {
-      setOriginalPrices((prev) => ({ ...prev, [id]: selectedItem.productPrice }));
+      setOriginalPrices((prev) => ({
+        ...prev,
+        [id]: selectedItem.productPrice,
+      }));
     }
-    setPrices((prev) => ({ ...prev, [id]: prices[id] || selectedItem.productPrice }));
+    setPrices((prev) => ({
+      ...prev,
+      [id]: prices[id] || selectedItem.productPrice,
+    }));
   };
 
   const handleChangePriceValue = (e, id) => {
@@ -246,14 +261,16 @@ const SalesManager = () => {
                   {renderProductDetails(item)}
                 </div>
                 <div className="flex flex-col items-end">
-                  <div className="flex flex-row items-start gap-2">
+                  <div className="flex flex-row items-start gap-2 border-b-[0.5px] border-r-[0.5px] border-black border-solid pr-1">
                     <h3 className="text-md font-semibold">
                       {propertyLabels.productPrice}:{" "}
                     </h3>
                     {editingItemId === item.id ? (
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-row gap-1">
                         <input
-                          onChange={(event) => handleChangePriceValue(event, item.id)}
+                          onChange={(event) =>
+                            handleChangePriceValue(event, item.id)
+                          }
                           value={prices[item.id] || ""}
                           className="w-10 rounded-md"
                           type="text"
@@ -272,43 +289,57 @@ const SalesManager = () => {
                     ) : (
                       <strong>€{prices[item.id] || item.productPrice}</strong>
                     )}
-                    <button
+                    
+                    
+                  </div>
+                  <div className="flex justify-end relative items-center gap-3">
+                  <button
                       onClick={() => handlePriceInput(item.id)}
                       className="py-2"
                     >
-                      <img className="w-4" src={editIcon} alt="edit-icon" />
+                      <img className="w-5" src={editIcon} alt="edit-icon" />
                     </button>
+                      <FaCalendarAlt
+                        className="text-gray-600 cursor-pointer"
+                        onClick={() => toggleDatePicker(item.id)}
+                      />
+                      {openPickerId === item.id && (
+                        <div className="absolute top-8 right-0 z-10 bg-white p-2 shadow-lg">
+                          <DatePicker
+                            selected={selectedDates[item.id] || new Date()} // Usa la fecha actual por defecto
+                            onChange={(date) => handleDateChange(date, item.id)}
+                            inline
+                          />
+                        </div>
+                      )}
+                    </div>
+                  <div>
+                    
+                    {item.productStock < 1 ? (
+                      <button
+                        onClick={() => handleSell(item.id)}
+                        className="bg-opacity-75 rounded-sm text-black font-semibold"
+                      >
+                        <img className="w-10" src={sellIconGray} alt="edit-icon" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleSell(item.id)}
+                        className="bg-opacity-75 rounded-sm text-black font-semibold"
+                      >
+                         <img className="w-10" src={sellIcon} alt="edit-icon" />
+                      </button>
+                    )}
                   </div>
-                  <button
-                    onClick={() => handleSell(item.id)}
-                    className="bg-success bg-opacity-75 px-2 py-1 rounded-md text-white font-semibold"
-                  >
-                    Vender
-                  </button>
                 </div>
               </div>
-              <div className="flex flex-row items-center justify-between w-full pb-3">
+              <div className="flex flex-row items-center justify-between w-full pb-2">
                 <div className="w-1/2 flex justify-start">
                   {selectedDates[item.id] && (
                     <h3 className="text-md font-semibold mt-2">
                       Fecha seleccionada:{" "}
                       {selectedDates[item.id].toLocaleDateString()}
                     </h3>
-                  )}
-                </div>
-                <div className="flex justify-end relative mt-2">
-                  <FaCalendarAlt
-                    className="text-gray-600 cursor-pointer"
-                    onClick={() => setOpenPickerId(item.id)}
-                  />
-                  {openPickerId === item.id && (
-                    <div className="absolute top-8 right-0 z-10 bg-white p-2 shadow-lg">
-                      <DatePicker
-                        selected={selectedDates[item.id] || new Date()} // Usa la fecha actual por defecto
-                        onChange={(date) => handleDateChange(date, item.id)}
-                        inline
-                      />
-                    </div>
                   )}
                 </div>
               </div>
