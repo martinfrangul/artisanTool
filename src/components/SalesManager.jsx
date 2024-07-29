@@ -1,11 +1,19 @@
 import { useContext, useState } from "react";
 import { InventoryContext } from "../context/InventoryContext";
-import { getFirestore, collection, addDoc, doc, updateDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { useAuth } from "../hooks/useAuth";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
+import editIcon from "../assets/editIcon.png";
+import cancelIcon from "../assets/cancelIcon.png";
 
 const SalesManager = () => {
   const context = useContext(InventoryContext);
@@ -30,6 +38,9 @@ const SalesManager = () => {
   const [tags, setTags] = useState([]);
   const [selectedDates, setSelectedDates] = useState({});
   const [openPickerId, setOpenPickerId] = useState(null);
+  const [editingItemId, setEditingItemId] = useState(null);
+  const [prices, setPrices] = useState({}); // Store prices by item id
+  const [originalPrices, setOriginalPrices] = useState({}); // Store original prices
 
   const handleAddTag = (event) => {
     event.preventDefault();
@@ -75,7 +86,10 @@ const SalesManager = () => {
     }
 
     // Reducir el stock localmente
-    const updatedItem = { ...selectedItem, productStock: selectedItem.productStock - 1 };
+    const updatedItem = {
+      ...selectedItem,
+      productStock: selectedItem.productStock - 1,
+    };
 
     const selectedDate = selectedDates[id] || new Date();
     const { productStock, ...selectedItemToSell } = updatedItem;
@@ -87,13 +101,19 @@ const SalesManager = () => {
       await updateDoc(docRef, { productStock: updatedItem.productStock });
 
       // Registrar la venta en Firestore
-      await addDoc(collection(db, `users/${user.uid}/sales`), selectedItemToSell);
+      await addDoc(
+        collection(db, `users/${user.uid}/sales`),
+        { ...selectedItemToSell, productPrice: parseInt(prices[id]) || selectedItem.productPrice } // Use temporary price if set
+      );
 
       alert("Venta agregada correctamente");
-      reloadData();
       setTags([]);
       setEnteredData("");
       setSelectedDates({});
+      setEditingItemId(null); // Reset the active editor
+      setPrices({});
+      setOriginalPrices({});
+      reloadData();
     } catch (error) {
       console.error("Error al procesar la venta: ", error);
       alert("Error: " + error.message);
@@ -106,6 +126,29 @@ const SalesManager = () => {
       [id]: date,
     }));
     setOpenPickerId(null);
+  };
+
+  const handlePriceInput = (id) => {
+    // Cancel the previous editing if a new item is being edited
+    if (editingItemId !== null && editingItemId !== id) {
+      handleCancelClick(editingItemId);
+    }
+
+    setEditingItemId(id);
+    const selectedItem = data.find((item) => item.id === id);
+    if (!prices[id]) {
+      setOriginalPrices((prev) => ({ ...prev, [id]: selectedItem.productPrice }));
+    }
+    setPrices((prev) => ({ ...prev, [id]: prices[id] || selectedItem.productPrice }));
+  };
+
+  const handleChangePriceValue = (e, id) => {
+    setPrices((prev) => ({ ...prev, [id]: e.target.value }));
+  };
+
+  const handleCancelClick = (id) => {
+    setPrices((prev) => ({ ...prev, [id]: originalPrices[id] || "" }));
+    setEditingItemId(null);
   };
 
   const renderProductDetails = (item) => {
@@ -203,10 +246,39 @@ const SalesManager = () => {
                   {renderProductDetails(item)}
                 </div>
                 <div className="flex flex-col items-end">
-                  <h3 className="text-md font-semibold">
-                    {propertyLabels.productPrice}:{" "}
-                    <strong>€{item.productPrice}</strong>
-                  </h3>
+                  <div className="flex flex-row items-start gap-2">
+                    <h3 className="text-md font-semibold">
+                      {propertyLabels.productPrice}:{" "}
+                    </h3>
+                    {editingItemId === item.id ? (
+                      <div className="flex flex-col gap-1">
+                        <input
+                          onChange={(event) => handleChangePriceValue(event, item.id)}
+                          value={prices[item.id] || ""}
+                          className="w-10 rounded-md"
+                          type="text"
+                        />
+                        <button
+                          className="text-sm"
+                          onClick={() => handleCancelClick(item.id)}
+                        >
+                          <img
+                            className="w-4"
+                            src={cancelIcon}
+                            alt="cancel-icon"
+                          />
+                        </button>
+                      </div>
+                    ) : (
+                      <strong>€{prices[item.id] || item.productPrice}</strong>
+                    )}
+                    <button
+                      onClick={() => handlePriceInput(item.id)}
+                      className="py-2"
+                    >
+                      <img className="w-4" src={editIcon} alt="edit-icon" />
+                    </button>
+                  </div>
                   <button
                     onClick={() => handleSell(item.id)}
                     className="bg-success bg-opacity-75 px-2 py-1 rounded-md text-white font-semibold"

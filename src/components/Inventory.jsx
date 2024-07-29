@@ -23,13 +23,12 @@ const Inventory = () => {
   const context = useContext(InventoryContext);
   const { data, reloadData } = context;
   const { user } = useAuth(); // Obtén el usuario actual
-  
-  
+
   // STATES
-  
+
   const [sortProperty, setSortProperty] = useState("productName");
   const [isModalVisible, setModalVisible] = useState(false);
-  const [idForEdit, setIdForEdit] = useState("")
+  const [idForEdit, setIdForEdit] = useState("");
 
   // Get the available properties
   const getAvailableProperties = () => {
@@ -70,16 +69,26 @@ const Inventory = () => {
     }
   };
 
-
   const renderProductDetails = (item) => {
     // Filtrar las propiedades para excluir 'productName', 'productStock' y 'productPrice'
-    const filteredProperties = Object.entries(item)
-      .filter(([key]) => key !== "productName" && key !== "productStock" && key !== "productPrice" && key !== "id");
-  
+    const filteredProperties = Object.entries(item).filter(
+      ([key]) =>
+        key !== "productName" &&
+        key !== "productStock" &&
+        key !== "productPrice" &&
+        key !== "id"
+    );
+
+    const orderedProperties = filteredProperties.sort(([keyA], [keyB]) => {
+      const indexA = Object.keys(propertyLabels).indexOf(keyA);
+      const indexB = Object.keys(propertyLabels).indexOf(keyB);
+      return indexA - indexB;
+    });
+
     return (
       <div className="flex flex-col justify-start items-start">
         <h1 className="text-xl font-bold text-logo">{item.productName}</h1>
-        {filteredProperties.map(([key, value]) => 
+        {orderedProperties.map(([key, value]) =>
           value ? (
             <h1 key={key}>
               <strong>{propertyLabels[key] || key}: </strong>
@@ -90,17 +99,15 @@ const Inventory = () => {
       </div>
     );
   };
-  
-
 
   const handleModalToggle = (closeModal) => {
-    setModalVisible(closeModal)
-  }
+    setModalVisible(closeModal);
+  };
 
   const openEditModal = (id) => {
-    setIdForEdit(id)
+    setIdForEdit(id);
     setModalVisible(true);
-  }
+  };
 
   // Ordenar los items según la propiedad seleccionada
   const sortedData = data.slice().sort((a, b) => {
@@ -151,8 +158,7 @@ const Inventory = () => {
             className="flex flex-row justify-between items-start pb-5 px-2 pt-2 border-b-[1px] border-solid border-black"
           >
             <div className="flex flex-col justify-start items-start">
-            {renderProductDetails(item)}
-             
+              {renderProductDetails(item)}
             </div>
 
             <div className="flex flex-col">
@@ -180,7 +186,10 @@ const Inventory = () => {
               </button>
 
               {isModalVisible && (
-                <EditProduct productIdForEdit={idForEdit} handleModalToggle={handleModalToggle} />
+                <EditProduct
+                  productIdForEdit={idForEdit}
+                  handleModalToggle={handleModalToggle}
+                />
               )}
             </div>
           </div>

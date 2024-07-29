@@ -107,14 +107,24 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     }
   };
 
+  useEffect(() => {
+    // Bloquear el desplazamiento del fondo cuando el modal está abierto
+    document.body.style.overflow = productIdForEdit ? "hidden" : "auto";
+
+    // Restaurar el desplazamiento del fondo cuando el modal se cierra
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [productIdForEdit]);
+
   return (
     <div
       id="default-modal"
       tabIndex="-1"
       aria-hidden="true"
-      className="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full backdrop-blur-sm"
+      className="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full backdrop-blur-sm overflow-auto"
     >
-      <div className="relative p-4 w-11/12 max-w-2xl max-h-full bg-white rounded-lg border-solid border-[1px] border-gray-700">
+      <div className="relative p-4 w-11/12 max-w-2xl max-h-[90vh] bg-white rounded-lg border-solid border-[1px] border-gray-700 overflow-auto">
         <div className="w-full flex justify-center border-b items-center">
           <div className="w-1/4">{/* DIV ESTRUCTURAL PARA DIVIDIR EN 3 */}</div>
           <div className="w-2/4 text-center font-semibold">
