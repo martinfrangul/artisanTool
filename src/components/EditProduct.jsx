@@ -158,7 +158,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
 
         <div className="p-4 md:p-5 space-y-4">
           {Object.entries(itemData)
-            .filter(([key]) => key !== "id")
+            .filter(([key]) => key !== "id" && key !== "toDo")
             .sort(([keyA], [keyB]) => {
               const indexA = customOrder.indexOf(keyA);
               const indexB = customOrder.indexOf(keyB);

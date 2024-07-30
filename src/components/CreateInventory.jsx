@@ -54,6 +54,7 @@ const CreateInventory = () => {
       productName,
       productPrice: parseFloat(productPrice),
       productStock: parseInt(productStock, 10),
+      toDo: 0,
       ...inputsObject,
     };
 

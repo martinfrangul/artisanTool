@@ -3,7 +3,7 @@ import { InventoryContext } from "../context/InventoryContext";
 import deleteItemIcon from "../assets/deleteItemIcon.png";
 import editIcon from "../assets/editIcon.png";
 import acceptIcon from "../assets/acceptIcon.png";
-import { doc, deleteDoc } from "firebase/firestore";
+import { doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { useAuth } from "../hooks/useAuth";
 import { database } from "../../firebase/firebaseConfig";
 import EditProduct from "./EditProduct";
@@ -40,7 +40,8 @@ const Inventory = () => {
           key !== "id" &&
           key !== "productName" &&
           key !== "productStock" &&
-          key !== "productPrice"
+          key !== "productPrice" &&
+          key !== "toDo"
         ) {
           properties.add(key);
         }
@@ -77,7 +78,8 @@ const Inventory = () => {
         key !== "productName" &&
         key !== "productStock" &&
         key !== "productPrice" &&
-        key !== "id"
+        key !== "id" &&
+        key !== "toDo"
     );
 
     const orderedProperties = filteredProperties.sort(([keyA], [keyB]) => {
@@ -131,8 +133,48 @@ const Inventory = () => {
     setSortProperty(event.target.value);
   };
 
-  const resolveToDo = (id) => {
-    console.log(id);
+  // Actualiza el TODO en la base de datos
+
+  const saveToDo = async (event, id) => {
+    const newToDoValue = event.target.value;
+    if (!user) return;
+    try {
+      const docRef = doc(database, `users/${user.uid}/products`, id);
+      await updateDoc(docRef, { toDo: newToDoValue === '' ? 0 : parseInt(newToDoValue) });
+      reloadData();
+    } catch (error) {
+      console.error("Error al editar el to-do del producto: ", error);
+    }
+  };
+
+  const resolveToDo = async (id) => {
+    if (!user) {
+      alert("Usuario no autenticado");
+      return;
+    }
+
+    let selectedItem = data.find((item) => item.id === id);
+
+    if (!selectedItem) {
+      alert("Producto no encontrado.");
+      return;
+    }
+
+    const updatedItem = {
+      ...selectedItem,
+      productStock: selectedItem.productStock + selectedItem.toDo,
+      toDo: 0,
+    };
+
+    try {
+      // Actualizar el stock en Firestore
+      const docRef = doc(database, `users/${user.uid}/products`, id);
+      await updateDoc(docRef, updatedItem);
+      reloadData();
+    } catch (error) {
+      console.error("Error al procesar la venta: ", error);
+      alert("Error: " + error.message);
+    }
   };
 
   return (
@@ -178,11 +220,17 @@ const Inventory = () => {
                 </h3>
                 <div className="flex flex-row gap-1">
                   <label htmlFor="to-do">Hacer:</label>
-                  <input className="w-8 rounded-md text-center bg-slate-100 ring-1 ring-black focus:ring-1 focus:outline-0" id="to-do" type="number"></input>
+                  <input
+                    onChange={(e) => saveToDo(e, item.id)}
+                    className="w-8 rounded-md text-center bg-slate-100 ring-1 ring-black focus:ring-1 focus:outline-0"
+                    id="to-do"
+                    type="number"
+                    value={item.toDo ?? ''}
+                  ></input>
                 </div>
               </div>
               <div className="flex flex-col justify-end items-center gap-2">
-              <button
+                <button
                   onClick={() => resolveToDo(item.id)}
                   className="flex justify-center items-center bg-success w-8 h-8 rounded-full border-[1px] border-solid border-black shadow-lg shadow-gray-500"
                 >
@@ -200,7 +248,7 @@ const Inventory = () => {
                 >
                   <img className="w-3" src={deleteItemIcon} alt="delete-icon" />
                 </button>
-            </div>
+              </div>
 
               {isModalVisible && (
                 <EditProduct
