@@ -4,6 +4,8 @@ import { InventoryContext } from "../context/InventoryContext";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { database } from "../../firebase/firebaseConfig";
 import PropTypes from "prop-types";
+import Alert from "./Alert";
+
 
 const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   // STATES
@@ -19,6 +21,9 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     "productPrice",
     "productStock",
   ];
+  const [alert, setAlert] = useState({ message: "", type: "", visible: false });
+
+
   const propertyLabels = {
     design: "Diseño",
     size: "Tamaño",
@@ -100,8 +105,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
       );
       await updateDoc(docRef, itemData);
       reloadData();
-      alert("Producto editado correctamente");
-      handleModalToggle(false);
+      setAlert({ message: "Producto editado correctamente", type: "success", visible: true});
     } catch (error) {
       console.error("Error al editar producto: ", error);
     }
@@ -121,9 +125,10 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     <div
       id="default-modal"
       tabIndex="-1"
-      aria-hidden="true"
       className="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full backdrop-blur-sm overflow-auto"
     >
+      {alert.visible && <Alert message={alert.message} type={alert.type} onClose={() => [setAlert({ ...alert, visible: false}), handleModalToggle(false)]} />}
+
       <div className="relative p-4 w-11/12 max-w-2xl max-h-[90vh] bg-white rounded-lg border-solid border-[1px] border-gray-700 overflow-auto">
         <div className="w-full flex justify-center border-b items-center">
           <div className="w-1/4">{/* DIV ESTRUCTURAL PARA DIVIDIR EN 3 */}</div>
@@ -138,7 +143,6 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
             >
               <svg
                 className="w-3 h-3"
-                aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 14 14"
@@ -155,7 +159,6 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
             </button>
           </div>
         </div>
-
         <div className="p-4 md:p-5 space-y-4">
           {Object.entries(itemData)
             .filter(([key]) => key !== "id" && key !== "toDo")

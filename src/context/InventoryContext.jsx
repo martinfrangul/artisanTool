@@ -33,7 +33,7 @@ const InventoryContextProvider = ({ children }) => {
   }, [user, db, reload]);
 
   if (authLoading) {
-    return <p>Loading...</p>;
+    return <span className="loading loading-dots loading-md"></span>;
   }
 
   // Función para recargar los datos

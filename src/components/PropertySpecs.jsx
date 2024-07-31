@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
 import '../styles/PropertySpecs.css';
 import { useState } from 'react';
+import Alert from "./Alert";
+
 
 const PropertySpecs = ({
   setProductStock,
@@ -10,6 +12,8 @@ const PropertySpecs = ({
 }) => {
   const [isStockEmpty, setIsStockEmpty] = useState(false);
   const [isPriceEmpty, setIsPriceEmpty] = useState(false);
+  const [alert, setAlert] = useState({ message: "", type: "", visible: false });
+
 
   // Handler para el stock
   const handleStockChange = (event) => {
@@ -25,7 +29,8 @@ const PropertySpecs = ({
     const numericValue = Number(value);
 
     if (numericValue < 0) {
-      alert("El stock no puede ser negativo.");
+      setAlert({ message: "El stock no puede ser negativo", type: "warning", visible: true});
+
       setProductStock(""); // Restablece el valor a cadena vacía
       setIsStockEmpty(false); // Asegúrate de que el campo vacío no se mantenga
       return;
@@ -49,7 +54,7 @@ const PropertySpecs = ({
     const numericValue = Number(value);
 
     if (numericValue < 0) {
-      alert("El precio no puede ser negativo.");
+      setAlert({ message: "El precio no puede ser negativo", type: "warning", visible: true});
       setProductPrice(""); // Restablece el valor a cadena vacía
       setIsPriceEmpty(false); // Asegúrate de que el campo vacío no se mantenga
       return;
@@ -61,6 +66,8 @@ const PropertySpecs = ({
 
   return (
     <div className="w-full flex flex-row justify-center items-center p-3 m-auto gap-4">
+      {alert.visible && <Alert message={alert.message} type={alert.type} onClose={() => setAlert({ ...alert, visible: false })} />}
+
       <div className="flex flex-col w-24 justify-center items-center">
         <label className="text-center" htmlFor="productStock">Stock inicial</label>
         <input

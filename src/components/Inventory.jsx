@@ -2,11 +2,13 @@ import { useState, useContext } from "react";
 import { InventoryContext } from "../context/InventoryContext";
 import deleteItemIcon from "../assets/deleteItemIcon.png";
 import editIcon from "../assets/editIcon.png";
+import checkAllIcon from "../assets/checkAllIcon.png";
 import acceptIcon from "../assets/acceptIcon.png";
-import { doc, deleteDoc, updateDoc } from "firebase/firestore";
+import { doc, deleteDoc, updateDoc, writeBatch } from "firebase/firestore";
 import { useAuth } from "../hooks/useAuth";
 import { database } from "../../firebase/firebaseConfig";
 import EditProduct from "./EditProduct";
+import Alert from "./Alert";
 
 // Map of readable names
 const propertyLabels = {
@@ -26,10 +28,11 @@ const Inventory = () => {
   const { user } = useAuth(); // Obtén el usuario actual
 
   // STATES
-
   const [sortProperty, setSortProperty] = useState("productName");
   const [isModalVisible, setModalVisible] = useState(false);
   const [idForEdit, setIdForEdit] = useState("");
+  const [alert, setAlert] = useState({ message: "", type: "", visible: false });
+  const [isConfirmationModalVisible, setConfirmationModalVisible] = useState(false);
 
   // Get the available properties
   const getAvailableProperties = () => {
@@ -59,13 +62,17 @@ const Inventory = () => {
   ];
 
   const handleDelete = async (id) => {
-    if (!user) return; // Asegúrate de que el usuario esté autenticado
+    if (!user) return;
 
     try {
       const docRef = doc(database, `users/${user.uid}/products`, id);
       await deleteDoc(docRef);
       reloadData(); // Recarga los datos después de eliminar
-      alert("Producto eliminado correctamente");
+      setAlert({
+        message: "Producto eliminado correctamente",
+        type: "success",
+        visible: true,
+      });
     } catch (error) {
       console.error("Error al eliminar el producto: ", error);
     }
@@ -134,29 +141,97 @@ const Inventory = () => {
   };
 
   // Actualiza el TODO en la base de datos
-
   const saveToDo = async (event, id) => {
     const newToDoValue = event.target.value;
     if (!user) return;
     try {
       const docRef = doc(database, `users/${user.uid}/products`, id);
-      await updateDoc(docRef, { toDo: newToDoValue === '' ? 0 : parseInt(newToDoValue) });
+      await updateDoc(docRef, {
+        toDo: newToDoValue === "" ? 0 : parseInt(newToDoValue),
+      });
       reloadData();
     } catch (error) {
       console.error("Error al editar el to-do del producto: ", error);
     }
   };
 
+  const confirmResolveAllTodos = () => {
+    setConfirmationModalVisible(true);
+  };
+
+  const resolveAllTodos = async () => {
+    if (!user) {
+      setAlert({
+        message: "Usuario no autenticado",
+        type: "error",
+        visible: true,
+      });
+
+      return;
+    }
+
+    // Creamos una transacción para actualizar todos los documentos
+    const batch = writeBatch(database);
+
+    try {
+      // Actualizar el stock en Firestore
+      data.forEach((item) => {
+        if (item.toDo > 0) {
+          const docRef = doc(database, `users/${user.uid}/products`, item.id);
+          const updatedStock = item.productStock + item.toDo;
+          // Actualiza el documento con el nuevo stock y toDo a 0
+          batch.update(docRef, { productStock: updatedStock, toDo: 0 });
+        }
+      });
+
+      // Commit de la transacción
+      await batch.commit();
+      reloadData();
+      setAlert({
+        message: "Todos los productos agregados correctamente al stock",
+        type: "success",
+        visible: true,
+      });
+      setConfirmationModalVisible(false);
+    } catch (error) {
+      console.error("Error al resolver todos los productos: ", error);
+      setAlert({
+        message: "Error al resolver los productos",
+        type: "error",
+        visible: true,
+      });
+      setConfirmationModalVisible(false);
+    }
+  };
+
+  const handleConfirmation = (confirmed) => {
+    if (confirmed) {
+      resolveAllTodos();
+    } else {
+      setConfirmationModalVisible(false);
+    }
+  };
+
   const resolveToDo = async (id) => {
     if (!user) {
-      alert("Usuario no autenticado");
+      setAlert({
+        message: "Usuario no autenticado",
+        type: "error",
+        visible: true,
+      });
+
       return;
     }
 
     let selectedItem = data.find((item) => item.id === id);
 
     if (!selectedItem) {
-      alert("Producto no encontrado.");
+      setAlert({
+        message: "Producto no encontrado",
+        type: "error",
+        visible: true,
+      });
+
       return;
     }
 
@@ -172,30 +247,70 @@ const Inventory = () => {
       await updateDoc(docRef, updatedItem);
       reloadData();
     } catch (error) {
-      console.error("Error al procesar la venta: ", error);
-      alert("Error: " + error.message);
+      setAlert({
+        message: "Error al editar el item",
+        type: "error",
+        visible: true,
+      });
     }
   };
 
   return (
     <div className="w-11/12 m-auto pb-28">
+      {alert.visible && (
+        <Alert
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert({ ...alert, visible: false })}
+        />
+      )}
+      {isConfirmationModalVisible && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+          <div className="bg-white p-5 rounded-md shadow-lg w-[90%]">
+            <h2 className="text-lg font-bold">Confirmación</h2>
+            <p>¿Estás seguro de que deseas agregar todos los productos al stock?</p>
+            <div className="mt-4 flex gap-4">
+              <button
+                onClick={() => handleConfirmation(true)}
+                className="btn btn-success"
+              >
+                Aceptar
+              </button>
+              <button
+                onClick={() => handleConfirmation(false)}
+                className="btn btn-danger"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Dropdown para seleccionar la propiedad de orden */}
-      <div className="flex flex-row justify-center items-center my-3 border-b-[1px] border-solid border-black pb-3">
-        <label className="p-3" htmlFor="sort-property">
-          Ordenar por:
-        </label>
-        <select
-          className="p-1 rounded-md shadow-md shadow-gray-500"
-          id="sort-property"
-          onChange={handleSortChange}
-          value={sortProperty}
-        >
-          {availableProperties.map((property) => (
-            <option key={property} value={property}>
-              {propertyLabels[property] || property}
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-row justify-end items-center my-3 border-b-[1px] border-solid border-black pb-3">
+        <div className="flex w-2/12"></div>
+        <div className="w-8/12 flex flex-row justify-center">
+          <label className="p-3" htmlFor="sort-property">
+            Ordenar por:
+          </label>
+          <select
+            className="p-1 rounded-md shadow-md shadow-gray-500"
+            id="sort-property"
+            onChange={handleSortChange}
+            value={sortProperty}
+          >
+            {availableProperties.map((property) => (
+              <option key={property} value={property}>
+                {propertyLabels[property] || property}
+              </option>
+            ))}
+          </select>
+        </div>
+          <button className="flex w-2/12 justify-end" onClick={confirmResolveAllTodos}>
+            <div className="rounded-full bg-success w-12 h-12 flex justify-center items-center">
+              <img className="w-8" src={checkAllIcon} alt="check-all-icon" />
+            </div>
+          </button>
       </div>
 
       {sortedData.length > 0 ? (
@@ -225,7 +340,7 @@ const Inventory = () => {
                     className="w-8 rounded-md text-center bg-slate-100 ring-1 ring-black focus:ring-1 focus:outline-0"
                     id="to-do"
                     type="number"
-                    value={item.toDo ?? ''}
+                    value={item.toDo ?? ""}
                   ></input>
                 </div>
               </div>

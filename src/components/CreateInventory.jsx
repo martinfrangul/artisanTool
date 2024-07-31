@@ -5,12 +5,14 @@ import { InventoryContext } from "../context/InventoryContext"; // Importa el co
 import addIcon from "../assets/addIcon.png";
 import PropertyInput from "./PropertyInput";
 import PropertySpecs from "./PropertySpecs";
+import Alert from "./Alert";
 
 const CreateInventory = () => {
   const [productName, setProductName] = useState("");
   const [productStock, setProductStock] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [properties, setProperties] = useState([{ property: "", option: "" }]);
+  const [alert, setAlert] = useState({ message: "", type: "", visible: false });
 
   const { user } = useAuth(); // Obtén el usuario actual
   const { reloadData } = useContext(InventoryContext); // Obtén la función reloadData del contexto
@@ -36,12 +38,12 @@ const CreateInventory = () => {
 
   const saveData = async () => {
     if (!user) {
-      alert("User is not authenticated");
+      setAlert({ message: "Usuario no autenticado", type: "error", visible: true });
       return;
     }
 
-    if (!productName || isNaN(!productPrice) || isNaN(!productStock)) {
-      alert("Nombre, precio y stock son obligatorios");
+    if (!productName || !productPrice || !productStock) {
+      setAlert({ message: "Nombre, precio y stock son obligatorios", type: "error", visible: true });
       return;
     }
 
@@ -66,20 +68,21 @@ const CreateInventory = () => {
 
     try {
       await addDoc(collection(db, `users/${user.uid}/products`), filteredProductData);
-      alert("Guardado correctamente");
+      setAlert({ message: "Guardado correctamente", type: "success", visible: true });
       setProductName("");
       setProductStock("");
       setProductPrice("");
       setProperties([{ property: "", option: "" }]);
       reloadData(); // Llama a reloadData para recargar el inventario
     } catch (error) {
-      alert("Error: " + error);
+      setAlert({ message: "Error: " + error.message, type: "error", visible: true });
     }
   };
 
   return (
     <div className="flex flex-col pb-28">
       <div className="flex-grow overflow-y-auto">
+      {alert.visible && <Alert message={alert.message} type={alert.type} onClose={() => setAlert({ ...alert, visible: false })} />}
         <div className="flex flex-col justify-center items-center p-3 w-full">
           <label htmlFor="product">Producto</label>
           <input

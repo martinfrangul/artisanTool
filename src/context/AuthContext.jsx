@@ -42,7 +42,7 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <span className="loading loading-dots loading-md"></span>;
   }
 
 

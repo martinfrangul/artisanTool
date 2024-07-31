@@ -16,6 +16,7 @@ import editIcon from "../assets/editIcon.png";
 import sellIcon from "../assets/sellIcon.svg";
 import sellIconGray from "../assets/sellIconGray.svg";
 import cancelIcon from "../assets/cancelIcon.png";
+import Alert from "./Alert";
 
 const SalesManager = () => {
   const context = useContext(InventoryContext);
@@ -43,6 +44,12 @@ const SalesManager = () => {
   const [editingItemId, setEditingItemId] = useState(null);
   const [prices, setPrices] = useState({}); // Store prices by item id
   const [originalPrices, setOriginalPrices] = useState({}); // Store original prices
+  const [alert, setAlert] = useState({
+    message: "",
+    subMessage: "",
+    type: "",
+    visible: false,
+  });
 
   const handleAddTag = (event) => {
     event.preventDefault();
@@ -71,19 +78,35 @@ const SalesManager = () => {
 
   const handleSell = async (id) => {
     if (!user) {
-      alert("Usuario no autenticado");
+      setAlert({
+        message: "Usuario no autenticado",
+        type: "error",
+        visible: true,
+      });
+
       return;
     }
 
     let selectedItem = data.find((item) => item.id === id);
 
     if (!selectedItem) {
-      alert("Producto no encontrado.");
+      setAlert({
+        message: "Producto no encontrado",
+        type: "warning",
+        visible: true,
+      });
+
       return;
     }
 
     if (selectedItem.productStock < 1) {
-      alert("No se puede vender este producto. Stock insuficiente.");
+      setAlert({
+        message: "Stock insuficiente.",
+        subMessage: "No se puede vender este producto.",
+        type: "error",
+        visible: true,
+      });
+
       return;
     }
 
@@ -94,7 +117,9 @@ const SalesManager = () => {
     };
 
     const selectedDate = selectedDates[id] || new Date();
-    const { productStock, ...selectedItemToSell } = updatedItem;
+    const selectedItemToSell = Object.fromEntries(
+      Object.entries(updatedItem).filter(([key]) => key !== "productStock")
+    );
     selectedItemToSell.date = selectedDate.toLocaleDateString();
 
     try {
@@ -111,7 +136,12 @@ const SalesManager = () => {
         } // Use temporary price if set
       );
 
-      alert("Venta agregada correctamente");
+      setAlert({
+        message: "Venta agregada correctamente",
+        type: "success",
+        visible: true,
+      });
+
       setTags([]);
       setEnteredData("");
       setSelectedDates({});
@@ -120,8 +150,11 @@ const SalesManager = () => {
       setOriginalPrices({});
       reloadData();
     } catch (error) {
-      console.error("Error al procesar la venta: ", error);
-      alert("Error: " + error.message);
+      setAlert({
+        message: "Error al procesar la venta",
+        type: "error",
+        visible: true,
+      });
     }
   };
 
@@ -170,7 +203,13 @@ const SalesManager = () => {
     const filteredProperties = Object.entries(item)
       .filter(
         ([key]) =>
-          !["productName", "productStock", "productPrice", "id"].includes(key)
+          ![
+            "productName",
+            "productStock",
+            "productPrice",
+            "id",
+            "toDo",
+          ].includes(key)
       )
       .sort(
         ([a], [b]) =>
@@ -196,6 +235,15 @@ const SalesManager = () => {
 
   return (
     <div className="pb-28">
+      {alert.visible && (
+        <Alert
+          message={alert.message}
+          subMessage={alert.subMessage}
+          type={alert.type}
+          onClose={() => setAlert({ ...alert, visible: false })}
+        />
+      )}
+
       <form
         onSubmit={handleAddTag}
         className="max-w-md mt-5 mx-auto w-4/5 mb-5"
@@ -210,7 +258,6 @@ const SalesManager = () => {
           <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
             <svg
               className="w-4 h-4 text-gray-500"
-              aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 20 20"
@@ -289,45 +336,46 @@ const SalesManager = () => {
                     ) : (
                       <strong>€{prices[item.id] || item.productPrice}</strong>
                     )}
-                    
-                    
                   </div>
                   <div className="flex justify-end relative items-center gap-3">
-                  <button
+                    <button
                       onClick={() => handlePriceInput(item.id)}
                       className="py-2"
                     >
                       <img className="w-5" src={editIcon} alt="edit-icon" />
                     </button>
-                      <FaCalendarAlt
-                        className="text-gray-600 cursor-pointer"
-                        onClick={() => toggleDatePicker(item.id)}
-                      />
-                      {openPickerId === item.id && (
-                        <div className="absolute top-8 right-0 z-10 bg-white p-2 shadow-lg">
-                          <DatePicker
-                            selected={selectedDates[item.id] || new Date()} // Usa la fecha actual por defecto
-                            onChange={(date) => handleDateChange(date, item.id)}
-                            inline
-                          />
-                        </div>
-                      )}
-                    </div>
+                    <FaCalendarAlt
+                      className="text-gray-600 cursor-pointer"
+                      onClick={() => toggleDatePicker(item.id)}
+                    />
+                    {openPickerId === item.id && (
+                      <div className="absolute top-8 right-0 z-10 bg-white p-2 shadow-lg">
+                        <DatePicker
+                          selected={selectedDates[item.id] || new Date()} // Usa la fecha actual por defecto
+                          onChange={(date) => handleDateChange(date, item.id)}
+                          inline
+                        />
+                      </div>
+                    )}
+                  </div>
                   <div>
-                    
                     {item.productStock < 1 ? (
                       <button
                         onClick={() => handleSell(item.id)}
                         className="bg-opacity-75 rounded-sm text-black font-semibold"
                       >
-                        <img className="w-10" src={sellIconGray} alt="edit-icon" />
+                        <img
+                          className="w-10"
+                          src={sellIconGray}
+                          alt="edit-icon"
+                        />
                       </button>
                     ) : (
                       <button
                         onClick={() => handleSell(item.id)}
                         className="bg-opacity-75 rounded-sm text-black font-semibold"
                       >
-                         <img className="w-10" src={sellIcon} alt="edit-icon" />
+                        <img className="w-10" src={sellIcon} alt="edit-icon" />
                       </button>
                     )}
                   </div>
