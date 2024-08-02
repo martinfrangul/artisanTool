@@ -1,14 +1,14 @@
 import { useState, useContext } from "react";
-import { InventoryContext } from "../context/InventoryContext";
-import deleteItemIcon from "../assets/deleteItemIcon.png";
-import editIcon from "../assets/editIcon.png";
-import checkAllIcon from "../assets/checkAllIcon.png";
-import acceptIcon from "../assets/acceptIcon.png";
+import { InventoryContext } from "../../context/InventoryContext";
+import deleteItemIcon from "../../assets/deleteItemIcon.png";
+import editIcon from "../../assets/editIcon.png";
+import checkAllIcon from "../../assets/checkAllIcon.png";
+import acceptIcon from "../../assets/acceptIcon.png";
 import { doc, deleteDoc, updateDoc, writeBatch } from "firebase/firestore";
-import { useAuth } from "../hooks/useAuth";
-import { database } from "../../firebase/firebaseConfig";
+import { useAuth } from "../../hooks/useAuth";
+import { database } from "../../../firebase/firebaseConfig";
 import EditProduct from "./EditProduct";
-import Alert from "./Alert";
+import Alert from "../Alert";
 
 // Map of readable names
 const propertyLabels = {

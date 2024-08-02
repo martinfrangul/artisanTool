@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
-import '../styles/PropertySpecs.css';
+import '../../styles/PropertySpecs.css';
 import { useState } from 'react';
-import Alert from "./Alert";
+import Alert from "../Alert";
 
 
 const PropertySpecs = ({

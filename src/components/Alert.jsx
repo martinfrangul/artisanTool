@@ -28,7 +28,7 @@ const Alert = ({ message, subMessage, type, onClose }) => {
         <span>{message}</span>
         {subMessage && <div className="text-sm">{subMessage}</div>}
         {onClose && (
-          <button onClick={onClose} className="btn btn-sm btn-close">Close</button>
+          <button onClick={onClose} className="btn btn-sm btn-close">Cerrar</button>
         )}
       </div>
     </div>

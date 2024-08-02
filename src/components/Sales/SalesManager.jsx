@@ -1,22 +1,37 @@
+// Hooks
 import { useContext, useState } from "react";
-import { InventoryContext } from "../context/InventoryContext";
+import { useAuth } from "../../hooks/useAuth";
+import { v4 as uuidv4 } from "uuid"; // Asegúrate de instalar uuid para generar IDs únicos
+
+// Firestore
 import {
   getFirestore,
   collection,
   addDoc,
   doc,
   updateDoc,
+  query,
+  getDocs,
+  where,
 } from "firebase/firestore";
-import { useAuth } from "../hooks/useAuth";
+
+// Context
+import { InventoryContext } from "../../context/InventoryContext";
+
+// Utilities
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
-import editIcon from "../assets/editIcon.png";
-import sellIcon from "../assets/sellIcon.svg";
-import sellIconGray from "../assets/sellIconGray.svg";
-import cancelIcon from "../assets/cancelIcon.png";
-import Alert from "./Alert";
+
+// Icons
+import editIcon from "../../assets/editIcon.png";
+import sellIcon from "../../assets/sellIcon.svg";
+import sellIconGray from "../../assets/sellIconGray.svg";
+import cancelIcon from "../../assets/cancelIcon.png";
+
+// Components
+import Alert from "../Alert";
 
 const SalesManager = () => {
   const context = useContext(InventoryContext);
@@ -83,7 +98,6 @@ const SalesManager = () => {
         type: "error",
         visible: true,
       });
-
       return;
     }
 
@@ -95,7 +109,6 @@ const SalesManager = () => {
         type: "warning",
         visible: true,
       });
-
       return;
     }
 
@@ -106,7 +119,6 @@ const SalesManager = () => {
         type: "error",
         visible: true,
       });
-
       return;
     }
 
@@ -127,14 +139,35 @@ const SalesManager = () => {
       const docRef = doc(db, `users/${user.uid}/products`, id);
       await updateDoc(docRef, { productStock: updatedItem.productStock });
 
-      // Registrar la venta en Firestore
-      await addDoc(
+      // Verificar si ya existe una venta para este producto en la misma fecha
+      const salesQuery = query(
         collection(db, `users/${user.uid}/sales`),
-        {
+        where("productName", "==", selectedItem.productName),
+        where("date", "==", selectedDate.toLocaleDateString())
+      );
+      const salesSnapshot = await getDocs(salesQuery);
+
+      if (!salesSnapshot.empty) {
+        // Si existe un documento, actualizar el documento con la nueva cantidad
+        const saleDocRef = doc(
+          db,
+          `users/${user.uid}/sales`,
+          salesSnapshot.docs[0].id
+        );
+        const existingSale = salesSnapshot.docs[0].data();
+        await updateDoc(saleDocRef, {
+          quantity: (existingSale.quantity || 0) + 1,
+          productPrice: parseInt(prices[id]) || selectedItem.productPrice,
+        });
+      } else {
+        // Crear un nuevo documento de venta con un ID único
+        await addDoc(collection(db, `users/${user.uid}/sales`), {
           ...selectedItemToSell,
           productPrice: parseInt(prices[id]) || selectedItem.productPrice,
-        } // Use temporary price if set
-      );
+          quantity: 1, // Cantidad vendida
+          id: uuidv4(), // Generar un ID único para el documento de venta
+        });
+      }
 
       setAlert({
         message: "Venta agregada correctamente",

@@ -1,11 +1,18 @@
 import { useState, useContext } from "react";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
-import { useAuth } from "../hooks/useAuth"; // Importa el hook personalizado
-import { InventoryContext } from "../context/InventoryContext"; // Importa el contexto
-import addIcon from "../assets/addIcon.png";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+import { useAuth } from "../../hooks/useAuth";
+import { InventoryContext } from "../../context/InventoryContext";
+import addIcon from "../../assets/addIcon.png";
 import PropertyInput from "./PropertyInput";
 import PropertySpecs from "./PropertySpecs";
-import Alert from "./Alert";
+import Alert from "../Alert";
 
 const CreateInventory = () => {
   const [productName, setProductName] = useState("");
@@ -14,16 +21,16 @@ const CreateInventory = () => {
   const [properties, setProperties] = useState([{ property: "", option: "" }]);
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
 
-  const { user } = useAuth(); // Obtén el usuario actual
-  const { reloadData } = useContext(InventoryContext); // Obtén la función reloadData del contexto
+  const { user } = useAuth();
+  const { reloadData } = useContext(InventoryContext);
   const db = getFirestore();
 
   const updatePropertyField = (index, field, value) => {
-    setProperties((prev) => {
-      const newProperties = [...prev];
-      newProperties[index] = { ...newProperties[index], [field]: value };
-      return newProperties;
-    });
+      setProperties((prev) => {
+        const newProperties = [...prev];
+        newProperties[index] = { ...newProperties[index], [field]: value };
+        return newProperties;
+      });
   };
 
   const createInput = () => {
@@ -36,24 +43,78 @@ const CreateInventory = () => {
     }
   };
 
+  const normalizeString = (str) => str.toLowerCase().trim();
+
+  const checkIfProductExists = async () => {
+    if (!user) return false;
+
+    // Construir la consulta con nombre del producto y propiedades
+    const productQuery = collection(db, `users/${user.uid}/products`);
+
+    // Consulta por nombre del producto (en minúsculas)
+    let productQueryRef = query(
+      productQuery,
+      where("productName", "==", normalizeString(productName))
+    );
+
+    // Agregar condiciones para propiedades
+    properties.forEach((p) => {
+      if (p.property && p.option) {
+        productQueryRef = query(
+          productQueryRef,
+          where(p.property, "==", normalizeString(p.option))
+        );
+      }
+    });
+
+    try {
+      const querySnapshot = await getDocs(productQueryRef);
+      // Verificar si hay documentos que coincidan
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error("Error checking product existence:", error);
+      return false;
+    }
+  };
+
   const saveData = async () => {
     if (!user) {
-      setAlert({ message: "Usuario no autenticado", type: "error", visible: true });
+      setAlert({
+        message: "Usuario no autenticado",
+        type: "error",
+        visible: true,
+      });
       return;
     }
 
-    if (!productName || !productPrice || !productStock) {
-      setAlert({ message: "Nombre, precio y stock son obligatorios", type: "error", visible: true });
+    if (!productName || !productStock || !productPrice) {
+      setAlert({
+        message: "El nombre del producto, stock y precio son obligatorios",
+        type: "error",
+        visible: true,
+      });
+      return;
+    }
+
+    // Comprobar si el producto ya existe
+    const productExists = await checkIfProductExists();
+
+    if (productExists) {
+      setAlert({
+        message: "El producto ya existe en el inventario",
+        type: "error",
+        visible: true,
+      });
       return;
     }
 
     const inputsObject = properties.reduce((acc, input) => {
-      acc[input.property] = input.option;
+      acc[input.property] = normalizeString(input.option);
       return acc;
     }, {});
 
     const productData = {
-      productName,
+      productName: normalizeString(productName),
       productPrice: parseFloat(productPrice),
       productStock: parseInt(productStock, 10),
       toDo: 0,
@@ -67,22 +128,39 @@ const CreateInventory = () => {
     );
 
     try {
-      await addDoc(collection(db, `users/${user.uid}/products`), filteredProductData);
-      setAlert({ message: "Guardado correctamente", type: "success", visible: true });
+      await addDoc(
+        collection(db, `users/${user.uid}/products`),
+        filteredProductData
+      );
+      setAlert({
+        message: "Guardado correctamente",
+        type: "success",
+        visible: true,
+      });
       setProductName("");
       setProductStock("");
       setProductPrice("");
       setProperties([{ property: "", option: "" }]);
-      reloadData(); // Llama a reloadData para recargar el inventario
+      reloadData();
     } catch (error) {
-      setAlert({ message: "Error: " + error.message, type: "error", visible: true });
+      setAlert({
+        message: "Error: " + error.message,
+        type: "error",
+        visible: true,
+      });
     }
   };
 
   return (
     <div className="flex flex-col pb-28">
       <div className="flex-grow overflow-y-auto">
-      {alert.visible && <Alert message={alert.message} type={alert.type} onClose={() => setAlert({ ...alert, visible: false })} />}
+        {alert.visible && (
+          <Alert
+            message={alert.message}
+            type={alert.type}
+            onClose={() => setAlert({ ...alert, visible: false })}
+          />
+        )}
         <div className="flex flex-col justify-center items-center p-3 w-full">
           <label htmlFor="product">Producto</label>
           <input
@@ -99,13 +177,11 @@ const CreateInventory = () => {
             input={input}
             updatePropertyField={updatePropertyField}
             deleteInput={deleteInput}
+            properties={properties}
           />
         ))}
         <div className="w-full flex justify-start items-start px-3">
-          <button
-            className="w-8 h-8 text-white rounded"
-            onClick={createInput}
-          >
+          <button className="w-8 h-8 text-white rounded" onClick={createInput}>
             <img src={addIcon} alt="add-inputs" />
           </button>
         </div>

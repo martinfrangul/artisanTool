@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../context/AuthContext";
-import { InventoryContext } from "../context/InventoryContext";
+import { AuthContext } from "../../context/AuthContext";
+import { InventoryContext } from "../../context/InventoryContext";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
-import { database } from "../../firebase/firebaseConfig";
+import { database } from "../../../firebase/firebaseConfig";
 import PropTypes from "prop-types";
-import Alert from "./Alert";
+import Alert from "../Alert";
 
 
 const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
@@ -155,7 +155,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
                   d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
                 />
               </svg>
-              <span className="sr-only">Close modal</span>
+              <span className="sr-only">Cerrar modal</span>
             </button>
           </div>
         </div>
@@ -200,14 +200,14 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
             className="text-white bg-success focus:ring-2 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 text-center"
             onClick={submitEditProduct}
           >
-            Save
+            Guardar
           </button>
           <button
             type="button"
             className="py-2 px-4 ms-3 text-sm font-medium text-white focus:outline-none bg-danger rounded-lg focus:z-10"
             onClick={() => handleModalToggle(false)}
           >
-            Cancel
+            Cancelar
           </button>
         </div>
       </div>

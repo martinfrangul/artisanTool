@@ -1,11 +1,11 @@
-import logoSimple from '../assets/Artisan Tool MERGED sin sombra (logo 1).png'
+import logo from '../assets/logo.png'
 
 const Banner = () => {
     return ( 
         <div className="flex justify-center w-full bg-banner rounded-t-2xl">
         <img
           className="flex justify-center w-32 items-center"
-          src={logoSimple}
+          src={logo}
           alt="logo-artisan-tool"
         />
       </div>
