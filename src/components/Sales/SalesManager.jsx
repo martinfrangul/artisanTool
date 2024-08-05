@@ -1,9 +1,11 @@
 // Hooks
 import { useContext, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { v4 as uuidv4 } from "uuid"; // Asegúrate de instalar uuid para generar IDs únicos
+import { v4 as uuidv4 } from "uuid";
+import { Timestamp } from "firebase/firestore";
 
 // Firestore
+
 import {
   getFirestore,
   collection,
@@ -66,6 +68,29 @@ const SalesManager = () => {
     visible: false,
   });
 
+
+  // UTILITIES ////////////////////
+
+  const capitalizeFirstLetter = (string) => {
+    if (typeof string !== 'string') {
+      return string; // O devuelve el valor por defecto que prefieras
+    }
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+  };
+
+
+  const formatDate = (date) => {
+    const d = date instanceof Timestamp ? date.toDate() : new Date(date);
+
+    const day = d.getDate().toString().padStart(2, "0");
+    const month = (d.getMonth() + 1).toString().padStart(2, "0"); // Los meses son 0-indexados
+    const year = d.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  };
+
+  //////////////////////////////// 
+
   const handleAddTag = (event) => {
     event.preventDefault();
     if (enteredData && !tags.includes(enteredData)) {
@@ -100,9 +125,9 @@ const SalesManager = () => {
       });
       return;
     }
-
+  
     let selectedItem = data.find((item) => item.id === id);
-
+  
     if (!selectedItem) {
       setAlert({
         message: "Producto no encontrado",
@@ -111,7 +136,7 @@ const SalesManager = () => {
       });
       return;
     }
-
+  
     if (selectedItem.productStock < 1) {
       setAlert({
         message: "Stock insuficiente.",
@@ -121,32 +146,36 @@ const SalesManager = () => {
       });
       return;
     }
-
+  
     // Reducir el stock localmente
     const updatedItem = {
       ...selectedItem,
       productStock: selectedItem.productStock - 1,
     };
 
-    const selectedDate = selectedDates[id] || new Date();
-    const selectedItemToSell = Object.fromEntries(
-      Object.entries(updatedItem).filter(([key]) => key !== "productStock")
-    );
-    selectedItemToSell.date = selectedDate.toLocaleDateString();
-
+    const saleDate = selectedDates[id] || new Date();
+    const selectedItemToSell = {
+      ...Object.fromEntries(
+        Object.entries(updatedItem).filter(([key]) => key !== "productStock")
+      ),
+      date: Timestamp.fromDate(saleDate),
+      productPrice: parseInt(prices[id]) || selectedItem.productPrice,
+    };
+  
     try {
       // Actualizar el stock en Firestore
       const docRef = doc(db, `users/${user.uid}/products`, id);
       await updateDoc(docRef, { productStock: updatedItem.productStock });
-
-      // Verificar si ya existe una venta para este producto en la misma fecha
+  
+      // Verificar si ya existe una venta para este producto en la misma fecha con el mismo precio
       const salesQuery = query(
         collection(db, `users/${user.uid}/sales`),
         where("productName", "==", selectedItem.productName),
-        where("date", "==", selectedDate.toLocaleDateString())
+        where("date", "==", selectedItemToSell.date),
+        where("productPrice", "==", selectedItemToSell.productPrice)
       );
       const salesSnapshot = await getDocs(salesQuery);
-
+  
       if (!salesSnapshot.empty) {
         // Si existe un documento, actualizar el documento con la nueva cantidad
         const saleDocRef = doc(
@@ -157,24 +186,22 @@ const SalesManager = () => {
         const existingSale = salesSnapshot.docs[0].data();
         await updateDoc(saleDocRef, {
           quantity: (existingSale.quantity || 0) + 1,
-          productPrice: parseInt(prices[id]) || selectedItem.productPrice,
         });
       } else {
         // Crear un nuevo documento de venta con un ID único
         await addDoc(collection(db, `users/${user.uid}/sales`), {
           ...selectedItemToSell,
-          productPrice: parseInt(prices[id]) || selectedItem.productPrice,
           quantity: 1, // Cantidad vendida
           id: uuidv4(), // Generar un ID único para el documento de venta
         });
       }
-
+  
       setAlert({
         message: "Venta agregada correctamente",
         type: "success",
         visible: true,
       });
-
+  
       setTags([]);
       setEnteredData("");
       setSelectedDates({});
@@ -190,6 +217,8 @@ const SalesManager = () => {
       });
     }
   };
+  
+  
 
   const toggleDatePicker = (id) => {
     setOpenPickerId((prevId) => (prevId === id ? null : id));
@@ -252,13 +281,13 @@ const SalesManager = () => {
 
     return (
       <div className="flex flex-col justify-start items-start">
-        <h1 className="text-xl font-bold text-logo">{item.productName}</h1>
+        <h1 className="text-xl font-bold text-logo">{capitalizeFirstLetter(item.productName)}</h1>
         {filteredProperties.map(
           ([key, value]) =>
             value && (
               <h1 key={key}>
                 <strong>{propertyLabels[key] || key}: </strong>
-                {value}
+                {capitalizeFirstLetter(value)}
               </h1>
             )
         )}
@@ -330,14 +359,14 @@ const SalesManager = () => {
           ))}
         </div>
 
-        <div>
+        <div className="flex flex-col gap-3">
           {filteredData.map((item) => (
             <div
               key={item.id}
-              className="border-b-[1px] border-solid border-black"
+              className="border-[1px] border-solid border-black rounded-xl shadow-lg shadow-gray-500 bg-opacity-45 bg-white px-3"
             >
               <div className="flex flex-row w-full justify-between items-start pt-3">
-                <div className="w-1/2 flex flex-col justify-center items-start">
+                <div className="w-3/4 flex flex-col justify-center items-start">
                   {renderProductDetails(item)}
                 </div>
                 <div className="flex flex-col items-end">
@@ -419,7 +448,7 @@ const SalesManager = () => {
                   {selectedDates[item.id] && (
                     <h3 className="text-md font-semibold mt-2">
                       Fecha seleccionada:{" "}
-                      {selectedDates[item.id].toLocaleDateString()}
+                      {formatDate(selectedDates[item.id])}
                     </h3>
                   )}
                 </div>

@@ -1,12 +1,13 @@
-import { useState, useContext, useEffect } from 'react';
-import { SellContext } from '../../context/SellContext.jsx';
-import deleteItemIcon from '../../assets/deleteItemIcon.png';
-import { doc, deleteDoc } from 'firebase/firestore';
-import { useAuth } from '../../hooks/useAuth';
-import { database } from '../../../firebase/firebaseConfig';
-import Alert from '../Alert';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import { useState, useContext } from "react";
+import { SellContext } from "../../context/SellContext.jsx";
+import deleteItemIcon from "../../assets/deleteItemIcon.png";
+import { doc, deleteDoc } from "firebase/firestore";
+import { useAuth } from "../../hooks/useAuth";
+import { database } from "../../../firebase/firebaseConfig";
+import Alert from "../Alert";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { Timestamp } from "firebase/firestore";
 
 // Map of readable names
 const propertyLabels = {
@@ -18,6 +19,8 @@ const propertyLabels = {
   productName: "Producto",
   productStock: "Stock",
   productPrice: "Precio",
+  date: "Fecha",
+  quantity: "Cantidad",
 };
 
 const SalesRegistry = () => {
@@ -27,18 +30,31 @@ const SalesRegistry = () => {
 
   // STATES
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
-  const [isConfirmationModalVisible, setConfirmationModalVisible] = useState(false);
+  const [isConfirmationModalVisible, setConfirmationModalVisible] =
+    useState(false);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
-  useEffect(() => {
-    // Carga inicial de datos
-    const fetchData = async () => {
-      await reloadData();
-    };
-    
-    fetchData();
-  }, []); // Dependencias vacías para ejecutar solo al montar el componente
+  ////// UTILITIES ///////
+
+  const capitalizeFirstLetter = (string) => {
+    if (typeof string !== "string") {
+      return string;
+    }
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+  };
+
+  const formatDate = (date) => {
+    const d = date instanceof Timestamp ? date.toDate() : new Date(date);
+
+    const day = d.getDate().toString().padStart(2, "0");
+    const month = (d.getMonth() + 1).toString().padStart(2, "0"); // Los meses son 0-indexados
+    const year = d.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  };
+
+  ////////////////////////
 
   const handleDelete = async (id) => {
     if (!user) return;
@@ -54,20 +70,24 @@ const SalesRegistry = () => {
       });
       setConfirmationModalVisible(false);
     } catch (error) {
-      console.error("Error al eliminar el producto: ", error);
+      console.error("Error al eliminar la venta: ", error);
     }
     setConfirmationModalVisible(false);
   };
 
   const renderProductDetails = (item) => {
-    // Filtrar las propiedades para excluir 'productName', 'productStock' y 'productPrice'
+    // Filtrar las propiedades para excluir 'productName', 'productStock', 'productPrice', 'id' y 'toDo'
     const filteredProperties = Object.entries(item).filter(
       ([key]) =>
-        key !== "productName" &&
-        key !== "productStock" &&
-        key !== "productPrice" &&
-        key !== "id" &&
-        key !== "toDo"
+        ![
+          "productName",
+          "productStock",
+          "productPrice",
+          "id",
+          "toDo",
+          "date",
+          "quantity",
+        ].includes(key)
     );
 
     const orderedProperties = filteredProperties.sort(([keyA], [keyB]) => {
@@ -77,16 +97,19 @@ const SalesRegistry = () => {
     });
 
     return (
-      <div className="flex flex-col justify-start items-start">
-        <h1 className="text-xl font-bold text-logo">{item.productName}</h1>
-        {orderedProperties.map(([key, value]) =>
-          value ? (
-            <h1 key={key}>
-              <strong>{propertyLabels[key] || key}: </strong>
-              {value}
-            </h1>
-          ) : null
-        )}
+      <div className="flex flex-col w-1/2 justify-start gap-1 items-start border-r-[1px] border-solid border-black">
+        <div className="flex flex-wrap gap-x-4">
+          {orderedProperties.map(([key, value]) =>
+            value ? (
+              <h4 className="text-md flex flex-row gap-1" key={key}>
+                <strong>
+                  {propertyLabels[key] || capitalizeFirstLetter(key)}:
+                </strong>
+                <div className="break-all">{capitalizeFirstLetter(value)}</div>
+              </h4>
+            ) : null
+          )}
+        </div>
       </div>
     );
   };
@@ -134,58 +157,77 @@ const SalesRegistry = () => {
           </div>
         </div>
       )}
-      <div className="flex flex-col justify-end items-center my-3 border-b-[1px] border-solid border-black pb-3">
+      <div className="flex flex-col justify-center items-center my-3 pb-3 gap-4">
+        <div className="flex flex-row items-center gap-3">
+         <div className="w-4/5">
+           <DatePicker
+             selected={startDate}
+             onChange={(date) => setStartDate(date)}
+             selectsStart
+             startDate={startDate}
+             endDate={endDate}
+             dateFormat="dd/MM/yyyy"
+             className="p-1 rounded-md shadow-md shadow-gray-500"
+           />
+         </div>
+          <div className="w-4/5">
+            <DatePicker
+              selected={endDate}
+              onChange={(date) => setEndDate(date)}
+              selectsEnd
+              startDate={startDate}
+              endDate={endDate}
+              minDate={startDate}
+              dateFormat="dd/MM/yyyy"
+              className="p-1 rounded-md shadow-md shadow-gray-500"
+            />
+          </div>
+        </div>
         {sellData.length > 0 ? (
           sellData.map((item, index) => (
             <div
               key={item.id || index}
-              className="flex flex-row justify-between items-start pb-5 px-2 pt-2 border-b-[1px] border-solid border-black"
+              className="w-[95%] flex flex-row justify-between items-start pb-5 p-2 border-[1px] border-solid border-black rounded-xl shadow-lg shadow-gray-500 bg-opacity-45 bg-white"
             >
-              <div className="flex flex-col justify-start items-start">
-                {renderProductDetails(item)}
-              </div>
-
-              <div className="flex flex-row gap-6 items-center">
-                <div className="flex flex-col gap-3">
-                  <h3 className="text-md font-semibold">
-                    {propertyLabels.productStock}:{" "}
-                    <strong>{item.productStock}</strong>
-                  </h3>
-                  <h3 className="text-md font-semibold">
-                    {propertyLabels.productPrice}:{" "}
-                    <strong>€{item.productPrice}</strong>
-                  </h3>
+              <div className="flex flex-col items-start w-full">
+                <div className="flex w-full items-end justify-between border-b-[1px] border-solid border-black">
+                  <h1 className="text-xl text-wrap font-bold text-logo">
+                    {capitalizeFirstLetter(item.productName)}
+                  </h1>
+                  <div className="flex items-center py-2">
+                    <button
+                      onClick={confirmDeleteItem}
+                      className="flex justify-center items-center bg-danger w-7 h-7 rounded-full border-[0.5px] border-solid border-black shadow-lg shadow-gray-500"
+                    >
+                      <img
+                        className="w-3"
+                        src={deleteItemIcon}
+                        alt="delete-icon"
+                      />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex flex-col justify-end items-center gap-2">
-                  <button
-                    onClick={confirmDeleteItem}
-                    className="flex justify-center items-center bg-danger w-8 h-8 rounded-full border-[0.5px] border-solid border-black shadow-lg shadow-gray-500"
-                  >
-                    <img
-                      className="w-3"
-                      src={deleteItemIcon}
-                      alt="delete-icon"
-                    />
-                  </button>
-
-                  <div className="flex flex-col items-center gap-4">
-                    <DatePicker
-                      selected={startDate}
-                      onChange={(date) => setStartDate(date)}
-                      selectsStart
-                      startDate={startDate}
-                      endDate={endDate}
-                      className="p-1 rounded-md shadow-md shadow-gray-500"
-                    />
-                    <DatePicker
-                      selected={endDate}
-                      onChange={(date) => setEndDate(date)}
-                      selectsEnd
-                      startDate={startDate}
-                      endDate={endDate}
-                      minDate={startDate}
-                      className="p-1 rounded-md shadow-md shadow-gray-500"
-                    />
+                <div className="w-full flex flex-row p-1">
+                  {renderProductDetails(item)}
+                  <div className="flex flex-col w-1/2 gap-2 p-1">
+                    <div className="flex flex-col">
+                      <h3 className="text-sm font-semibold">
+                        {propertyLabels.date}:{" "}
+                        <strong>{formatDate(item.date)}</strong>
+                      </h3>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <h3 className="text-sm font-semibold">
+                        {propertyLabels.productPrice}:{" "}
+                        <strong>€{item.productPrice}</strong>
+                      </h3>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <h3 className="text-sm font-semibold">
+                        {propertyLabels.quantity}:{" "}
+                        <strong>{item.quantity}</strong>
+                      </h3>
+                    </div>
                   </div>
                 </div>
               </div>

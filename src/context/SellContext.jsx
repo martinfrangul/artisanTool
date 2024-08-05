@@ -3,7 +3,6 @@ import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { useAuth } from "../hooks/useAuth";
 import PropTypes from "prop-types";
 
-
 const SellContext = createContext();
 
 const SellContextProvider = ({ children }) => {
@@ -15,7 +14,7 @@ const SellContextProvider = ({ children }) => {
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return; // No hacer nada si el usuario no está autenticado
-
+      
       try {
         const querySnapshot = await getDocs(
           collection(db, `users/${user.uid}/sales`)
@@ -29,9 +28,9 @@ const SellContextProvider = ({ children }) => {
         console.error("Error al leer los datos: ", error);
       }
     };
-
+    
     fetchData();
-  }, [user, db, reload]);
+  }, [user, reload]);
 
   if (authLoading) {
     return <span className="loading loading-dots loading-md"></span>;
@@ -41,6 +40,8 @@ const SellContextProvider = ({ children }) => {
   const reloadData = () => {
     setReload((prev) => !prev);
   };
+
+  
 
   return (
     <SellContext.Provider value={{ sellData, reloadData }}>

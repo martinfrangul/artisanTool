@@ -23,6 +23,7 @@ import "./App.css";
 import Banner from "./components/Banner";
 
 function App() {
+
   return (
     <div className="background min-h-screen flex flex-col">
       <Router>

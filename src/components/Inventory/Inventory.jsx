@@ -34,6 +34,14 @@ const Inventory = () => {
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
   const [isConfirmationModalVisible, setConfirmationModalVisible] = useState(false);
 
+
+  const capitalizeFirstLetter = (string) => {
+    if (typeof string !== 'string') {
+      return string; // O devuelve el valor por defecto que prefieras
+    }
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+  };
+
   // Get the available properties
   const getAvailableProperties = () => {
     const properties = new Set();
@@ -97,12 +105,13 @@ const Inventory = () => {
 
     return (
       <div className="flex flex-col justify-start items-start">
-        <h1 className="text-xl font-bold text-logo">{item.productName}</h1>
+        <h1 className="text-xl font-bold text-logo">{capitalizeFirstLetter(item.productName)}</h1>
+        
         {orderedProperties.map(([key, value]) =>
           value ? (
             <h1 key={key}>
-              <strong>{propertyLabels[key] || key}: </strong>
-              {value}
+              <strong>{propertyLabels[key] || capitalizeFirstLetter(key)}: </strong>
+              {capitalizeFirstLetter(value)}
             </h1>
           ) : null
         )}
