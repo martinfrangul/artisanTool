@@ -1,0 +1,6 @@
+/* styles.css o tu archivo CSS */
+.no-scroll {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}

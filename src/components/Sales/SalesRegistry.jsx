@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { SellContext } from "../../context/SellContext.jsx";
 import deleteItemIcon from "../../assets/deleteItemIcon.png";
 import { doc, deleteDoc } from "firebase/firestore";
@@ -8,6 +8,7 @@ import Alert from "../Alert";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Timestamp } from "firebase/firestore";
+import "../../styles/SalesRegistry.css"
 
 // Map of readable names
 const propertyLabels = {
@@ -34,6 +35,8 @@ const SalesRegistry = () => {
     useState(false);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  const [filteredSellData, setFilteredSellData] = useState([]);
+  // const [sortedFilteredSellData, setSortedFilteredSellData] = useState([]);
 
   ////// UTILITIES ///////
 
@@ -55,6 +58,35 @@ const SalesRegistry = () => {
   };
 
   ////////////////////////
+
+  useEffect(() => {
+    const newFilteredSellData = sellData.filter((item) => {
+      const itemDate = formatDate(item.date);
+      return (
+        itemDate >= formatDate(startDate) && itemDate <= formatDate(endDate)
+      );
+    });
+
+    newFilteredSellData.sort((a, b) => a.date.toDate() - b.date.toDate());
+    
+    setFilteredSellData(newFilteredSellData);
+  }, [sellData, startDate, endDate]);
+
+
+
+  useEffect(() => {
+    // Añadir o quitar la clase no-scroll en el body
+    if (isConfirmationModalVisible) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+
+    // Limpiar la clase al desmontar el componente
+    return () => {
+      document.body.classList.remove('no-scroll');
+    };
+  }, [isConfirmationModalVisible]);
 
   const handleDelete = async (id) => {
     if (!user) return;
@@ -127,7 +159,7 @@ const SalesRegistry = () => {
   };
 
   return (
-    <div className="w-full h-full">
+    <div className="pb-28">
       {alert.visible && (
         <Alert
           message={alert.message}
@@ -159,18 +191,18 @@ const SalesRegistry = () => {
       )}
       <div className="flex flex-col justify-center items-center my-3 pb-3 gap-4">
         <div className="flex flex-row items-center gap-3">
-         <div className="w-4/5">
-           <DatePicker
-             selected={startDate}
-             onChange={(date) => setStartDate(date)}
-             selectsStart
-             startDate={startDate}
-             endDate={endDate}
-             dateFormat="dd/MM/yyyy"
-             className="p-1 rounded-md shadow-md shadow-gray-500"
-           />
-         </div>
-          <div className="w-4/5">
+          <div className="w-full">
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+              selectsStart
+              startDate={startDate}
+              endDate={endDate}
+              dateFormat="dd/MM/yyyy"
+              className="p-2 rounded-md shadow-md shadow-gray-500 w-24 text-sm font-semibold text-gray-700 bg-banner"
+            />
+          </div>
+          <div className="w-full">
             <DatePicker
               selected={endDate}
               onChange={(date) => setEndDate(date)}
@@ -179,12 +211,12 @@ const SalesRegistry = () => {
               endDate={endDate}
               minDate={startDate}
               dateFormat="dd/MM/yyyy"
-              className="p-1 rounded-md shadow-md shadow-gray-500"
+              className="p-2 rounded-md shadow-md shadow-gray-500 w-24 text-sm font-semibold text-gray-700 bg-banner" 
             />
           </div>
         </div>
-        {sellData.length > 0 ? (
-          sellData.map((item, index) => (
+        {filteredSellData.length > 0 ? (
+          filteredSellData.map((item, index) => (
             <div
               key={item.id || index}
               className="w-[95%] flex flex-row justify-between items-start pb-5 p-2 border-[1px] border-solid border-black rounded-xl shadow-lg shadow-gray-500 bg-opacity-45 bg-white"

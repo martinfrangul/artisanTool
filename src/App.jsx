@@ -6,7 +6,7 @@ import Inventory from "./components/Inventory/Inventory";
 import CreateInventory from "./components/Inventory/CreateInventory";
 import Navbar from "./components/Navbar";
 import SalesManager from "./components/Sales/SalesManager";
-import SalesRegistryRender from "./components/Sales/SalesRegistryRender";
+import SalesRegistry from "./components/Sales/SalesRegistry";
 
 // UTILS
 import ProtectedRoutes from "./ProtectedRoutes";
@@ -87,7 +87,7 @@ function App() {
                     path="/sales-registry"
                     element={
                       <ProtectedRoutes>
-                        <SalesRegistryRender />
+                        <SalesRegistry />
                       </ProtectedRoutes>
                     }
                   />

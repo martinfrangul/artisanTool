@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { InventoryContext } from "../../context/InventoryContext";
 import deleteItemIcon from "../../assets/deleteItemIcon.png";
 import editIcon from "../../assets/editIcon.png";
@@ -35,12 +35,34 @@ const Inventory = () => {
   const [isConfirmationModalVisible, setConfirmationModalVisible] = useState(false);
 
 
+
+  // UTILITIES ///////////////////
+
   const capitalizeFirstLetter = (string) => {
     if (typeof string !== 'string') {
       return string; // O devuelve el valor por defecto que prefieras
     }
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
   };
+
+
+  useEffect(() => {
+    // Añadir o quitar la clase no-scroll en el body
+    if (isConfirmationModalVisible) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+
+    // Limpiar la clase al desmontar el componente
+    return () => {
+      document.body.classList.remove('no-scroll');
+    };
+  }, [isConfirmationModalVisible]);
+
+
+/////////////////////////// 
+
 
   // Get the available properties
   const getAvailableProperties = () => {
