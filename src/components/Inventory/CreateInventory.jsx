@@ -26,11 +26,11 @@ const CreateInventory = () => {
   const db = getFirestore();
 
   const updatePropertyField = (index, field, value) => {
-      setProperties((prev) => {
-        const newProperties = [...prev];
-        newProperties[index] = { ...newProperties[index], [field]: value };
-        return newProperties;
-      });
+    setProperties((prev) => {
+      const newProperties = [...prev];
+      newProperties[index] = { ...newProperties[index], [field]: value };
+      return newProperties;
+    });
   };
 
   const createInput = () => {
@@ -48,29 +48,44 @@ const CreateInventory = () => {
   const checkIfProductExists = async () => {
     if (!user) return false;
 
-    // Construir la consulta con nombre del producto y propiedades
-    const productQuery = collection(db, `users/${user.uid}/products`);
-
-    // Consulta por nombre del producto (en minúsculas)
-    let productQueryRef = query(
-      productQuery,
-      where("productName", "==", normalizeString(productName))
-    );
-
-    // Agregar condiciones para propiedades
-    properties.forEach((p) => {
-      if (p.property && p.option) {
-        productQueryRef = query(
-          productQueryRef,
-          where(p.property, "==", normalizeString(p.option))
-        );
-      }
-    });
-
     try {
-      const querySnapshot = await getDocs(productQueryRef);
-      // Verificar si hay documentos que coincidan
-      return !querySnapshot.empty;
+      const productQuery = collection(db, `users/${user.uid}/products`);
+      
+      // Consulta para obtener productos con el mismo nombre
+      const baseQuery = query(
+        productQuery,
+        where("productName", "==", normalizeString(productName))
+      );
+
+      const baseQuerySnapshot = await getDocs(baseQuery);
+      const existingProducts = baseQuerySnapshot.docs.map(doc => doc.data());
+
+      // Si no hay productos con el mismo nombre, el producto no existe
+      if (existingProducts.length === 0) {
+        return false;
+      }
+
+      // Verifica si hay un producto con el mismo nombre y propiedades opcionales
+      const hasSameNameAndProperties = existingProducts.some(product => {
+        const productProperties = Object.keys(product).filter(key => key !== "productName" && key !== "productPrice" && key !== "productStock" && key !== "toDo");
+        const formProperties = properties.reduce((acc, p) => {
+          if (p.property) {
+            acc[p.property] = normalizeString(p.option);
+          }
+          return acc;
+        }, {});
+
+        // Compara el nombre del producto
+        const hasSameName = product.productName === normalizeString(productName);
+
+        // Compara las propiedades opcionales
+        const hasSameProperties = productProperties.every(p => formProperties[p] === product[p]) && Object.keys(formProperties).length === productProperties.length;
+
+        return hasSameName && hasSameProperties;
+      });
+
+      return hasSameNameAndProperties;
+
     } catch (error) {
       console.error("Error checking product existence:", error);
       return false;
@@ -86,8 +101,8 @@ const CreateInventory = () => {
       });
       return;
     }
-
-    if (!productName || !productStock || !productPrice) {
+  
+    if (!productName || productStock === "" || !productPrice) {
       setAlert({
         message: "El nombre del producto, stock y precio son obligatorios",
         type: "error",
@@ -95,10 +110,23 @@ const CreateInventory = () => {
       });
       return;
     }
-
+  
+    // Si `productStock` es una cadena vacía, conviértelo en 0
+    const stock = productStock === "" ? 0 : parseInt(productStock, 10);
+    
+    // Asegúrate de que `stock` es un número y no un NaN
+    if (isNaN(stock)) {
+      setAlert({
+        message: "Stock debe ser un número válido",
+        type: "error",
+        visible: true,
+      });
+      return;
+    }
+  
     // Comprobar si el producto ya existe
     const productExists = await checkIfProductExists();
-
+  
     if (productExists) {
       setAlert({
         message: "El producto ya existe en el inventario",
@@ -107,26 +135,26 @@ const CreateInventory = () => {
       });
       return;
     }
-
+  
     const inputsObject = properties.reduce((acc, input) => {
       acc[input.property] = normalizeString(input.option);
       return acc;
     }, {});
-
+  
     const productData = {
       productName: normalizeString(productName),
       productPrice: parseFloat(productPrice),
-      productStock: parseInt(productStock, 10),
+      productStock: stock,
       toDo: 0,
       ...inputsObject,
     };
-
+  
     const filteredProductData = Object.fromEntries(
       Object.entries(productData).filter(
         ([, value]) => value !== "" && value !== undefined && value !== null
       )
     );
-
+  
     try {
       await addDoc(
         collection(db, `users/${user.uid}/products`),

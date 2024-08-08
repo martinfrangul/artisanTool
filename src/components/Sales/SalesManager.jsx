@@ -1,7 +1,7 @@
 // Hooks
 import { useContext, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { v4 as uuidv4 } from "uuid";
+// import { v4 as uuidv4 } from "uuid";
 import { Timestamp } from "firebase/firestore";
 
 // Firestore
@@ -12,9 +12,9 @@ import {
   addDoc,
   doc,
   updateDoc,
-  query,
-  getDocs,
-  where,
+  // query,
+  // getDocs,
+  // where,
 } from "firebase/firestore";
 
 // Context
@@ -68,16 +68,14 @@ const SalesManager = () => {
     visible: false,
   });
 
-
   // UTILITIES ////////////////////
 
   const capitalizeFirstLetter = (string) => {
-    if (typeof string !== 'string') {
+    if (typeof string !== "string") {
       return string; // O devuelve el valor por defecto que prefieras
     }
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
   };
-
 
   const formatDate = (date) => {
     const d = date instanceof Timestamp ? date.toDate() : new Date(date);
@@ -89,7 +87,7 @@ const SalesManager = () => {
     return `${day}/${month}/${year}`;
   };
 
-  //////////////////////////////// 
+  ////////////////////////////////
 
   const handleAddTag = (event) => {
     event.preventDefault();
@@ -125,9 +123,9 @@ const SalesManager = () => {
       });
       return;
     }
-  
+
     let selectedItem = data.find((item) => item.id === id);
-  
+
     if (!selectedItem) {
       setAlert({
         message: "Producto no encontrado",
@@ -136,7 +134,7 @@ const SalesManager = () => {
       });
       return;
     }
-  
+
     if (selectedItem.productStock < 1) {
       setAlert({
         message: "Stock insuficiente.",
@@ -146,7 +144,7 @@ const SalesManager = () => {
       });
       return;
     }
-  
+
     // Reducir el stock localmente
     const updatedItem = {
       ...selectedItem,
@@ -154,54 +152,68 @@ const SalesManager = () => {
     };
 
     const saleDate = selectedDates[id] || new Date();
+    const saleDateTimestamp = Timestamp.fromDate(saleDate);
+    const salePrice = parseInt(prices[id]) || selectedItem.productPrice;
+
     const selectedItemToSell = {
       ...Object.fromEntries(
         Object.entries(updatedItem).filter(([key]) => key !== "productStock")
       ),
-      date: Timestamp.fromDate(saleDate),
-      productPrice: parseInt(prices[id]) || selectedItem.productPrice,
+      date: saleDateTimestamp,
+      productPrice: salePrice,
     };
-  
+
     try {
       // Actualizar el stock en Firestore
       const docRef = doc(db, `users/${user.uid}/products`, id);
       await updateDoc(docRef, { productStock: updatedItem.productStock });
-  
+      // Graba la venta
+      await addDoc(collection(db, `users/${user.uid}/sales`), selectedItemToSell);
+
+
+
+      // await addDoc(collection(db, `users/${user.uid}/sales`), {
+      //   ...selectedItemToSell,
+        // quantity: 1, // Cantidad vendida
+        // id: uuidv4(), // Generar un ID único para el documento de venta
+      // });
+
       // Verificar si ya existe una venta para este producto en la misma fecha con el mismo precio
-      const salesQuery = query(
-        collection(db, `users/${user.uid}/sales`),
-        where("productName", "==", selectedItem.productName),
-        where("date", "==", selectedItemToSell.date),
-        where("productPrice", "==", selectedItemToSell.productPrice)
-      );
-      const salesSnapshot = await getDocs(salesQuery);
-  
-      if (!salesSnapshot.empty) {
-        // Si existe un documento, actualizar el documento con la nueva cantidad
-        const saleDocRef = doc(
-          db,
-          `users/${user.uid}/sales`,
-          salesSnapshot.docs[0].id
-        );
-        const existingSale = salesSnapshot.docs[0].data();
-        await updateDoc(saleDocRef, {
-          quantity: (existingSale.quantity || 0) + 1,
-        });
-      } else {
-        // Crear un nuevo documento de venta con un ID único
-        await addDoc(collection(db, `users/${user.uid}/sales`), {
-          ...selectedItemToSell,
-          quantity: 1, // Cantidad vendida
-          id: uuidv4(), // Generar un ID único para el documento de venta
-        });
-      }
-  
+      // const salesQuery = query(
+      //   collection(db, `users/${user.uid}/sales`),
+      //   where("productName", "==", selectedItem.productName),
+      //   // where("date", "==", selectedItemToSell.date), // Usa Timestamp aquí
+      //   where("productPrice", "==", selectedItemToSell.productPrice)
+      // );
+      // const salesSnapshot = await getDocs(salesQuery);
+
+      // if (!salesSnapshot.empty) {
+      //   // Si existe un documento, actualizar el documento con la nueva cantidad
+      //   const saleDocRef = doc(
+      //     db,
+      //     `users/${user.uid}/sales`,
+      //     salesSnapshot.docs[0].id
+      //   );
+      //   const existingSale = salesSnapshot.docs[0].data();
+      //   console.log("Venta existente:", existingSale); // Para depuración
+      //   await updateDoc(saleDocRef, {
+      //     quantity: (existingSale.quantity || 0) + 1,
+      //   });
+      // } else {
+      //   // Crear un nuevo documento de venta con un ID único
+      //   await addDoc(collection(db, `users/${user.uid}/sales`), {
+      //     ...selectedItemToSell,
+      //     quantity: 1, // Cantidad vendida
+      //     id: uuidv4(), // Generar un ID único para el documento de venta
+      //   });
+      // }
+
       setAlert({
         message: "Venta agregada correctamente",
         type: "success",
         visible: true,
       });
-  
+
       setTags([]);
       setEnteredData("");
       setSelectedDates({});
@@ -210,6 +222,7 @@ const SalesManager = () => {
       setOriginalPrices({});
       reloadData();
     } catch (error) {
+      console.error("Error al procesar la venta: ", error); // Para depuración
       setAlert({
         message: "Error al procesar la venta",
         type: "error",
@@ -217,8 +230,6 @@ const SalesManager = () => {
       });
     }
   };
-  
-  
 
   const toggleDatePicker = (id) => {
     setOpenPickerId((prevId) => (prevId === id ? null : id));
@@ -281,7 +292,9 @@ const SalesManager = () => {
 
     return (
       <div className="flex flex-col justify-start items-start">
-        <h1 className="text-xl font-bold text-logo">{capitalizeFirstLetter(item.productName)}</h1>
+        <h1 className="text-xl font-bold text-logo">
+          {capitalizeFirstLetter(item.productName)}
+        </h1>
         {filteredProperties.map(
           ([key, value]) =>
             value && (
@@ -447,8 +460,7 @@ const SalesManager = () => {
                 <div className="w-1/2 flex justify-start">
                   {selectedDates[item.id] && (
                     <h3 className="text-md font-semibold mt-2">
-                      Fecha seleccionada:{" "}
-                      {formatDate(selectedDates[item.id])}
+                      Fecha seleccionada: {formatDate(selectedDates[item.id])}
                     </h3>
                   )}
                 </div>

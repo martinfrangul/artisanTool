@@ -8,7 +8,7 @@ import Alert from "../Alert";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Timestamp } from "firebase/firestore";
-import "../../styles/SalesRegistry.css"
+import "../../styles/SalesRegistry.css";
 
 // Map of readable names
 const propertyLabels = {
@@ -60,31 +60,51 @@ const SalesRegistry = () => {
   ////////////////////////
 
   useEffect(() => {
-    const newFilteredSellData = sellData.filter((item) => {
+    const filteredData = sellData.filter((item) => {
       const itemDate = formatDate(item.date);
       return (
         itemDate >= formatDate(startDate) && itemDate <= formatDate(endDate)
       );
     });
 
-    newFilteredSellData.sort((a, b) => a.date.toDate() - b.date.toDate());
-    
-    setFilteredSellData(newFilteredSellData);
+    const groupedData = filteredData.reduce((accumulator, current) => {
+      // Aseguramos que el objeto actual tiene una propiedad quantity
+      if (typeof current.quantity === "undefined") {
+        current.quantity = 1; // Asignamos 1 si no tiene quantity
+      }
+
+      const key = `${current.id}-${formatDate(current.date)}-${current.productPrice}`;
+
+      if (!accumulator[key]) {
+        accumulator[key] = {
+          ...current,
+          quantity: Number(current.quantity),
+        };
+      } else {
+        accumulator[key].quantity += Number(current.quantity);
+      }
+
+      return accumulator;
+    }, {});
+
+    const groupedDataArray = Object.values(groupedData);
+
+    groupedDataArray.sort((a, b) => a.date.toDate() - b.date.toDate());
+
+    setFilteredSellData(groupedDataArray);
   }, [sellData, startDate, endDate]);
-
-
 
   useEffect(() => {
     // Añadir o quitar la clase no-scroll en el body
     if (isConfirmationModalVisible) {
-      document.body.classList.add('no-scroll');
+      document.body.classList.add("no-scroll");
     } else {
-      document.body.classList.remove('no-scroll');
+      document.body.classList.remove("no-scroll");
     }
 
     // Limpiar la clase al desmontar el componente
     return () => {
-      document.body.classList.remove('no-scroll');
+      document.body.classList.remove("no-scroll");
     };
   }, [isConfirmationModalVisible]);
 
@@ -167,34 +187,18 @@ const SalesRegistry = () => {
           onClose={() => setAlert({ ...alert, visible: false })}
         />
       )}
-      {isConfirmationModalVisible && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-5 rounded-md shadow-lg w-[90%]">
-            <h2 className="text-lg font-bold">Confirmación</h2>
-            <p>¿Estás seguro de que deseas eliminar el producto?</p>
-            <div className="mt-4 flex gap-4">
-              <button
-                onClick={() => handleConfirmation(true)}
-                className="btn btn-success"
-              >
-                Aceptar
-              </button>
-              <button
-                onClick={() => handleConfirmation(false)}
-                className="btn btn-danger"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
       <div className="flex flex-col justify-center items-center my-3 pb-3 gap-4">
         <div className="flex flex-row items-center gap-3">
           <div className="w-full">
             <DatePicker
               selected={startDate}
-              onChange={(date) => setStartDate(date)}
+              onChange={(date) => {
+                setStartDate(date);
+                if (date > endDate) {
+                  setEndDate(date);
+                }
+              }}
               selectsStart
               startDate={startDate}
               endDate={endDate}
@@ -205,22 +209,50 @@ const SalesRegistry = () => {
           <div className="w-full">
             <DatePicker
               selected={endDate}
-              onChange={(date) => setEndDate(date)}
+              onChange={(date) => {
+                if (date >= startDate) {
+                  setEndDate(date);
+                } else {
+                  setEndDate(startDate);
+                }
+              }}
               selectsEnd
               startDate={startDate}
               endDate={endDate}
               minDate={startDate}
               dateFormat="dd/MM/yyyy"
-              className="p-2 rounded-md shadow-md shadow-gray-500 w-24 text-sm font-semibold text-gray-700 bg-banner" 
+              className="p-2 rounded-md shadow-md shadow-gray-500 w-24 text-sm font-semibold text-gray-700 bg-banner"
             />
           </div>
         </div>
         {filteredSellData.length > 0 ? (
-          filteredSellData.map((item, index) => (
+          filteredSellData.map((item) => (
             <div
-              key={item.id || index}
+              key={`${item.id}-${formatDate(item.date)}-${item.productPrice}`}
               className="w-[95%] flex flex-row justify-between items-start pb-5 p-2 border-[1px] border-solid border-black rounded-xl shadow-lg shadow-gray-500 bg-opacity-45 bg-white"
             >
+              {isConfirmationModalVisible && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+                  <div className="bg-white p-5 rounded-md shadow-lg w-[90%]">
+                    <h2 className="text-lg font-bold">Confirmación</h2>
+                    <p>¿Estás seguro de que deseas eliminar el producto?</p>
+                    <div className="mt-4 flex gap-4">
+                      <button
+                        onClick={() => handleConfirmation(true, item.id)}
+                        className="btn btn-success"
+                      >
+                        Aceptar
+                      </button>
+                      <button
+                        onClick={() => handleConfirmation(false, item.id)}
+                        className="btn btn-danger"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="flex flex-col items-start w-full">
                 <div className="flex w-full items-end justify-between border-b-[1px] border-solid border-black">
                   <h1 className="text-xl text-wrap font-bold text-logo">
