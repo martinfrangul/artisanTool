@@ -7,6 +7,7 @@ import CreateInventory from "./components/Inventory/CreateInventory";
 import Navbar from "./components/Navbar";
 import SalesManager from "./components/Sales/SalesManager";
 import SalesRegistry from "./components/Sales/SalesRegistry";
+import SalesCharts from "./components/Sales/SalesCharts";
 
 // UTILS
 import ProtectedRoutes from "./ProtectedRoutes";
@@ -23,7 +24,6 @@ import "./App.css";
 import Banner from "./components/Banner";
 
 function App() {
-
   return (
     <div className="background min-h-screen flex flex-col">
       <Router>
@@ -88,6 +88,14 @@ function App() {
                     element={
                       <ProtectedRoutes>
                         <SalesRegistry />
+                      </ProtectedRoutes>
+                    }
+                  />
+                  <Route
+                    path="/sales-charts"
+                    element={
+                      <ProtectedRoutes>
+                        <SalesCharts />
                       </ProtectedRoutes>
                     }
                   />

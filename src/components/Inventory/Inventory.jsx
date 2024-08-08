@@ -9,6 +9,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { database } from "../../../firebase/firebaseConfig";
 import EditProduct from "./EditProduct";
 import Alert from "../Alert";
+import ConfirmationPopup from "../ConfirmationPopup";
 
 // Map of readable names
 const propertyLabels = {
@@ -33,8 +34,9 @@ const Inventory = () => {
   const [idForEdit, setIdForEdit] = useState("");
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
   const [isConfirmationModalVisible, setConfirmationModalVisible] = useState(false);
-
-
+  const [pendingAction, setPendingAction] = useState(null);
+ 
+ 
 
   // UTILITIES ///////////////////
 
@@ -93,6 +95,8 @@ const Inventory = () => {
 
   const handleDelete = async (id) => {
     if (!user) return;
+
+    console.log(id);
 
     try {
       const docRef = doc(database, `users/${user.uid}/products`, id);
@@ -188,6 +192,12 @@ const Inventory = () => {
 
   const confirmResolveAllTodos = () => {
     setConfirmationModalVisible(true);
+    setPendingAction(() => resolveAllTodos)
+  };
+
+  const confirmDeleteItem = (id) => {
+    setConfirmationModalVisible(true);
+    setPendingAction(() => () => handleDelete(id))
   };
 
   const resolveAllTodos = async () => {
@@ -236,11 +246,11 @@ const Inventory = () => {
   };
 
   const handleConfirmation = (confirmed) => {
-    if (confirmed) {
-      resolveAllTodos();
-    } else {
-      setConfirmationModalVisible(false);
+    if (confirmed && pendingAction) {
+      pendingAction();
     }
+    setConfirmationModalVisible(false);
+    setPendingAction(null);
   };
 
   const resolveToDo = async (id) => {
@@ -296,26 +306,9 @@ const Inventory = () => {
         />
       )}
       {isConfirmationModalVisible && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-5 rounded-md shadow-lg w-[90%]">
-            <h2 className="text-lg font-bold">Confirmación</h2>
-            <p>¿Estás seguro de que deseas agregar todos los productos al stock?</p>
-            <div className="mt-4 flex gap-4">
-              <button
-                onClick={() => handleConfirmation(true)}
-                className="btn btn-success"
-              >
-                Aceptar
-              </button>
-              <button
-                onClick={() => handleConfirmation(false)}
-                className="btn btn-danger"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmationPopup 
+        handleConfirmation={handleConfirmation}
+        />
       )}
       {/* Dropdown para seleccionar la propiedad de orden */}
       <div className="flex flex-row justify-end items-center my-3 border-b-[1px] border-solid border-black pb-3">
@@ -389,7 +382,7 @@ const Inventory = () => {
                   <img className="w-3" src={editIcon} alt="edit-icon" />
                 </button>
                 <button
-                  onClick={() => handleDelete(item.id)}
+                  onClick={() => confirmDeleteItem(item.id)}
                   className="flex justify-center items-center bg-danger w-8 h-8 rounded-full border-[0.5px] border-solid border-black shadow-lg shadow-gray-500"
                 >
                   <img className="w-3" src={deleteItemIcon} alt="delete-icon" />

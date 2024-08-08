@@ -26,7 +26,7 @@ const propertyLabels = {
 
 const SalesRegistry = () => {
   const context = useContext(SellContext);
-  const { sellData, reloadData } = context;
+  const { sellData } = context;
   const { user } = useAuth(); // Obtén el usuario actual
 
   // STATES
@@ -60,37 +60,45 @@ const SalesRegistry = () => {
   ////////////////////////
 
   useEffect(() => {
+    // Filtrar las ventas dentro del rango de fechas
     const filteredData = sellData.filter((item) => {
       const itemDate = formatDate(item.date);
       return (
         itemDate >= formatDate(startDate) && itemDate <= formatDate(endDate)
       );
     });
-
+  
+    // Agrupar datos por combinación de fecha y precio, y acumular cantidades
     const groupedData = filteredData.reduce((accumulator, current) => {
       // Aseguramos que el objeto actual tiene una propiedad quantity
       if (typeof current.quantity === "undefined") {
         current.quantity = 1; // Asignamos 1 si no tiene quantity
       }
-
-      const key = `${current.id}-${formatDate(current.date)}-${current.productPrice}`;
-
+  
+      // Crear una clave única para el agrupamiento
+      // Aquí usamos una combinación de id, fecha y precio para la clave
+      const key = `${current.productName}-${formatDate(current.date)}-${current.productPrice}`;
+  
       if (!accumulator[key]) {
+        // Si no existe la clave, inicializar el objeto
         accumulator[key] = {
           ...current,
           quantity: Number(current.quantity),
         };
       } else {
+        // Si ya existe, acumular la cantidad
         accumulator[key].quantity += Number(current.quantity);
       }
-
+  
       return accumulator;
     }, {});
-
+  
+    // Convertir el objeto agrupado en un array
     const groupedDataArray = Object.values(groupedData);
-
+  
+    // Ordenar los datos por fecha
     groupedDataArray.sort((a, b) => a.date.toDate() - b.date.toDate());
-
+  
     setFilteredSellData(groupedDataArray);
   }, [sellData, startDate, endDate]);
 
@@ -111,10 +119,11 @@ const SalesRegistry = () => {
   const handleDelete = async (id) => {
     if (!user) return;
 
+    console.log(id);
+
     try {
       const docRef = doc(database, `users/${user.uid}/sales`, id);
       await deleteDoc(docRef);
-      reloadData(); // Recarga los datos después de eliminar
       setAlert({
         message: "Producto eliminado correctamente",
         type: "success",

@@ -68,14 +68,12 @@ const SalesManager = () => {
     visible: false,
   });
 
-  // UTILITIES ////////////////////
+  ///////////// UTILITIES ////////////////////
 
-  const capitalizeFirstLetter = (string) => {
-    if (typeof string !== "string") {
-      return string; // O devuelve el valor por defecto que prefieras
-    }
-    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
-  };
+  const capitalizeFirstLetter = (string) =>
+    typeof string === "string"
+      ? string.charAt(0).toUpperCase() + string.slice(1).toLowerCase()
+      : string;
 
   const formatDate = (date) => {
     const d = date instanceof Timestamp ? date.toDate() : new Date(date);
@@ -87,7 +85,7 @@ const SalesManager = () => {
     return `${day}/${month}/${year}`;
   };
 
-  ////////////////////////////////
+  ////////////////////////////////////////////
 
   const handleAddTag = (event) => {
     event.preventDefault();
@@ -112,8 +110,9 @@ const SalesManager = () => {
     });
   };
 
+  
   const filteredData = filterData(data, tags);
-
+  
   const handleSell = async (id) => {
     if (!user) {
       setAlert({
@@ -123,6 +122,8 @@ const SalesManager = () => {
       });
       return;
     }
+
+    console.log(id);
 
     let selectedItem = data.find((item) => item.id === id);
 
@@ -151,13 +152,14 @@ const SalesManager = () => {
       productStock: selectedItem.productStock - 1,
     };
 
+
     const saleDate = selectedDates[id] || new Date();
     const saleDateTimestamp = Timestamp.fromDate(saleDate);
     const salePrice = parseInt(prices[id]) || selectedItem.productPrice;
 
     const selectedItemToSell = {
       ...Object.fromEntries(
-        Object.entries(updatedItem).filter(([key]) => key !== "productStock")
+        Object.entries(updatedItem).filter(([key]) => key !== "productStock" && key !== "toDo")
       ),
       date: saleDateTimestamp,
       productPrice: salePrice,
@@ -167,11 +169,13 @@ const SalesManager = () => {
       // Actualizar el stock en Firestore
       const docRef = doc(db, `users/${user.uid}/products`, id);
       await updateDoc(docRef, { productStock: updatedItem.productStock });
-      // Graba la venta
-      await addDoc(collection(db, `users/${user.uid}/sales`), selectedItemToSell);
-
-
-
+  
+      // Crear la venta y obtener el ID del documento
+      const saleDocRef = await addDoc(collection(db, `users/${user.uid}/sales`), selectedItemToSell);
+      const saleId = saleDocRef.id;
+  
+      await updateDoc(saleDocRef, { id: saleId });
+  
       // await addDoc(collection(db, `users/${user.uid}/sales`), {
       //   ...selectedItemToSell,
         // quantity: 1, // Cantidad vendida

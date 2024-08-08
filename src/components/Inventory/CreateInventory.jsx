@@ -6,6 +6,8 @@ import {
   query,
   where,
   getDocs,
+  updateDoc,
+  doc
 } from "firebase/firestore";
 import { useAuth } from "../../hooks/useAuth";
 import { InventoryContext } from "../../context/InventoryContext";
@@ -156,10 +158,16 @@ const CreateInventory = () => {
     );
   
     try {
-      await addDoc(
+      // Añadir el producto a Firestore
+      const docRef = await addDoc(
         collection(db, `users/${user.uid}/products`),
         filteredProductData
       );
+
+      // Obtener el ID del documento y actualizar el documento con el ID
+      await updateDoc(doc(db, `users/${user.uid}/products`, docRef.id), {
+        id: docRef.id
+      });
       setAlert({
         message: "Guardado correctamente",
         type: "success",
@@ -222,7 +230,7 @@ const CreateInventory = () => {
         <hr className="bg-black h-[2px] w-3/4 mx-auto mt-5" />
         <div className="flex w-full justify-center">
           <button
-            className="m-2 p-2 bg-success text-white rounded"
+            className="m-2 p-2 bg-success text-black rounded"
             onClick={saveData}
           >
             Crear
