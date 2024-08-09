@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from "react";
-import { SellContext } from "../../context/SellContext.jsx";
+import { DataContext } from "../../context/DataContext.jsx";
 import deleteItemIcon from "../../assets/deleteItemIcon.png";
 import { doc, deleteDoc } from "firebase/firestore";
 import { useAuth } from "../../hooks/useAuth";
@@ -25,8 +25,8 @@ const propertyLabels = {
 };
 
 const SalesRegistry = () => {
-  const context = useContext(SellContext);
-  const { sellData } = context;
+  const context = useContext(DataContext);
+  const { sellData, reloadData } = context;
   const { user } = useAuth(); // Obtén el usuario actual
 
   // STATES
@@ -36,6 +36,7 @@ const SalesRegistry = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [filteredSellData, setFilteredSellData] = useState([]);
+  const [confirmationId, setConfirmationId] = useState(null); // Estado para el ID del ítem a eliminar
   // const [sortedFilteredSellData, setSortedFilteredSellData] = useState([]);
 
   ////// UTILITIES ///////
@@ -67,18 +68,20 @@ const SalesRegistry = () => {
         itemDate >= formatDate(startDate) && itemDate <= formatDate(endDate)
       );
     });
-  
+
     // Agrupar datos por combinación de fecha y precio, y acumular cantidades
     const groupedData = filteredData.reduce((accumulator, current) => {
       // Aseguramos que el objeto actual tiene una propiedad quantity
       if (typeof current.quantity === "undefined") {
         current.quantity = 1; // Asignamos 1 si no tiene quantity
       }
-  
+
       // Crear una clave única para el agrupamiento
       // Aquí usamos una combinación de id, fecha y precio para la clave
-      const key = `${current.productName}-${formatDate(current.date)}-${current.productPrice}`;
-  
+      const key = `${current.productName}-${formatDate(current.date)}-${
+        current.productPrice
+      }`;
+
       if (!accumulator[key]) {
         // Si no existe la clave, inicializar el objeto
         accumulator[key] = {
@@ -89,16 +92,16 @@ const SalesRegistry = () => {
         // Si ya existe, acumular la cantidad
         accumulator[key].quantity += Number(current.quantity);
       }
-  
+
       return accumulator;
     }, {});
-  
+
     // Convertir el objeto agrupado en un array
     const groupedDataArray = Object.values(groupedData);
-  
+
     // Ordenar los datos por fecha
     groupedDataArray.sort((a, b) => a.date.toDate() - b.date.toDate());
-  
+
     setFilteredSellData(groupedDataArray);
   }, [sellData, startDate, endDate]);
 
@@ -129,7 +132,9 @@ const SalesRegistry = () => {
         type: "success",
         visible: true,
       });
+      setConfirmationId(null); // Resetear el ID de confirmación
       setConfirmationModalVisible(false);
+      reloadData();
     } catch (error) {
       console.error("Error al eliminar la venta: ", error);
     }
@@ -175,13 +180,14 @@ const SalesRegistry = () => {
     );
   };
 
-  const confirmDeleteItem = () => {
+  const confirmDeleteItem = (id) => {
+    setConfirmationId(id); // Establecer el ID del ítem a eliminar
     setConfirmationModalVisible(true);
   };
 
-  const handleConfirmation = (confirmed, id) => {
-    if (confirmed) {
-      handleDelete(id);
+  const handleConfirmation = (confirmed) => {
+    if (confirmed && confirmationId) {
+      handleDelete(confirmationId); // Pasar el ID almacenado
     } else {
       setConfirmationModalVisible(false);
     }
@@ -237,23 +243,23 @@ const SalesRegistry = () => {
         {filteredSellData.length > 0 ? (
           filteredSellData.map((item) => (
             <div
-              key={`${item.id}-${formatDate(item.date)}-${item.productPrice}`}
+              key={item.id}
               className="w-[95%] flex flex-row justify-between items-start pb-5 p-2 border-[1px] border-solid border-black rounded-xl shadow-lg shadow-gray-500 bg-opacity-45 bg-white"
             >
-              {isConfirmationModalVisible && (
+              {isConfirmationModalVisible && confirmationId === item.id && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
                   <div className="bg-white p-5 rounded-md shadow-lg w-[90%]">
                     <h2 className="text-lg font-bold">Confirmación</h2>
                     <p>¿Estás seguro de que deseas eliminar el producto?</p>
                     <div className="mt-4 flex gap-4">
                       <button
-                        onClick={() => handleConfirmation(true, item.id)}
+                        onClick={() => handleConfirmation(true)}
                         className="btn btn-success"
                       >
                         Aceptar
                       </button>
                       <button
-                        onClick={() => handleConfirmation(false, item.id)}
+                        onClick={() => handleConfirmation(false)}
                         className="btn btn-danger"
                       >
                         Cancelar
@@ -269,7 +275,7 @@ const SalesRegistry = () => {
                   </h1>
                   <div className="flex items-center py-2">
                     <button
-                      onClick={confirmDeleteItem}
+                      onClick={() => confirmDeleteItem(item.id)}
                       className="flex justify-center items-center bg-danger w-7 h-7 rounded-full border-[0.5px] border-solid border-black shadow-lg shadow-gray-500"
                     >
                       <img

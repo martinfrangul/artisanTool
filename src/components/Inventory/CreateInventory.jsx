@@ -10,7 +10,7 @@ import {
   doc
 } from "firebase/firestore";
 import { useAuth } from "../../hooks/useAuth";
-import { InventoryContext } from "../../context/InventoryContext";
+import { DataContext } from "../../context/DataContext";
 import addIcon from "../../assets/addIcon.png";
 import PropertyInput from "./PropertyInput";
 import PropertySpecs from "./PropertySpecs";
@@ -24,7 +24,7 @@ const CreateInventory = () => {
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
 
   const { user } = useAuth();
-  const { reloadData } = useContext(InventoryContext);
+  const { reloadData } = useContext(DataContext);
   const db = getFirestore();
 
   const updatePropertyField = (index, field, value) => {

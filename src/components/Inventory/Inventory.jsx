@@ -1,5 +1,4 @@
 import { useState, useContext, useEffect } from "react";
-import { InventoryContext } from "../../context/InventoryContext";
 import deleteItemIcon from "../../assets/deleteItemIcon.png";
 import editIcon from "../../assets/editIcon.png";
 import checkAllIcon from "../../assets/checkAllIcon.png";
@@ -10,6 +9,7 @@ import { database } from "../../../firebase/firebaseConfig";
 import EditProduct from "./EditProduct";
 import Alert from "../Alert";
 import ConfirmationPopup from "../ConfirmationPopup";
+import { DataContext } from "../../context/DataContext";
 
 // Map of readable names
 const propertyLabels = {
@@ -24,8 +24,8 @@ const propertyLabels = {
 };
 
 const Inventory = () => {
-  const context = useContext(InventoryContext);
-  const { data, reloadData } = context;
+  const context = useContext(DataContext);
+  const { inventoryData, reloadData } = context;
   const { user } = useAuth(); // Obtén el usuario actual
 
   // STATES
@@ -33,43 +33,39 @@ const Inventory = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [idForEdit, setIdForEdit] = useState("");
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
-  const [isConfirmationModalVisible, setConfirmationModalVisible] = useState(false);
+  const [isConfirmationModalVisible, setConfirmationModalVisible] =
+    useState(false);
   const [pendingAction, setPendingAction] = useState(null);
- 
- 
 
   // UTILITIES ///////////////////
 
   const capitalizeFirstLetter = (string) => {
-    if (typeof string !== 'string') {
+    if (typeof string !== "string") {
       return string; // O devuelve el valor por defecto que prefieras
     }
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
   };
 
-
   useEffect(() => {
     // Añadir o quitar la clase no-scroll en el body
     if (isConfirmationModalVisible) {
-      document.body.classList.add('no-scroll');
+      document.body.classList.add("no-scroll");
     } else {
-      document.body.classList.remove('no-scroll');
+      document.body.classList.remove("no-scroll");
     }
 
     // Limpiar la clase al desmontar el componente
     return () => {
-      document.body.classList.remove('no-scroll');
+      document.body.classList.remove("no-scroll");
     };
   }, [isConfirmationModalVisible]);
 
-
-/////////////////////////// 
-
+  ///////////////////////////
 
   // Get the available properties
   const getAvailableProperties = () => {
     const properties = new Set();
-    data.forEach((item) => {
+    inventoryData.forEach((item) => {
       Object.keys(item).forEach((key) => {
         if (
           key !== "id" &&
@@ -131,12 +127,16 @@ const Inventory = () => {
 
     return (
       <div className="flex flex-col justify-start items-start">
-        <h1 className="text-xl font-bold text-logo">{capitalizeFirstLetter(item.productName)}</h1>
-        
+        <h1 className="text-xl font-bold text-logo">
+          {capitalizeFirstLetter(item.productName)}
+        </h1>
+
         {orderedProperties.map(([key, value]) =>
           value ? (
             <h1 key={key}>
-              <strong>{propertyLabels[key] || capitalizeFirstLetter(key)}: </strong>
+              <strong>
+                {propertyLabels[key] || capitalizeFirstLetter(key)}:{" "}
+              </strong>
               {capitalizeFirstLetter(value)}
             </h1>
           ) : null
@@ -155,7 +155,7 @@ const Inventory = () => {
   };
 
   // Ordenar los items según la propiedad seleccionada
-  const sortedData = data.slice().sort((a, b) => {
+  const sortedData = inventoryData.slice().sort((a, b) => {
     // Si alguno de los items no tiene el valor de la propiedad seleccionada
     if (a[sortProperty] === undefined) return 1;
     if (b[sortProperty] === undefined) return -1;
@@ -192,12 +192,12 @@ const Inventory = () => {
 
   const confirmResolveAllTodos = () => {
     setConfirmationModalVisible(true);
-    setPendingAction(() => resolveAllTodos)
+    setPendingAction(() => resolveAllTodos);
   };
 
   const confirmDeleteItem = (id) => {
     setConfirmationModalVisible(true);
-    setPendingAction(() => () => handleDelete(id))
+    setPendingAction(() => () => handleDelete(id));
   };
 
   const resolveAllTodos = async () => {
@@ -216,7 +216,7 @@ const Inventory = () => {
 
     try {
       // Actualizar el stock en Firestore
-      data.forEach((item) => {
+      inventoryData.forEach((item) => {
         if (item.toDo > 0) {
           const docRef = doc(database, `users/${user.uid}/products`, item.id);
           const updatedStock = item.productStock + item.toDo;
@@ -264,7 +264,7 @@ const Inventory = () => {
       return;
     }
 
-    let selectedItem = data.find((item) => item.id === id);
+    let selectedItem = inventoryData.find((item) => item.id === id);
 
     if (!selectedItem) {
       setAlert({
@@ -306,9 +306,7 @@ const Inventory = () => {
         />
       )}
       {isConfirmationModalVisible && (
-        <ConfirmationPopup 
-        handleConfirmation={handleConfirmation}
-        />
+        <ConfirmationPopup handleConfirmation={handleConfirmation} />
       )}
       {/* Dropdown para seleccionar la propiedad de orden */}
       <div className="flex flex-row justify-end items-center my-3 border-b-[1px] border-solid border-black pb-3">
@@ -330,11 +328,14 @@ const Inventory = () => {
             ))}
           </select>
         </div>
-          <button className="flex w-2/12 justify-end" onClick={confirmResolveAllTodos}>
-            <div className="rounded-full bg-success w-12 h-12 flex justify-center items-center">
-              <img className="w-8" src={checkAllIcon} alt="check-all-icon" />
-            </div>
-          </button>
+        <button
+          className="flex w-2/12 justify-end"
+          onClick={confirmResolveAllTodos}
+        >
+          <div className="rounded-full bg-success w-12 h-12 flex justify-center items-center">
+            <img className="w-8" src={checkAllIcon} alt="check-all-icon" />
+          </div>
+        </button>
       </div>
 
       {sortedData.length > 0 ? (
@@ -399,7 +400,9 @@ const Inventory = () => {
           </div>
         ))
       ) : (
-        <p>No hay datos</p>
+        <div className="w-full flex justify-center">
+          <p>No hay datos</p>
+        </div>
       )}
     </div>
   );

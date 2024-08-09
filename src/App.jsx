@@ -16,8 +16,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 // CONTEXT
 import { AuthProvider } from "./context/AuthContext";
-import { InventoryContextProvider } from "./context/InventoryContext";
-import { SellContextProvider } from "./context/SellContext";
+import { DataContextProvider } from "./context/DataContext";
 
 // STYLES
 import "./App.css";
@@ -28,8 +27,7 @@ function App() {
     <div className="background min-h-screen flex flex-col">
       <Router>
         <AuthProvider>
-          <InventoryContextProvider>
-            <SellContextProvider>
+          <DataContextProvider>
               <div className="flex-grow">
                 <ProtectedRoutes>
                   <Banner />
@@ -104,8 +102,7 @@ function App() {
               <ProtectedRoutes>
                 <Navbar />
               </ProtectedRoutes>
-            </SellContextProvider>
-          </InventoryContextProvider>
+          </DataContextProvider>
         </AuthProvider>
       </Router>
     </div>

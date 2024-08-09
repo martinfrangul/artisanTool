@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import { InventoryContext } from "../../context/InventoryContext";
+import { DataContext } from "../../context/DataContext";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { database } from "../../../firebase/firebaseConfig";
 import PropTypes from "prop-types";
@@ -36,10 +36,10 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   };
 
   const Authcontext = useContext(AuthContext);
-  const Inventorycontext = useContext(InventoryContext);
+  const DataContext = useContext(DataContext);
 
   const { user } = Authcontext;
-  const { reloadData } = Inventorycontext;
+  const { reloadData } = DataContext;
 
   useEffect(() => {
     const fetchProductData = async () => {

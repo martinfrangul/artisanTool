@@ -42,9 +42,12 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   if (loading) {
-    return <span className="loading loading-dots loading-md"></span>;
+    return (
+      <div className="flex justify-center w-full h-screen items-center">
+        <span className="loading loading-dots loading-md"></span>
+      </div>
+    );
   }
-
 
   return (
     <AuthContext.Provider value={{ googleLogIn, user, logOut, loading }}>
