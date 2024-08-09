@@ -34,12 +34,12 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     productStock: "Stock",
     productPrice: "Precio",
   };
-
+  
   const Authcontext = useContext(AuthContext);
-  const DataContext = useContext(DataContext);
-
+  const Datacontext = useContext(DataContext);
+  
   const { user } = Authcontext;
-  const { reloadData } = DataContext;
+  const { reloadData } = Datacontext;
 
   useEffect(() => {
     const fetchProductData = async () => {
