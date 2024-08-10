@@ -97,7 +97,7 @@ const SalesCharts = () => {
   };
 
   return (
-    <div className="w-full h-[75vh] pb-28 flex flex-col justify-center">
+    <div className="w-full h-[75%] pb-28 flex flex-col justify-center">
       <div className="flex flex-row justify-center items-center my-5">
         <div className="flex w-1/4">
 
@@ -138,7 +138,7 @@ const SalesCharts = () => {
 
       <div className="mt-4 text-center">
         <h3 className="text-lg font-semibold">
-          Total del {isMonthlyView ? 'Mes' : 'Año'}: €{groupedData.reduce((sum, item) => sum + item.total, 0).toFixed(2)}
+          Total del {isMonthlyView ? 'mes' : 'año'}: €{groupedData.reduce((sum, item) => sum + item.total, 0).toFixed(2)}
         </h3>
       </div>
     </div>

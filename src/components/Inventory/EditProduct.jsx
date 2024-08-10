@@ -129,7 +129,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     >
       {alert.visible && <Alert message={alert.message} type={alert.type} onClose={() => [setAlert({ ...alert, visible: false}), handleModalToggle(false)]} />}
 
-      <div className="relative p-4 w-11/12 max-w-2xl max-h-[90vh] bg-white rounded-lg border-solid border-[1px] border-gray-700 overflow-auto">
+      <div className="relative p-4 w-11/12 max-w-2xl max-h-[90vh] bg-gray-100 rounded-lg border-solid border-[1px] border-gray-700 overflow-auto">
         <div className="w-full flex justify-center border-b items-center">
           <div className="w-1/4">{/* DIV ESTRUCTURAL PARA DIVIDIR EN 3 */}</div>
           <div className="w-2/4 text-center font-semibold">
@@ -181,7 +181,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
 
                 <input
                   className={`input input-bordered w-full max-w-xs ${
-                    errors[key] ? "border-red-500" : "border-gray-300"
+                    errors[key] ? "border-red-500" : "border-black"
                   }`}
                   id={key}
                   value={value}
