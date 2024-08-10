@@ -5,8 +5,7 @@ import { doc, deleteDoc } from "firebase/firestore";
 import { useAuth } from "../../hooks/useAuth";
 import { database } from "../../../firebase/firebaseConfig";
 import Alert from "../Alert";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import CustomDatePicker from "../CustomDatePicker.jsx";
 import { Timestamp } from "firebase/firestore";
 import "../../styles/SalesRegistry.css";
 
@@ -206,24 +205,24 @@ const SalesRegistry = () => {
       <div className="flex flex-col justify-center items-center my-3 pb-3 gap-4">
         <div className="flex flex-row items-center gap-3">
           <div className="w-full">
-            <DatePicker
-              selected={startDate}
+            <CustomDatePicker
+              selectedDate={startDate}
               onChange={(date) => {
                 setStartDate(date);
                 if (date > endDate) {
                   setEndDate(date);
                 }
               }}
-              selectsStart
               startDate={startDate}
               endDate={endDate}
+              selectsStart
               dateFormat="dd/MM/yyyy"
-              className="p-2 rounded-md shadow-md shadow-gray-500 w-24 text-sm font-semibold text-gray-700 bg-banner"
+              showMonthYearPicker={false} // Usa el selector de días por defecto
             />
           </div>
           <div className="w-full">
-            <DatePicker
-              selected={endDate}
+            <CustomDatePicker
+              selectedDate={endDate}
               onChange={(date) => {
                 if (date >= startDate) {
                   setEndDate(date);
@@ -231,12 +230,12 @@ const SalesRegistry = () => {
                   setEndDate(startDate);
                 }
               }}
-              selectsEnd
               startDate={startDate}
               endDate={endDate}
+              selectsEnd
               minDate={startDate}
               dateFormat="dd/MM/yyyy"
-              className="p-2 rounded-md shadow-md shadow-gray-500 w-24 text-sm font-semibold text-gray-700 bg-banner"
+              showMonthYearPicker={false} // Usa el selector de días por defecto
             />
           </div>
         </div>
