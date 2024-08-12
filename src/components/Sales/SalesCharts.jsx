@@ -1,4 +1,6 @@
-// src/components/SalesCharts.jsx
+import { useContext, useState } from "react";
+
+// CHART
 import {
   Chart as ChartJs,
   CategoryScale,
@@ -8,9 +10,11 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { useContext, useState } from "react";
 import { Bar } from "react-chartjs-2";
+
 import { DataContext } from "../../context/DataContext";
+
+// DATEPICKER
 import CustomDatePicker from "../CustomDatePicker";
 import {
   startOfYear,

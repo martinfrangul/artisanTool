@@ -1,4 +1,7 @@
 import { useState, useContext } from "react";
+import addIcon from "../../assets/addIcon.png";
+
+// FIREBASE
 import {
   getFirestore,
   collection,
@@ -9,12 +12,16 @@ import {
   updateDoc,
   doc
 } from "firebase/firestore";
+
+// CONTEXT
 import { useAuth } from "../../hooks/useAuth";
 import { DataContext } from "../../context/DataContext";
-import addIcon from "../../assets/addIcon.png";
+
+// COMPONENTS
 import PropertyInput from "./PropertyInput";
 import PropertySpecs from "./PropertySpecs";
 import Alert from "../Alert";
+
 
 const CreateInventory = () => {
   const [productName, setProductName] = useState("");

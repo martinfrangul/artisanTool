@@ -1,17 +1,25 @@
 import { useState, useContext, useEffect } from "react";
+import { useAuth } from "../../hooks/useAuth";
+
+// CONTEXT
+import { DataContext } from "../../context/DataContext";
+
+// ICONOS
 import deleteItemIcon from "../../assets/deleteItemIcon.png";
 import editIcon from "../../assets/editIcon.png";
 import checkAllIcon from "../../assets/checkAllIcon.png";
 import acceptIcon from "../../assets/acceptIcon.png";
+
+// FIREBASE
 import { doc, deleteDoc, updateDoc, writeBatch } from "firebase/firestore";
-import { useAuth } from "../../hooks/useAuth";
 import { database } from "../../../firebase/firebaseConfig";
+
+// COMPONENTS
 import EditProduct from "./EditProduct";
 import Alert from "../Alert";
 import ConfirmationPopup from "../ConfirmationPopup";
-import { DataContext } from "../../context/DataContext";
 
-// Map of readable names
+// Mapa de nombre de propiedes mejorado
 const propertyLabels = {
   design: "Diseño",
   size: "Tamaño",
@@ -28,7 +36,6 @@ const Inventory = () => {
   const { inventoryData, reloadData } = context;
   const { user } = useAuth(); // Obtén el usuario actual
 
-  // STATES
   const [sortProperty, setSortProperty] = useState("productName");
   const [isModalVisible, setModalVisible] = useState(false);
   const [idForEdit, setIdForEdit] = useState("");
@@ -37,11 +44,10 @@ const Inventory = () => {
     useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
-  // UTILITIES ///////////////////
 
   const capitalizeFirstLetter = (string) => {
     if (typeof string !== "string") {
-      return string; // O devuelve el valor por defecto que prefieras
+      return string;
     }
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
   };
@@ -60,9 +66,7 @@ const Inventory = () => {
     };
   }, [isConfirmationModalVisible]);
 
-  ///////////////////////////
-
-  // Get the available properties
+  // Coge las propiedades disponibles
   const getAvailableProperties = () => {
     const properties = new Set();
     inventoryData.forEach((item) => {
@@ -81,7 +85,7 @@ const Inventory = () => {
     return Array.from(properties);
   };
 
-  // Get properties
+  // Coge las propiedades
   const availableProperties = [
     "productName",
     "productStock",
@@ -91,8 +95,6 @@ const Inventory = () => {
 
   const handleDelete = async (id) => {
     if (!user) return;
-
-    console.log(id);
 
     try {
       const docRef = doc(database, `users/${user.uid}/products`, id);
@@ -211,7 +213,7 @@ const Inventory = () => {
       return;
     }
 
-    // Creamos una transacción para actualizar todos los documentos
+    // Crear una transacción para actualizar todos los documentos
     const batch = writeBatch(database);
 
     try {
@@ -220,7 +222,7 @@ const Inventory = () => {
         if (item.toDo > 0) {
           const docRef = doc(database, `users/${user.uid}/products`, item.id);
           const updatedStock = item.productStock + item.toDo;
-          // Actualiza el documento con el nuevo stock y toDo a 0
+          // Actualizar el documento con el nuevo stock y toDo a 0
           batch.update(docRef, { productStock: updatedStock, toDo: 0 });
         }
       });

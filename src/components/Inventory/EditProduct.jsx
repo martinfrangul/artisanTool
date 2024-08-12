@@ -1,16 +1,24 @@
 import { useContext, useEffect, useState } from "react";
+import deleteItemIconRed from "../../assets/deleteItemIconRed.png";
+import PropTypes from "prop-types";
+
+// CONTEXT
 import { AuthContext } from "../../context/AuthContext";
 import { DataContext } from "../../context/DataContext";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+
+// FIREBASE
+import { doc, updateDoc, getDoc, deleteField } from "firebase/firestore";
 import { database } from "../../../firebase/firebaseConfig";
-import PropTypes from "prop-types";
+
+// COMPONENTS
 import Alert from "../Alert";
 
-
 const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
-  // STATES
   const [itemData, setItemData] = useState({});
   const [errors, setErrors] = useState({});
+  const [alert, setAlert] = useState({ message: "", type: "", visible: false });
+  const [availableProperties, setAvailableProperties] = useState([]);
+
   const customOrder = [
     "productName",
     "design",
@@ -21,9 +29,8 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     "productPrice",
     "productStock",
   ];
-  const [alert, setAlert] = useState({ message: "", type: "", visible: false });
 
-
+  // Mapa de nombre de propiedes mejorado
   const propertyLabels = {
     design: "Diseño",
     size: "Tamaño",
@@ -34,10 +41,17 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     productStock: "Stock",
     productPrice: "Precio",
   };
-  
+
+  const nonDeletableProperties = [
+    "productName",
+    "productStock",
+    "productPrice",
+  ];
+  const allProperties = Object.keys(propertyLabels);
+
   const Authcontext = useContext(AuthContext);
   const Datacontext = useContext(DataContext);
-  
+
   const { user } = Authcontext;
   const { reloadData } = Datacontext;
 
@@ -51,16 +65,24 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
       );
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setItemData(docSnap.data());
+        const data = docSnap.data();
+        setItemData(data);
+        // Propiedades usadas y propiedades disponibles
+        const usedProperties = Object.keys(data);
+        const available = allProperties.filter(
+          (prop) => !usedProperties.includes(prop)
+        );
+        setAvailableProperties(available);
       } else {
-        console.log("No such document!");
+        console.log("No existe el documento");
       }
     };
     fetchProductData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, productIdForEdit]);
 
   const handleInputChange = (key, value) => {
-    if (key === "productStock" && value !== "") {
+    if ((key === "productStock" || key === "productPrice") && value !== "") {
       value = parseInt(value);
     }
     setItemData((prevItemData) => ({
@@ -68,11 +90,24 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
       [key]: value,
     }));
 
-    // Clear the error for the field if it's being modified
     setErrors((prevErrors) => ({
       ...prevErrors,
       [key]: "",
     }));
+  };
+
+  const handleDeleteProperty = (key) => {
+    const { [key]: _, ...rest } = itemData;
+    setItemData(rest);
+    setAvailableProperties([...availableProperties, key]);
+  };
+
+  const handleAddProperty = (key) => {
+    setItemData((prevItemData) => ({
+      ...prevItemData,
+      [key]: "",
+    }));
+    setAvailableProperties(availableProperties.filter((prop) => prop !== key));
   };
 
   const validateFields = () => {
@@ -97,17 +132,44 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     if (!user || !productIdForEdit) return;
     if (!validateFields()) return;
 
-    try {
-      const docRef = doc(
-        database,
-        `users/${user.uid}/products`,
-        productIdForEdit
-      );
-      await updateDoc(docRef, itemData);
-      reloadData();
-      setAlert({ message: "Producto editado correctamente", type: "success", visible: true});
-    } catch (error) {
-      console.error("Error al editar producto: ", error);
+    const updates = { ...itemData };
+
+    // Revisar las propiedades que faltan en itemData y eliminarlas en Firebase
+    const docRef = doc(
+      database,
+      `users/${user.uid}/products`,
+      productIdForEdit
+    );
+
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const existingData = docSnap.data();
+      const fieldsToDelete = {};
+
+      // Identificar campos que no están en itemData pero que existen en Firebase
+      Object.keys(existingData).forEach((key) => {
+        if (!(key in updates)) {
+          fieldsToDelete[key] = deleteField();
+        }
+      });
+
+      // Combinar los campos a eliminar con los campos a actualizar
+      const finalUpdate = { ...updates, ...fieldsToDelete };
+
+      try {
+        await updateDoc(docRef, finalUpdate);
+        reloadData();
+        setAlert({
+          message: "Producto editado correctamente",
+          type: "success",
+          visible: true,
+        });
+      } catch (error) {
+        console.error("Error al editar producto: ", error);
+      }
+    } else {
+      console.log("No existe el documento");
     }
   };
 
@@ -127,7 +189,16 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
       tabIndex="-1"
       className="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full backdrop-blur-sm overflow-auto"
     >
-      {alert.visible && <Alert message={alert.message} type={alert.type} onClose={() => [setAlert({ ...alert, visible: false}), handleModalToggle(false)]} />}
+      {alert.visible && (
+        <Alert
+          message={alert.message}
+          type={alert.type}
+          onClose={() => [
+            setAlert({ ...alert, visible: false }),
+            handleModalToggle(false),
+          ]}
+        />
+      )}
 
       <div className="relative p-4 w-11/12 max-w-2xl max-h-[90vh] bg-gray-100 rounded-lg border-solid border-[1px] border-gray-700 overflow-auto">
         <div className="w-full flex justify-center border-b items-center">
@@ -171,43 +242,67 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
               return indexA - indexB; // Ambos están en el array
             })
             .map(([key, value]) => (
-              <div key={key} className="space-y-2">
+              <div key={key} className="flex flex-col justify-start gap-3">
                 <label
-                  className="block text-sm font-semibold text-gray-700"
+                  className="block text-sm font-bold text-gray-700"
                   htmlFor={key}
                 >
-                  {propertyLabels[key] || key} {/* Usa la etiqueta amigable */}
+                  {propertyLabels[key] || key}
                 </label>
-
-                <input
-                  className={`input input-bordered w-full max-w-xs ${
-                    errors[key] ? "border-red-500" : "border-black"
-                  }`}
-                  id={key}
-                  value={value}
-                  onChange={(e) => handleInputChange(key, e.target.value)}
-                  type="text"
-                />
+                <div className="w-full flex justify-center items-center">
+                  <input
+                    className={`input input-bordered w-full max-w-xs ${
+                      errors[key] ? "border-red-500" : "border-black"
+                    }`}
+                    id={key}
+                    value={value}
+                    onChange={(e) => handleInputChange(key, e.target.value)}
+                    type="text"
+                  />
+                  {!nonDeletableProperties.includes(key) ? (
+                    <button
+                      type="button"
+                      className="ml-2"
+                      onClick={() => handleDeleteProperty(key)}
+                    >
+                      <img
+                        className="w-6"
+                        src={deleteItemIconRed}
+                        alt="delete-icon"
+                      />
+                    </button>
+                  ) : (
+                    <div className="ml-2 w-6"></div>
+                  )}
+                </div>
                 {errors[key] && (
                   <p className="text-red-500 text-sm">{errors[key]}</p>
                 )}
               </div>
             ))}
         </div>
-        <div className="flex justify-center items-center p-4 md:p-5 border-t border-gray-200 rounded-b">
-          <button
-            type="button"
-            className="text-white bg-success focus:ring-2 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 text-center"
-            onClick={submitEditProduct}
-          >
-            Guardar
-          </button>
-          <button
-            type="button"
-            className="py-2 px-4 ms-3 text-sm font-medium text-white focus:outline-none bg-danger rounded-lg focus:z-10"
-            onClick={() => handleModalToggle(false)}
-          >
-            Cancelar
+        <div className="flex flex-col justify-center items-center p-4 md:p-5 border-t border-gray-200 rounded-b">
+          {availableProperties.length > 0 && (
+            <div className="flex items-center mb-4">
+              <select
+                id="addProperty"
+                className="input input-bordered w-full max-w-xs bg-[#DEEAFF]"
+                onChange={(e) => handleAddProperty(e.target.value)}
+                value=""
+              >
+                <option value="" disabled>
+                  Agregar propiedad
+                </option>
+                {availableProperties.map((prop) => (
+                  <option key={prop} value={prop}>
+                    {propertyLabels[prop] || prop}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <button className="btn bg-success" onClick={submitEditProduct}>
+            Guardar Cambios
           </button>
         </div>
       </div>

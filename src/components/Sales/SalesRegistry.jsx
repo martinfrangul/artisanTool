@@ -1,15 +1,17 @@
 import { useState, useContext, useEffect } from "react";
 import { DataContext } from "../../context/DataContext.jsx";
 import deleteItemIcon from "../../assets/deleteItemIcon.png";
-import { doc, deleteDoc } from "firebase/firestore";
 import { useAuth } from "../../hooks/useAuth";
-import { database } from "../../../firebase/firebaseConfig";
 import Alert from "../Alert";
 import CustomDatePicker from "../CustomDatePicker.jsx";
-import { Timestamp } from "firebase/firestore";
 import "../../styles/SalesRegistry.css";
 
-// Map of readable names
+// FIREBASE
+import { doc, deleteDoc } from "firebase/firestore";
+import { database } from "../../../firebase/firebaseConfig";
+import { Timestamp } from "firebase/firestore";
+
+// Mapa de nombre de propiedes mejorado
 const propertyLabels = {
   design: "Diseño",
   size: "Tamaño",
@@ -36,10 +38,8 @@ const SalesRegistry = () => {
   const [endDate, setEndDate] = useState(new Date());
   const [filteredSellData, setFilteredSellData] = useState([]);
   const [confirmationId, setConfirmationId] = useState(null); // Estado para el ID del ítem a eliminar
-  // const [sortedFilteredSellData, setSortedFilteredSellData] = useState([]);
 
   ////// UTILITIES ///////
-
   const capitalizeFirstLetter = (string) => {
     if (typeof string !== "string") {
       return string;
@@ -70,7 +70,7 @@ const SalesRegistry = () => {
 
     // Agrupar datos por combinación de fecha y precio, y acumular cantidades
     const groupedData = filteredData.reduce((accumulator, current) => {
-      // Aseguramos que el objeto actual tiene una propiedad quantity
+      // Asegurar que el objeto actual tiene una propiedad quantity
       if (typeof current.quantity === "undefined") {
         current.quantity = 1; // Asignamos 1 si no tiene quantity
       }
@@ -120,8 +120,6 @@ const SalesRegistry = () => {
 
   const handleDelete = async (id) => {
     if (!user) return;
-
-    console.log(id);
 
     try {
       const docRef = doc(database, `users/${user.uid}/sales`, id);
@@ -217,7 +215,7 @@ const SalesRegistry = () => {
               endDate={endDate}
               selectsStart
               dateFormat="dd/MM/yyyy"
-              showMonthYearPicker={false} // Usa el selector de días por defecto
+              showMonthYearPicker={false}
             />
           </div>
           <div className="w-full">
@@ -235,7 +233,7 @@ const SalesRegistry = () => {
               selectsEnd
               minDate={startDate}
               dateFormat="dd/MM/yyyy"
-              showMonthYearPicker={false} // Usa el selector de días por defecto
+              showMonthYearPicker={false}
             />
           </div>
         </div>

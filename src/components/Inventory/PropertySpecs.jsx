@@ -1,8 +1,8 @@
+import { useState } from 'react';
 import PropTypes from "prop-types";
 import '../../styles/PropertySpecs.css';
-import { useState } from 'react';
-import Alert from "../Alert";
 
+import Alert from "../Alert";
 
 const PropertySpecs = ({
   setProductStock,
@@ -32,7 +32,7 @@ const PropertySpecs = ({
       setAlert({ message: "El stock no puede ser negativo", type: "warning", visible: true});
 
       setProductStock(""); // Restablece el valor a cadena vacía
-      setIsStockEmpty(false); // Asegúrate de que el campo vacío no se mantenga
+      setIsStockEmpty(false);
       return;
     }
 
@@ -56,11 +56,11 @@ const PropertySpecs = ({
     if (numericValue < 0) {
       setAlert({ message: "El precio no puede ser negativo", type: "warning", visible: true});
       setProductPrice(""); // Restablece el valor a cadena vacía
-      setIsPriceEmpty(false); // Asegúrate de que el campo vacío no se mantenga
+      setIsPriceEmpty(false);
       return;
     }
 
-    setProductPrice(numericValue); // Actualiza el estado solo si el valor es válido
+    setProductPrice(numericValue); // Actualiza el estado sólo si el valor es válido
     setIsPriceEmpty(false);
   };
 

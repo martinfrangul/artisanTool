@@ -1,38 +1,32 @@
-// Hooks
 import { useContext, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
-// import { v4 as uuidv4 } from "uuid";
 import { Timestamp } from "firebase/firestore";
 
-// Firestore
-
+// FIREBASE
 import {
   getFirestore,
   collection,
   addDoc,
   doc,
   updateDoc,
-  // query,
-  // getDocs,
-  // where,
 } from "firebase/firestore";
 
-// Context
+// CONTEXT
 import { DataContext } from "../../context/DataContext";
 
-// Utilities
+// UTILITIES
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
 
-// Icons
+// ICONS
 import editIcon from "../../assets/editIcon.png";
 import sellIcon from "../../assets/sellIcon.svg";
 import sellIconGray from "../../assets/sellIconGray.svg";
 import cancelIcon from "../../assets/cancelIcon.png";
 
-// Components
+// COMPONENTS
 import Alert from "../Alert";
 
 const SalesManager = () => {
@@ -58,8 +52,8 @@ const SalesManager = () => {
   const [selectedDates, setSelectedDates] = useState({});
   const [openPickerId, setOpenPickerId] = useState(null);
   const [editingItemId, setEditingItemId] = useState(null);
-  const [prices, setPrices] = useState({}); // Store prices by item id
-  const [originalPrices, setOriginalPrices] = useState({}); // Store original prices
+  const [prices, setPrices] = useState({});
+  const [originalPrices, setOriginalPrices] = useState({});
   const [alert, setAlert] = useState({
     message: "",
     subMessage: "",
@@ -120,8 +114,6 @@ const SalesManager = () => {
       });
       return;
     }
-
-    console.log(id);
 
     let selectedItem = inventoryData.find((item) => item.id === id);
 
@@ -187,12 +179,11 @@ const SalesManager = () => {
       setTags([]);
       setEnteredData("");
       setSelectedDates({});
-      setEditingItemId(null); // Reset the active editor
+      setEditingItemId(null);
       setPrices({});
       setOriginalPrices({});
       reloadData();
     } catch (error) {
-      console.error("Error al procesar la venta: ", error); // Para depuración
       setAlert({
         message: "Error al procesar la venta",
         type: "error",
@@ -214,7 +205,7 @@ const SalesManager = () => {
   };
 
   const handlePriceInput = (id) => {
-    // Cancel the previous editing if a new item is being edited
+    // Cancela la edición previa si hay uno que se está editando
     if (editingItemId !== null && editingItemId !== id) {
       handleCancelClick(editingItemId);
     }

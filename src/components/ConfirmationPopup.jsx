@@ -27,7 +27,7 @@ const ConfirmationPopup = ({handleConfirmation}) => {
 }
 
 ConfirmationPopup.propTypes = {
-  handleConfirmation: PropTypes.func.isRequired, // Corregido: handleConfirmation es una función
+  handleConfirmation: PropTypes.func.isRequired,
 };
 
  

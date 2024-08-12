@@ -24,21 +24,21 @@ const CustomDatePicker = ({
       dateFormat={dateFormat}
       showMonthYearPicker={showMonthYearPicker}
       showYearPicker={showYearPicker}
-      className="p-2 rounded-md w-24 text-md text-center font-semibold text-gray-700 bg-banner border-solid border-black border-[0.5px]"
+      className="p-2 rounded-md w-28 text-md text-center font-semibold text-gray-700 bg-banner border-solid border-black border-[0.5px]"
     />
   );
 };
 
 CustomDatePicker.propTypes = {
-  selectedDate: PropTypes.instanceOf(Date).isRequired, // Fecha seleccionada debe ser un objeto Date
-  onChange: PropTypes.func.isRequired, // Función callback para manejar el cambio de fecha
-  selectsStart: PropTypes.bool, // Si el DatePicker selecciona el inicio de un rango de fechas
-  selectsEnd: PropTypes.bool, // Si el DatePicker selecciona el final de un rango de fechas
-  minDate: PropTypes.instanceOf(Date), // Fecha mínima seleccionable
-  maxDate: PropTypes.instanceOf(Date), // Fecha máxima seleccionable
-  dateFormat: PropTypes.string, // Formato de fecha mostrado
-  showMonthYearPicker: PropTypes.bool, // Si muestra selector de mes y año
-  showYearPicker: PropTypes.bool, // Si muestra solo selector de año
+  selectedDate: PropTypes.instanceOf(Date).isRequired, 
+  onChange: PropTypes.func.isRequired, 
+  selectsStart: PropTypes.bool, 
+  selectsEnd: PropTypes.bool, 
+  minDate: PropTypes.instanceOf(Date), 
+  maxDate: PropTypes.instanceOf(Date), 
+  dateFormat: PropTypes.string, 
+  showMonthYearPicker: PropTypes.bool,
+  showYearPicker: PropTypes.bool,
 };
 
 export default CustomDatePicker;

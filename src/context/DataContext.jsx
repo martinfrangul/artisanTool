@@ -45,6 +45,7 @@ const DataContextProvider = ({ children }) => {
 
     fetchSellData();
     fetchInventoryData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, reload]);
 
   if (authLoading) {
