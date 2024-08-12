@@ -2,16 +2,9 @@ import deleteIcon from "../../assets/deleteIcon.png";
 import { motion } from "framer-motion";
 import PropTypes from "prop-types";
 
-const PropertyInput = ({ index, input, updatePropertyField, deleteInput, properties }) => {
+const PropertyInput = ({ index, input, updatePropertyField, deleteInput, properties, options }) => {
 
-  const options =[
-    { value: "", label: "(Opcional)", disabled: true },
-    { value: "model", label: "Modelo" },
-    { value: "size", label: "Tamaño" },
-    { value: "design", label: "Diseño" },
-    { value: "color", label: "Color" },
-    { value: "type", label: "Tipo" }
-  ];
+  
 
   return (
     <motion.div
@@ -24,7 +17,7 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
       <div className="flex flex-col justify-center items-center px-3 gap-2 w-full">
         <label htmlFor="property">Propiedad</label>
         <select
-          className="h-fit border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700"
+          className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700"
           name="properties"
           id={index}
           value={input.property}
@@ -75,6 +68,13 @@ PropertyInput.propTypes = {
     PropTypes.shape({
       property: PropTypes.string.isRequired,
       option: PropTypes.string
+    })
+  ).isRequired,
+  options: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+      disabled: PropTypes.bool
     })
   ).isRequired
 };

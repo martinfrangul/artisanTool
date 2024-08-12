@@ -41,15 +41,22 @@ const CreateInventory = () => {
       return newProperties;
     });
   };
+  
+  const options =[
+    { value: "", label: "(Opcional)", disabled: true },
+    { value: "model", label: "Modelo" },
+    { value: "size", label: "Tamaño" },
+    { value: "design", label: "Diseño" },
+    { value: "color", label: "Color" },
+    { value: "type", label: "Tipo" }
+  ];
 
   const createInput = () => {
     setProperties((prev) => [...prev, { property: "", option: "" }]);
   };
 
   const deleteInput = (index) => {
-    if (properties.length > 1) {
       setProperties((prev) => prev.filter((_, i) => i !== index));
-    }
   };
 
   const normalizeString = (str) => str.toLowerCase().trim();
@@ -119,6 +126,7 @@ const CreateInventory = () => {
       });
       return;
     }
+
   
     // Si `productStock` es una cadena vacía, conviértelo en 0
     const stock = productStock === "" ? 0 : parseInt(productStock, 10);
@@ -221,13 +229,16 @@ const CreateInventory = () => {
             updatePropertyField={updatePropertyField}
             deleteInput={deleteInput}
             properties={properties}
+            options={options}
           />
         ))}
+
+        {properties.length < options.length - 1 && 
         <div className="w-full flex justify-start items-start px-3">
           <button className="w-8 h-8 text-white rounded" onClick={createInput}>
             <img src={addIcon} alt="add-inputs" />
           </button>
-        </div>
+        </div>}
         <PropertySpecs
           setProductStock={setProductStock}
           setProductPrice={setProductPrice}

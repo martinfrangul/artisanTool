@@ -204,6 +204,14 @@ const SalesManager = () => {
     setOpenPickerId(null);
   };
 
+  const handlePriceBlur = (id) => {
+    setPrices((prev) => ({
+      ...prev,
+      [id]: originalPrices[id],
+    }));
+    setEditingItemId(null); // Salir del modo de edición
+  };
+
   const handlePriceInput = (id) => {
     // Cancela la edición previa si hay uno que se está editando
     if (editingItemId !== null && editingItemId !== id) {
@@ -356,6 +364,7 @@ const SalesManager = () => {
                               handleChangePriceValue(event, item.id)
                             }
                             value={prices[item.id] || ""}
+                            onBlur={() => handlePriceBlur(item.id)}
                             className="w-10 rounded-md"
                             type="text"
                           />
@@ -374,6 +383,10 @@ const SalesManager = () => {
                         <strong>€{prices[item.id] || item.productPrice}</strong>
                       )}
                     </div>
+                    <h3 className="font-semibold">
+                      Stock: <strong> {item.productStock}</strong>
+                    </h3>
+
                     <div className="flex justify-end relative items-center gap-3">
                       <button
                         onClick={() => handlePriceInput(item.id)}

@@ -19,7 +19,7 @@ import EditProduct from "./EditProduct";
 import Alert from "../Alert";
 import ConfirmationPopup from "../ConfirmationPopup";
 
-// Mapa de nombre de propiedes mejorado
+// Mapa de nombre de propiedades mejorado
 const propertyLabels = {
   design: "Diseño",
   size: "Tamaño",
@@ -36,21 +36,22 @@ const Inventory = () => {
   const { inventoryData, reloadData } = context;
   const { user } = useAuth(); // Obtén el usuario actual
 
-  const [sortProperty, setSortProperty] = useState("productName");
+  const initialSortProperty =
+    localStorage.getItem("sortProperty") || "productName";
+  const initialSecondarySortProperty =
+    localStorage.getItem("secondarySortProperty") || "productName";
+  const [sortProperty, setSortProperty] = useState(initialSortProperty);
+  const [secondarySortProperty, setSecondarySortProperty] = useState(
+    initialSecondarySortProperty
+  );
   const [isModalVisible, setModalVisible] = useState(false);
   const [idForEdit, setIdForEdit] = useState("");
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
   const [isConfirmationModalVisible, setConfirmationModalVisible] =
     useState(false);
   const [pendingAction, setPendingAction] = useState(null);
-
-
-  const capitalizeFirstLetter = (string) => {
-    if (typeof string !== "string") {
-      return string;
-    }
-    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
-  };
+  const [confirmationPopupMessage, setConfirmationPopupMessage] = useState("");
+  const [tempToDo, setTempToDo] = useState({}); // Estado para manejar el valor temporal del input
 
   useEffect(() => {
     // Añadir o quitar la clase no-scroll en el body
@@ -65,6 +66,15 @@ const Inventory = () => {
       document.body.classList.remove("no-scroll");
     };
   }, [isConfirmationModalVisible]);
+
+  // Sincronizar el estado `tempToDo` con `inventoryData`
+  useEffect(() => {
+    const updatedToDo = {};
+    inventoryData.forEach((item) => {
+      updatedToDo[item.id] = item.toDo;
+    });
+    setTempToDo(updatedToDo);
+  }, [inventoryData]);
 
   // Coge las propiedades disponibles
   const getAvailableProperties = () => {
@@ -92,6 +102,13 @@ const Inventory = () => {
     "productPrice",
     ...getAvailableProperties(),
   ];
+
+  const capitalizeFirstLetter = (string) => {
+    if (typeof string !== "string") {
+      return string;
+    }
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+  };
 
   const handleDelete = async (id) => {
     if (!user) return;
@@ -156,35 +173,39 @@ const Inventory = () => {
     setModalVisible(true);
   };
 
-  // Ordenar los items según la propiedad seleccionada
+  // Ordenar los items según las propiedades seleccionadas
   const sortedData = inventoryData.slice().sort((a, b) => {
-    // Si alguno de los items no tiene el valor de la propiedad seleccionada
-    if (a[sortProperty] === undefined) return 1;
-    if (b[sortProperty] === undefined) return -1;
+    // Comparar los valores del criterio primario
+    if (a[sortProperty] < b[sortProperty]) return -1;
+    if (a[sortProperty] > b[sortProperty]) return 1;
 
-    // Comparar los valores de la propiedad seleccionada
-    if (a[sortProperty] < b[sortProperty]) {
-      return -1;
-    }
-    if (a[sortProperty] > b[sortProperty]) {
-      return 1;
-    }
+    // Si los valores del criterio primario son iguales, comparar los del criterio secundario
+    if (a[secondarySortProperty] < b[secondarySortProperty]) return -1;
+    if (a[secondarySortProperty] > b[secondarySortProperty]) return 1;
+
     return 0;
   });
 
   // Maneja el cambio en la propiedad de orden
   const handleSortChange = (event) => {
-    setSortProperty(event.target.value);
+    const newSortProperty = event.target.value;
+    setSortProperty(newSortProperty);
+    localStorage.setItem("sortProperty", newSortProperty);
+  };
+
+  const handleSecondarySortChange = (event) => {
+    const newSecondarySortProperty = event.target.value;
+    setSecondarySortProperty(newSecondarySortProperty);
+    localStorage.setItem("secondarySortProperty", newSecondarySortProperty);
   };
 
   // Actualiza el TODO en la base de datos
-  const saveToDo = async (event, id) => {
-    const newToDoValue = event.target.value;
+  const saveToDo = async (id, value) => {
     if (!user) return;
     try {
       const docRef = doc(database, `users/${user.uid}/products`, id);
       await updateDoc(docRef, {
-        toDo: newToDoValue === "" ? 0 : parseInt(newToDoValue),
+        toDo: value === "" ? 0 : parseInt(value),
       });
       reloadData();
     } catch (error) {
@@ -194,11 +215,13 @@ const Inventory = () => {
 
   const confirmResolveAllTodos = () => {
     setConfirmationModalVisible(true);
+    setConfirmationPopupMessage("¿Estás seguro que deseas agregar todos los productos al stock?");
     setPendingAction(() => resolveAllTodos);
   };
 
   const confirmDeleteItem = (id) => {
     setConfirmationModalVisible(true);
+    setConfirmationPopupMessage('¿Estás seguro que deseas eliminar el producto?');
     setPendingAction(() => () => handleDelete(id));
   };
 
@@ -221,29 +244,21 @@ const Inventory = () => {
       inventoryData.forEach((item) => {
         if (item.toDo > 0) {
           const docRef = doc(database, `users/${user.uid}/products`, item.id);
-          const updatedStock = item.productStock + item.toDo;
-          // Actualizar el documento con el nuevo stock y toDo a 0
-          batch.update(docRef, { productStock: updatedStock, toDo: 0 });
+          batch.update(docRef, {
+            productStock: item.productStock + item.toDo,
+            toDo: 0,
+          });
         }
       });
 
-      // Commit de la transacción
       await batch.commit();
       reloadData();
-      setAlert({
-        message: "Todos los productos agregados correctamente al stock",
-        type: "success",
-        visible: true,
-      });
-      setConfirmationModalVisible(false);
     } catch (error) {
-      console.error("Error al resolver todos los productos: ", error);
       setAlert({
         message: "Error al resolver los productos",
         type: "error",
         visible: true,
       });
-      setConfirmationModalVisible(false);
     }
   };
 
@@ -253,6 +268,7 @@ const Inventory = () => {
     }
     setConfirmationModalVisible(false);
     setPendingAction(null);
+    setConfirmationPopupMessage("");
   };
 
   const resolveToDo = async (id) => {
@@ -298,6 +314,30 @@ const Inventory = () => {
     }
   };
 
+  const handleFocus = (id) => {
+    setTempToDo((prev) => ({ ...prev, [id]: "" })); // Limpia el valor del input cuando recibe el foco
+  };
+
+  const handleBlur = async (id, value) => {
+    if (value === "") {
+      setTempToDo((prev) => {
+        const { [id]: _, ...rest } = prev;
+        return rest;
+      });
+      return; // No actualiza la base de datos si el valor es vacío
+    }
+
+    // Asegúrate de que `tempToDo` se actualiza con el nuevo valor
+    setTempToDo((prev) => ({ ...prev, [id]: value }));
+    await saveToDo(id, value); // Guarda el valor en la base de datos
+  };
+
+  const handleKeyPress = async (e, id, value) => {
+    if (e.key === 'Enter') {
+      await handleBlur(id, value);
+    }
+  };
+
   return (
     <div className="w-11/12 m-auto pb-28">
       {alert.visible && (
@@ -308,30 +348,52 @@ const Inventory = () => {
         />
       )}
       {isConfirmationModalVisible && (
-        <ConfirmationPopup handleConfirmation={handleConfirmation} />
+        <ConfirmationPopup handleConfirmation={handleConfirmation} confirmationPopupMessage={confirmationPopupMessage}/>
       )}
       {/* Dropdown para seleccionar la propiedad de orden */}
       <div className="flex flex-row justify-end items-center my-3 border-b-[1px] border-solid border-black pb-3">
-        <div className="flex w-2/12"></div>
-        <div className="w-8/12 flex flex-row justify-center">
-          <label className="p-3" htmlFor="sort-property">
-            Ordenar por:
-          </label>
-          <select
-            className="p-1 rounded-md shadow-md shadow-gray-500"
-            id="sort-property"
-            onChange={handleSortChange}
-            value={sortProperty}
-          >
-            {availableProperties.map((property) => (
-              <option key={property} value={property}>
-                {propertyLabels[property] || property}
-              </option>
-            ))}
-          </select>
+        <div className="flex justify-center">
+          <div className="w-full flex flex-col justify-center gap-3">
+            <div className="flex flex-row items-center justify-end h-fit">
+              <label className="px-3" htmlFor="sort-property">
+                Ordenar por:
+              </label>
+              <select
+                className="p-1 rounded-md shadow-md shadow-gray-500 h-fit"
+                id="sort-property"
+                onChange={handleSortChange}
+                value={sortProperty}
+              >
+                {availableProperties.map((property) => (
+                  <option key={property} value={property}>
+                    {propertyLabels[property] || property}
+                  </option>
+                ))}
+              </select>
+            </div>
+        
+            <div className="flex flex-row items-center justify-end h-fit">
+              <label className="px-3" htmlFor="secondary-sort-property">
+                Luego por:
+              </label>
+              <select
+                className="p-1 rounded-md shadow-md shadow-gray-500 h-fit"
+                id="secondary-sort-property"
+                onChange={handleSecondarySortChange}
+                value={secondarySortProperty}
+              >
+                {availableProperties.map((property) => (
+                  <option key={property} value={property}>
+                    {propertyLabels[property] || property}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
+
         <button
-          className="flex w-2/12 justify-end"
+          className="flex w-3/12 justify-end"
           onClick={confirmResolveAllTodos}
         >
           <div className="rounded-full bg-success w-12 h-12 flex justify-center items-center">
@@ -351,7 +413,7 @@ const Inventory = () => {
             </div>
 
             <div className="flex flex-row gap-6 items-center">
-              <div className="flex flex-col gap-3">
+              <div className="min-w-24 flex flex-col gap-3">
                 <h3 className="text-md font-semibold">
                   {propertyLabels.productStock}:{" "}
                   <strong>{item.productStock}</strong>
@@ -361,14 +423,17 @@ const Inventory = () => {
                   <strong>€{item.productPrice}</strong>
                 </h3>
                 <div className="flex flex-row gap-1">
-                  <label htmlFor="to-do">Hacer:</label>
+                  <label htmlFor={`to-do-${item.id}`}>Hacer:</label>
                   <input
-                    onChange={(e) => saveToDo(e, item.id)}
+                    onFocus={() => handleFocus(item.id)}
+                    onBlur={(e) => handleBlur(item.id, e.target.value)}
+                    onChange={(e) => setTempToDo((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                    onKeyDown={(e) => handleKeyPress(e, item.id, e.target.value)}
                     className="w-8 rounded-md text-center bg-slate-100 ring-1 ring-black focus:ring-1 focus:outline-0"
-                    id="to-do"
+                    id={`to-do-${item.id}`}
                     type="number"
-                    value={item.toDo ?? ""}
-                  ></input>
+                    value={tempToDo[item.id] !== undefined ? tempToDo[item.id] : item.toDo}
+                  />
                 </div>
               </div>
               <div className="flex flex-col justify-end items-center gap-2">
