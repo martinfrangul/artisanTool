@@ -339,7 +339,7 @@ const Inventory = () => {
   };
 
   return (
-    <div className="w-11/12 m-auto pb-28">
+    <div className="w-11/12 md:w-9/12 m-auto pb-28 md:pb-36">
       {alert.visible && (
         <Alert
           message={alert.message}

@@ -10,7 +10,7 @@ const Alert = ({ message, subMessage, type, onClose }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center z-20">
       <div className="absolute inset-0 bg-black opacity-50" onClick={onClose}></div>
-      <div className={`relative alert w-[95%] ${alertTypeClass} p-4 rounded-lg shadow-lg`}>
+      <div className={`relative alert w-[95%] max-w-2xl ${alertTypeClass} p-4 rounded-lg shadow-lg`}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

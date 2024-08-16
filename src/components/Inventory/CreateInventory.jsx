@@ -203,7 +203,7 @@ const CreateInventory = () => {
   };
 
   return (
-    <div className="flex flex-col pb-28">
+    <div className="flex flex-col pb-28 md:pb-36">
       <div className="flex-grow overflow-y-auto">
         {alert.visible && (
           <Alert

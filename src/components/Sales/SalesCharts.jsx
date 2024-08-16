@@ -101,7 +101,7 @@ const SalesCharts = () => {
   };
 
   return (
-    <div className="w-full h-[75%] pb-28 flex flex-col justify-center">
+    <div className="w-full h-[75%] pb-28 md:pb-36 flex flex-col justify-center">
       <div className="flex flex-row justify-center items-center my-5">
         <div className="flex w-1/4">
 

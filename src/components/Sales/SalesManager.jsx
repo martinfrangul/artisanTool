@@ -278,7 +278,7 @@ const SalesManager = () => {
   };
 
   return (
-    <div className="pb-28">
+    <div className="pb-28 md:pb-36">
       {alert.visible && (
         <Alert
           message={alert.message}
@@ -327,7 +327,7 @@ const SalesManager = () => {
         </div>
       </form>
 
-      <div className="w-11/12 m-auto">
+      <div className="w-11/12 md:w-9/12 m-auto">
         <div className="flex flex-row gap-3 mb-3">
           {tags.map((tag, index) => (
             <div

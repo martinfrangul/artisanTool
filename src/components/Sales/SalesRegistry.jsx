@@ -191,7 +191,7 @@ const SalesRegistry = () => {
   };
 
   return (
-    <div className="pb-28">
+    <div className="pb-28 md:pb-36">
       {alert.visible && (
         <Alert
           message={alert.message}

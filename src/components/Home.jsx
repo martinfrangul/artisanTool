@@ -8,13 +8,13 @@ import expensesImage from "../assets/expensesImage.jpeg";
 
 const Home = () => {
   return (
-      <div className=" w-11/12 mx-auto pt-4 flex flex-wrap justify-between pb-28">
+      <div className=" w-11/12 md:w-9/12 mx-auto pt-4 flex flex-wrap justify-between pb-28 md:pb-36">
           <NavLink
             className="w-1/2 flex flex-col justify-end items-center my-3"
             to="/create-inventory"
           >
-            <div className="text-md text-center pb-3 font-thin">Crear inventario</div>
-            <div className="w-20">
+            <div className="text-md text-center md:text-2xl pb-3 font-thin">Crear inventario</div>
+            <div className="w-20 md:w-44">
               <img
                 className="rounded-xl border-[1px] border-solid border-black"
                 src={createInventoryImage}
@@ -26,8 +26,8 @@ const Home = () => {
             className="w-1/2 flex flex-col justify-end items-center my-3"
             to="/inventory"
           >
-            <div className="text-md text-center pb-3 font-thin">Inventario</div>
-            <div className="w-20">
+            <div className="text-md text-center md:text-2xl pb-3 font-thin">Inventario</div>
+            <div className="w-20 md:w-44">
               <img
                 className="rounded-xl border-[1px] border-solid border-gray-600"
                 src={inventoryImage}
@@ -39,8 +39,8 @@ const Home = () => {
           className="w-1/2 flex flex-col justify-end items-center my-3"
           to="/sales-manager"
         >
-          <div className="text-md text-center pb-3 font-thin">Vender</div>
-          <div className="w-20">
+          <div className="text-md text-center md:text-2xl pb-3 font-thin">Vender</div>
+          <div className="w-20 md:w-44">
             <img
               className="rounded-xl border-[1px] border-solid border-black"
               src={salesRegistryImage}
@@ -52,8 +52,8 @@ const Home = () => {
           className="w-1/2 flex flex-col justify-end items-center my-3"
           to="/sales-registry"
         >
-          <div className="text-md pb-3 text-center font-thin">Registro de ventas</div>
-          <div className="w-20">
+          <div className="text-md pb-3 text-center md:text-2xl font-thin">Registro de ventas</div>
+          <div className="w-20 md:w-44">
             <img
               className="rounded-xl border-[1px] border-solid border-gray-600"
               src={salesImage}
@@ -65,8 +65,8 @@ const Home = () => {
           className="w-1/2 flex flex-col justify-end items-center my-3"
           to="/sales-charts"
         >
-          <div className="text-md pb-3 text-center font-thin">Gráficos y estadísticas</div>
-          <div className="w-20">
+          <div className="text-md pb-3 text-center md:text-2xl font-thin">Gráficos y estadísticas</div>
+          <div className="w-20 md:w-44">
             <img
               className="rounded-xl border-[1px] border-solid border-gray-600"
               src={salesChartImage}
@@ -78,8 +78,8 @@ const Home = () => {
           className="w-1/2 flex flex-col justify-end items-center my-3"
           to="/expenses"
         >
-          <div className="text-md text-center pb-3 font-thin">Gastos</div>
-          <div className="w-20">
+          <div className="text-md text-center md:text-2xl pb-3 font-thin">Gastos</div>
+          <div className="w-20 md:w-44">
             <img
               className="rounded-xl border-[1px] border-solid border-gray-600"
               src={expensesImage}
