@@ -245,10 +245,10 @@ const CreateInventory = () => {
           productPrice={productPrice}
           productStock={productStock}
         />
-        <hr className="bg-black h-[2px] w-3/4 mx-auto mt-5" />
+        <hr className="bg-black h-[2px] w-full mx-auto mt-5" />
         <div className="flex w-full justify-center">
           <button
-            className="m-2 p-2 bg-success text-black rounded"
+            className="m-2 px-3 py-2 shadow-md shadow-gray-500 bg-success text-navbar font-semibold rounded"
             onClick={saveData}
           >
             Crear

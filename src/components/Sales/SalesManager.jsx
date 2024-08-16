@@ -383,7 +383,7 @@ const SalesManager = () => {
                         <strong>€{prices[item.id] || item.productPrice}</strong>
                       )}
                     </div>
-                    <h3 className="font-semibold">
+                    <h3 className="font-semibold text-sm">
                       Stock: <strong> {item.productStock}</strong>
                     </h3>
 

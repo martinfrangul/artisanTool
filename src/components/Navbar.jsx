@@ -10,6 +10,8 @@ const Navbar = () => {
   const AuthContextCall = useContext(AuthContext);
   const { logOut } = AuthContextCall;
 
+  
+
   return (
     <nav className="fixed bottom-4 h-24 w-full bg-transparent p-3">
       <div className="bg-gray-800 text-white w-[95%] mx-auto p-3 rounded-xl flex justify-around items-center shadow-xl shadow-slate-700">

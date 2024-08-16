@@ -17,7 +17,7 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
       <div className="flex flex-col justify-center items-center px-3 gap-2 w-full">
         <label htmlFor="property">Propiedad</label>
         <select
-          className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700"
+          className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700 text-center"
           name="properties"
           id={index}
           value={input.property}
