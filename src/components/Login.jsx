@@ -107,7 +107,7 @@ const Login = () => {
           onClose={() => setAlert({ ...alert, visible: false })}
         />
       )}
-      <div className="md:w-2/4 w-3/4 h-[23rem] md:h-[28rem] bg-opacity-70 backdrop-blur-sm bg-white rounded-lg flex flex-col md:justify-center justify-evenly items-center md:mb-0">
+      <div className="w-3/4 md:w-2/4 lg:w-1/4 h-[23rem] md:h-[28rem] bg-opacity-70 backdrop-blur-sm bg-white rounded-lg flex flex-col md:justify-center justify-evenly items-center md:mb-0">
         <div
           id="logo-container"
           className="flex justify-center w-44 items-center"

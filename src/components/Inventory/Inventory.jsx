@@ -215,13 +215,17 @@ const Inventory = () => {
 
   const confirmResolveAllTodos = () => {
     setConfirmationModalVisible(true);
-    setConfirmationPopupMessage("¿Estás seguro que deseas agregar todos los productos al stock?");
+    setConfirmationPopupMessage(
+      "¿Estás seguro que deseas agregar todos los productos al stock?"
+    );
     setPendingAction(() => resolveAllTodos);
   };
 
   const confirmDeleteItem = (id) => {
     setConfirmationModalVisible(true);
-    setConfirmationPopupMessage('¿Estás seguro que deseas eliminar el producto?');
+    setConfirmationPopupMessage(
+      "¿Estás seguro que deseas eliminar el producto?"
+    );
     setPendingAction(() => () => handleDelete(id));
   };
 
@@ -314,28 +318,14 @@ const Inventory = () => {
     }
   };
 
-  const handleFocus = (id) => {
-    setTempToDo((prev) => ({ ...prev, [id]: "" })); // Limpia el valor del input cuando recibe el foco
-  };
+  const handleInputChange = async (id, value) => {
+    if (value === "") return;
 
-  const handleBlur = async (id, value) => {
-    if (value === "") {
-      setTempToDo((prev) => {
-        const { [id]: _, ...rest } = prev;
-        return rest;
-      });
-      return; // No actualiza la base de datos si el valor es vacío
-    }
-
-    // Asegúrate de que `tempToDo` se actualiza con el nuevo valor
+    // Actualiza el estado local
     setTempToDo((prev) => ({ ...prev, [id]: value }));
-    await saveToDo(id, value); // Guarda el valor en la base de datos
-  };
 
-  const handleKeyPress = async (e, id, value) => {
-    if (e.key === 'Enter') {
-      await handleBlur(id, value);
-    }
+    // Guarda el valor en la base de datos de inmediato
+    await saveToDo(id, value);
   };
 
   return (
@@ -348,12 +338,18 @@ const Inventory = () => {
         />
       )}
       {isConfirmationModalVisible && (
-        <ConfirmationPopup handleConfirmation={handleConfirmation} confirmationPopupMessage={confirmationPopupMessage}/>
+        <ConfirmationPopup
+          handleConfirmation={handleConfirmation}
+          confirmationPopupMessage={confirmationPopupMessage}
+        />
       )}
       {/* Dropdown para seleccionar la propiedad de orden */}
       <div className="flex flex-row justify-end items-center my-3 border-b-[1px] border-solid border-black pb-3">
-        <div className="flex justify-center">
-          <div className="w-full flex flex-col justify-center gap-3">
+        <div className="flex w-1/12 md:w-0">
+          {/* DIV ESTRUCTURAL PARA CENTRAR */}
+        </div>
+        <div className="w-8/12 flex justify-center">
+          <div className="w-full flex flex-col md:flex-row justify-center gap-3">
             <div className="flex flex-row items-center justify-end h-fit">
               <label className="px-3" htmlFor="sort-property">
                 Ordenar por:
@@ -371,7 +367,7 @@ const Inventory = () => {
                 ))}
               </select>
             </div>
-        
+
             <div className="flex flex-row items-center justify-end h-fit">
               <label className="px-3" htmlFor="secondary-sort-property">
                 Luego por:
@@ -393,7 +389,7 @@ const Inventory = () => {
         </div>
 
         <button
-          className="flex w-3/12 justify-end"
+          className="flex w-3/12 md:w-2/12 justify-end"
           onClick={confirmResolveAllTodos}
         >
           <div className="rounded-full bg-success w-12 h-12 flex justify-center items-center">
@@ -425,14 +421,16 @@ const Inventory = () => {
                 <div className="flex flex-row gap-1">
                   <label htmlFor={`to-do-${item.id}`}>Hacer:</label>
                   <input
-                    onFocus={() => handleFocus(item.id)}
-                    onBlur={(e) => handleBlur(item.id, e.target.value)}
-                    onChange={(e) => setTempToDo((prev) => ({ ...prev, [item.id]: e.target.value }))}
-                    onKeyDown={(e) => handleKeyPress(e, item.id, e.target.value)}
+                    onClick={(e) => e.target.select()}
+                    onChange={(e) => handleInputChange(item.id, e.target.value)}
                     className="w-8 rounded-md text-center bg-slate-100 ring-1 ring-black focus:ring-1 focus:outline-0"
                     id={`to-do-${item.id}`}
                     type="number"
-                    value={tempToDo[item.id] !== undefined ? tempToDo[item.id] : item.toDo}
+                    value={
+                      tempToDo[item.id] !== undefined
+                        ? tempToDo[item.id]
+                        : item.toDo
+                    }
                   />
                 </div>
               </div>

@@ -90,7 +90,7 @@ const Register = () => {
           onClose={() => setAlert({ ...alert, visible: false })}
         />
       )}
-      <div className="w-3/4 md:w-2/4 h-[25rem] md:h-[26rem] bg-opacity-70 backdrop-blur-sm bg-white rounded-lg flex flex-col justify-evenly items-center">
+      <div className="w-3/4 md:w-2/4 lg:w-1/4 h-[25rem] md:h-[26rem] bg-opacity-70 backdrop-blur-sm bg-white rounded-lg flex flex-col justify-evenly items-center">
         <div
           id="logo-container"
           className="flex justify-center w-44 h-1/4 items-center"

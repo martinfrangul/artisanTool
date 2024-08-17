@@ -14,10 +14,10 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
       className="flex flex-row gap-4 p-x2 justify-center items-start"
       key={index}
     >
-      <div className="flex flex-col justify-center items-center px-3 gap-2 w-full">
+      <div className="flex flex-col justify-center items-center px-3 gap-2 w-full md:w-1/4">
         <label htmlFor="property">Propiedad</label>
         <select
-          className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700 text-center"
+          className="border-1 border-solid border-black rounded-md shadow-inner md:w-full p-2 shadow-slate-700 text-center"
           name="properties"
           id={index}
           value={input.property}
@@ -31,12 +31,12 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
           ))}
         </select>
       </div>
-      <div className="flex flex-col justify-center items-center px-3 gap-2 w-full">
+      <div className="flex flex-col justify-center items-center px-3 gap-2 w-full md:w-1/4">
         <label htmlFor="option">Opción</label>
         <input
         placeholder="(Opcional)"
           id={index}
-          className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700"
+          className="border-1 border-solid border-black rounded-md shadow-inner md:w-full p-2 shadow-slate-700"
           onChange={(event) =>
             updatePropertyField(index, "option", event.target.value)
           }
