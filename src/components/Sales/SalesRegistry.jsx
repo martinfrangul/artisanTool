@@ -5,6 +5,7 @@ import { useAuth } from "../../hooks/useAuth";
 import Alert from "../Alert";
 import CustomDatePicker from "../CustomDatePicker.jsx";
 import "../../styles/SalesRegistry.css";
+import ConfirmationPopup from "../ConfirmationPopup.jsx";
 
 // FIREBASE
 import { doc, deleteDoc } from "firebase/firestore";
@@ -37,7 +38,9 @@ const SalesRegistry = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [filteredSellData, setFilteredSellData] = useState([]);
-  const [confirmationId, setConfirmationId] = useState(null); // Estado para el ID del ítem a eliminar
+  const [confirmationPopupMessage, setConfirmationPopupMessage] = useState("");
+  const [pendingAction, setPendingAction] = useState(null);
+
 
   ////// UTILITIES ///////
   const capitalizeFirstLetter = (string) => {
@@ -60,7 +63,6 @@ const SalesRegistry = () => {
   ////////////////////////
 
   useEffect(() => {
-    // Filtrar las ventas dentro del rango de fechas
     const filteredData = sellData.filter((item) => {
       const itemDate = formatDate(item.date);
       return (
@@ -68,37 +70,41 @@ const SalesRegistry = () => {
       );
     });
 
-    // Agrupar datos por combinación de fecha y precio, y acumular cantidades
     const groupedData = filteredData.reduce((accumulator, current) => {
-      // Asegurar que el objeto actual tiene una propiedad quantity
       if (typeof current.quantity === "undefined") {
-        current.quantity = 1; // Asignamos 1 si no tiene quantity
+        current.quantity = 1;
       }
 
-      // Crear una clave única para el agrupamiento
-      // Aquí usamos una combinación de id, fecha y precio para la clave
+      // Crear una clave única considerando todas las propiedades relevantes
+      const properties = Object.keys(propertyLabels)
+        .filter(
+          (key) =>
+            key !== "quantity" &&
+            key !== "date" &&
+            key !== "productStock" &&
+            key !== "id"
+        )
+        .map((key) => current[key])
+        .join("-");
+
       const key = `${current.productName}-${formatDate(current.date)}-${
         current.productPrice
-      }`;
+      }-${properties}`;
 
       if (!accumulator[key]) {
-        // Si no existe la clave, inicializar el objeto
         accumulator[key] = {
           ...current,
           quantity: Number(current.quantity),
         };
       } else {
-        // Si ya existe, acumular la cantidad
         accumulator[key].quantity += Number(current.quantity);
       }
 
       return accumulator;
     }, {});
 
-    // Convertir el objeto agrupado en un array
     const groupedDataArray = Object.values(groupedData);
 
-    // Ordenar los datos por fecha
     groupedDataArray.sort((a, b) => a.date.toDate() - b.date.toDate());
 
     setFilteredSellData(groupedDataArray);
@@ -129,7 +135,6 @@ const SalesRegistry = () => {
         type: "success",
         visible: true,
       });
-      setConfirmationId(null); // Resetear el ID de confirmación
       setConfirmationModalVisible(false);
       reloadData();
     } catch (error) {
@@ -161,7 +166,7 @@ const SalesRegistry = () => {
 
     return (
       <div className="flex flex-col w-1/2 justify-start gap-1 items-start border-r-[1px] border-solid border-black">
-        <div className="flex flex-wrap gap-x-4">
+        <div className="flex flex-col flex-wrap gap-x-4">
           {orderedProperties.map(([key, value]) =>
             value ? (
               <h4 className="text-md flex flex-row gap-1" key={key}>
@@ -178,16 +183,21 @@ const SalesRegistry = () => {
   };
 
   const confirmDeleteItem = (id) => {
-    setConfirmationId(id); // Establecer el ID del ítem a eliminar
     setConfirmationModalVisible(true);
+    setConfirmationPopupMessage(
+      "¿Estás segure que deseas eliminar la venta?"
+    );
+    setPendingAction(() => () => handleDelete(id));
+    
   };
 
   const handleConfirmation = (confirmed) => {
-    if (confirmed && confirmationId) {
-      handleDelete(confirmationId); // Pasar el ID almacenado
-    } else {
-      setConfirmationModalVisible(false);
+    if (confirmed && pendingAction) {
+      pendingAction();
     }
+    setConfirmationModalVisible(false);
+    setPendingAction(null);
+    setConfirmationPopupMessage("");
   };
 
   return (
@@ -241,29 +251,13 @@ const SalesRegistry = () => {
           filteredSellData.map((item) => (
             <div
               key={item.id}
-              className="w-[95%] flex flex-row justify-between items-start pb-5 p-2 border-[1px] border-solid border-black rounded-xl shadow-lg shadow-gray-500 bg-opacity-45 bg-white"
+              className="w-[95%] md:w-1/2 flex flex-row justify-between items-start pb-5 p-2 border-[1px] border-solid border-black rounded-xl shadow-lg shadow-gray-500 bg-opacity-45 bg-white"
             >
-              {isConfirmationModalVisible && confirmationId === item.id && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-                  <div className="bg-white p-5 rounded-md shadow-lg w-[90%]">
-                    <h2 className="text-lg font-bold">Confirmación</h2>
-                    <p>¿Estás seguro de que deseas eliminar el producto?</p>
-                    <div className="mt-4 flex gap-4">
-                      <button
-                        onClick={() => handleConfirmation(true)}
-                        className="btn btn-success"
-                      >
-                        Aceptar
-                      </button>
-                      <button
-                        onClick={() => handleConfirmation(false)}
-                        className="btn btn-danger"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                </div>
+              {isConfirmationModalVisible && (
+                <ConfirmationPopup
+                  handleConfirmation={handleConfirmation}
+                  confirmationPopupMessage={confirmationPopupMessage}
+                />
               )}
               <div className="flex flex-col items-start w-full">
                 <div className="flex w-full items-end justify-between border-b-[1px] border-solid border-black">

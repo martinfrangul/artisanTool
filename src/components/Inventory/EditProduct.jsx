@@ -258,6 +258,8 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
                     value={value}
                     onChange={(e) => handleInputChange(key, e.target.value)}
                     type="text"
+                    onClick={(e) => e.target.select()}
+
                   />
                   {!nonDeletableProperties.includes(key) ? (
                     <button
