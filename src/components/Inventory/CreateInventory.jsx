@@ -83,7 +83,8 @@ const CreateInventory = () => {
 
       // Verifica si hay un producto con el mismo nombre y propiedades opcionales
       const hasSameNameAndProperties = existingProducts.some(product => {
-        const productProperties = Object.keys(product).filter(key => key !== "productName" && key !== "productPrice" && key !== "productStock" && key !== "toDo");
+        const productProperties = Object.keys(product)
+        .filter(key => !["productName", "productPrice", "productStock", "toDo", "id"].includes(key));
         const formProperties = properties.reduce((acc, p) => {
           if (p.property) {
             acc[p.property] = normalizeString(p.option);

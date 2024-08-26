@@ -15,7 +15,7 @@ const Banner = () => {
             src={logoSinLetras}
             alt="logo-artisan-tool"
           />
-          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">CREAR INVENTARIO</h1>
+          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">Crear inventario</h1>
         </div>
       );
       break;
@@ -27,7 +27,7 @@ const Banner = () => {
             src={logoSinLetras}
             alt="logo-artisan-tool"
           />
-          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">INVENTARIO</h1>
+          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">Inventario</h1>
         </div>
       );
       break;
@@ -39,7 +39,7 @@ const Banner = () => {
             src={logoSinLetras}
             alt="logo-artisan-tool"
           />
-          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">VENDER</h1>
+          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">Vender</h1>
         </div>
       );
       break;
@@ -51,7 +51,7 @@ const Banner = () => {
             src={logoSinLetras}
             alt="logo-artisan-tool"
           />
-          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">REGISTRO DE VENTAS</h1>
+          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">Registro de ventas</h1>
         </div>
       );
       break;
@@ -63,7 +63,7 @@ const Banner = () => {
             src={logoSinLetras}
             alt="logo-artisan-tool"
           />
-          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">GRÁFICOS Y ESTADÍSTICAS</h1>
+          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">Gráficos y estadísiticas</h1>
         </div>
       );
       break;

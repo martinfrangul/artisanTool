@@ -173,20 +173,48 @@ const Inventory = () => {
     setModalVisible(true);
   };
 
-  // Ordenar los items según las propiedades seleccionadas
+  // MÉTODO SORT QUE ORDENA SEGÚN UN CRITERIO PRIMARIO Y UNO SECUNDARIO TENIENDO EN CUENTA TILDES
+  // Y LLEVANDO AL FONDO DE CADA CRITERIO SI NO TIENE LA PROPIEDAD A FILTRAR
+
   const sortedData = inventoryData.slice().sort((a, b) => {
+    // Obtén los valores para los criterios primarios y secundarios
+    const aPrimary = a[sortProperty] !== undefined ? a[sortProperty] : '';
+    const bPrimary = b[sortProperty] !== undefined ? b[sortProperty] : '';
+    const aSecondary = a[secondarySortProperty] !== undefined ? a[secondarySortProperty] : '';
+    const bSecondary = b[secondarySortProperty] !== undefined ? b[secondarySortProperty] : '';
+  
     // Comparar los valores del criterio primario
-    if (a[sortProperty] < b[sortProperty]) return -1;
-    if (a[sortProperty] > b[sortProperty]) return 1;
-
-    // Si los valores del criterio primario son iguales, comparar los del criterio secundario
-    if (a[secondarySortProperty] < b[secondarySortProperty]) return -1;
-    if (a[secondarySortProperty] > b[secondarySortProperty]) return 1;
-
-    return 0;
+    if (aPrimary === '' && bPrimary !== '') {
+      return 1; // Mueve los elementos sin valor del criterio primario al final
+    } else if (bPrimary === '' && aPrimary !== '') {
+      return -1; // Mueve los elementos sin valor del criterio primario al final
+    } else {
+      let primaryComparison;
+      if (typeof aPrimary === 'string' && typeof bPrimary === 'string') {
+        primaryComparison = aPrimary.localeCompare(bPrimary);
+      } else {
+        primaryComparison = aPrimary < bPrimary ? -1 : (aPrimary > bPrimary ? 1 : 0);
+      }
+      if (primaryComparison !== 0) return primaryComparison;
+    }
+  
+    // Comparar los valores del criterio secundario
+    if (aSecondary === '' && bSecondary !== '') {
+      return 1; // Mueve los elementos sin valor del criterio secundario al final
+    } else if (bSecondary === '' && aSecondary !== '') {
+      return -1; // Mueve los elementos sin valor del criterio secundario al final
+    } else {
+      if (typeof aSecondary === 'string' && typeof bSecondary === 'string') {
+        return aSecondary.localeCompare(bSecondary);
+      } else {
+        return aSecondary < bSecondary ? -1 : (aSecondary > bSecondary ? 1 : 0);
+      }
+    }
   });
+  
+  
 
-  // Maneja el cambio en la propiedad de orden
+  // Maneja el cambio en la propiedad de orden y la agrega al localStorage para que perdure
   const handleSortChange = (event) => {
     const newSortProperty = event.target.value;
     setSortProperty(newSortProperty);
@@ -329,7 +357,7 @@ const Inventory = () => {
   };
 
   return (
-    <div className="w-11/12 md:w-9/12 m-auto pb-28 md:pb-36">
+    <div className="w-11/12 md:w-7/12 lg:w-6/12 xl:w-5/12 m-auto pb-28 md:pb-36">
       {alert.visible && (
         <Alert
           message={alert.message}
@@ -348,7 +376,7 @@ const Inventory = () => {
         <div className="flex w-1/12 md:w-0">
           {/* DIV ESTRUCTURAL PARA CENTRAR */}
         </div>
-        <div className="w-8/12 flex justify-center">
+        <div className="w-8/12 md:w-9/12 lg:w-11/12 flex justify-center">
           <div className="w-full flex flex-col md:flex-row justify-center gap-3">
             <div className="flex flex-row items-center justify-end h-fit">
               <label className="px-3" htmlFor="sort-property">
@@ -389,7 +417,7 @@ const Inventory = () => {
         </div>
 
         <button
-          className="flex w-3/12 md:w-2/12 justify-end"
+          className="flex w-3/12 md:w-2/12 lg:w-1/12 justify-end"
           onClick={confirmResolveAllTodos}
         >
           <div className="rounded-full bg-success w-12 h-12 flex justify-center items-center">

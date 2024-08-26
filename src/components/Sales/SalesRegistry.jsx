@@ -251,7 +251,7 @@ const SalesRegistry = () => {
           filteredSellData.map((item) => (
             <div
               key={item.id}
-              className="w-[95%] md:w-1/2 flex flex-row justify-between items-start pb-5 p-2 border-[1px] border-solid border-black rounded-xl shadow-lg shadow-gray-500 bg-opacity-45 bg-white"
+              className="w-11/12 md:w-6/12 lg:w-4/12 flex flex-row justify-between items-start pb-5 p-2 border-[1px] border-solid border-black rounded-xl shadow-lg shadow-gray-500 bg-opacity-45 bg-white"
             >
               {isConfirmationModalVisible && (
                 <ConfirmationPopup

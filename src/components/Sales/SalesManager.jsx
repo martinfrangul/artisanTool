@@ -321,7 +321,7 @@ const SalesManager = () => {
         </div>
       </form>
 
-      <div className="w-11/12 md:w-9/12 m-auto">
+      <div className="w-11/12 md:w-6/12 lg:w-5/12 xl:w-4/12 m-auto">
         <div className="flex flex-row gap-3 mb-3">
           {tags.map((tag, index) => (
             <div
@@ -366,7 +366,7 @@ const SalesManager = () => {
                             onClick={() => handleCancelClick(item.id)}
                           >
                             <img
-                              className="w-4"
+                              className="w-10"
                               src={cancelIcon}
                               alt="cancel-icon"
                             />
