@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import addIcon from "../../assets/addIcon.png";
 
 // FIREBASE
@@ -29,10 +29,46 @@ const CreateInventory = () => {
   const [productPrice, setProductPrice] = useState("");
   const [properties, setProperties] = useState([{ property: "", option: "" }]);
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
+  const [existingProperties, setExistingProperties] = useState({});
 
   const { user } = useAuth();
   const { reloadData } = useContext(DataContext);
   const db = getFirestore();
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchExistingProperties = async () => {
+      try {
+        const productQuery = collection(db, `users/${user.uid}/products`);
+        const productSnapshot = await getDocs(productQuery);
+        const allProperties = {};
+
+        productSnapshot.forEach(doc => {
+          const productData = doc.data();
+          Object.keys(productData).forEach(key => {
+            if (!["id", "productStock", "productPrice", "toDo"].includes(key)) {
+              if (!allProperties[key]) {
+                allProperties[key] = new Set();
+              }
+              allProperties[key].add(productData[key]);
+            }
+          });
+        });
+
+        const normalizedProperties = {};
+        Object.keys(allProperties).forEach(key => {
+          normalizedProperties[key] = Array.from(allProperties[key]);
+        });
+
+        setExistingProperties(normalizedProperties);
+      } catch (error) {
+        console.error("Error fetching existing properties:", error);
+      }
+    };
+
+    fetchExistingProperties();
+  }, [user, db]);
 
   const updatePropertyField = (index, field, value) => {
     setProperties((prev) => {
@@ -231,6 +267,7 @@ const CreateInventory = () => {
             deleteInput={deleteInput}
             properties={properties}
             options={options}
+            existingProperties={existingProperties}
           />
         ))}
 

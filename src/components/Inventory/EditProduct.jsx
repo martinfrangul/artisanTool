@@ -7,7 +7,16 @@ import { AuthContext } from "../../context/AuthContext";
 import { DataContext } from "../../context/DataContext";
 
 // FIREBASE
-import { doc, updateDoc, getDoc, deleteField, collection, query, where, getDocs } from "firebase/firestore";
+import {
+  doc,
+  updateDoc,
+  getDoc,
+  deleteField,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { database } from "../../../firebase/firebaseConfig";
 
 // COMPONENTS
@@ -55,6 +64,8 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   const { user } = Authcontext;
   const { reloadData } = Datacontext;
 
+  const normalizeString = (str) => str.toLowerCase().trim();
+
   useEffect(() => {
     const fetchProductData = async () => {
       if (!user || !productIdForEdit) return;
@@ -84,7 +95,10 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   const handleInputChange = (key, value) => {
     if ((key === "productStock" || key === "productPrice") && value !== "") {
       value = parseInt(value);
+    } else {
+      value = normalizeString(value);
     }
+
     setItemData((prevItemData) => ({
       ...prevItemData,
       [key]: value,
@@ -128,41 +142,47 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     return isValid;
   };
 
-
   const checkIfProductExists = async (excludeId) => {
     if (!user || !itemData.productName) return false;
-  
+
     try {
       const productQuery = collection(database, `users/${user.uid}/products`);
       const baseQuery = query(
         productQuery,
         where("productName", "==", itemData.productName),
         // Excluir el producto que se está editando
-        excludeId ? where("__name__", "!=", excludeId) : where("__name__", "!=", "")
+        excludeId
+          ? where("__name__", "!=", excludeId)
+          : where("__name__", "!=", "")
       );
-  
+
       const baseQuerySnapshot = await getDocs(baseQuery);
-      const existingProducts = baseQuerySnapshot.docs.map(doc => ({
+      const existingProducts = baseQuerySnapshot.docs.map((doc) => ({
         ...doc.data(),
-        id: doc.id
+        id: doc.id,
       }));
-  
+
       // Comparar propiedades
-      return existingProducts.some(product => {
+      return existingProducts.some((product) => {
         // Excluir propiedades no comparables
-        const productProperties = Object.keys(product)
-          .filter(key => !["id", "productPrice", "productStock", "toDo"].includes(key));
-        
-        const formProperties = Object.entries(itemData).reduce((acc, [key, value]) => {
-          if (!["id", "productPrice", "productStock", "toDo"].includes(key)) {
-            acc[key] = value;
-          }
-          return acc;
-        }, {});
-  
-        const hasSameProperties = productProperties.every(p => formProperties[p] === product[p]) &&
+        const productProperties = Object.keys(product).filter(
+          (key) => !["id", "productPrice", "productStock", "toDo"].includes(key)
+        );
+
+        const formProperties = Object.entries(itemData).reduce(
+          (acc, [key, value]) => {
+            if (!["id", "productPrice", "productStock", "toDo"].includes(key)) {
+              acc[key] = value;
+            }
+            return acc;
+          },
+          {}
+        );
+
+        const hasSameProperties =
+          productProperties.every((p) => formProperties[p] === product[p]) &&
           Object.keys(formProperties).length === productProperties.length;
-  
+
         return hasSameProperties;
       });
     } catch (error) {
@@ -170,51 +190,49 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
       return false;
     }
   };
-  
-  
-  
 
   const submitEditProduct = async () => {
     if (!user || !productIdForEdit) return;
     if (!validateFields()) return;
-  
+
     // Verificar si el producto ya existe, excluyendo el producto en edición
     const productExists = await checkIfProductExists(productIdForEdit);
-  
+
     if (productExists) {
       setAlert({
-        message: "El producto con el mismo nombre y propiedades ya existe en la base de datos.",
+        message:
+          "El producto con el mismo nombre y propiedades ya existe en la base de datos.",
         type: "error",
         visible: true,
       });
       return;
     }
-  
+
     const updates = { ...itemData };
-  
+
     // Revisar las propiedades que faltan en itemData y eliminarlas en Firebase
     const docRef = doc(
       database,
       `users/${user.uid}/products`,
       productIdForEdit
     );
-  
+
     const docSnap = await getDoc(docRef);
-  
+
     if (docSnap.exists()) {
       const existingData = docSnap.data();
       const fieldsToDelete = {};
-  
+
       // Identificar campos que no están en itemData pero que existen en Firebase
       Object.keys(existingData).forEach((key) => {
         if (!(key in updates)) {
           fieldsToDelete[key] = deleteField();
         }
       });
-  
+
       // Combinar los campos a eliminar con los campos a actualizar
       const finalUpdate = { ...updates, ...fieldsToDelete };
-  
+
       try {
         await updateDoc(docRef, finalUpdate);
         setAlert({
@@ -230,8 +248,6 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
       console.log("No existe el documento");
     }
   };
-  
-
 
   useEffect(() => {
     // Bloquear el desplazamiento del fondo cuando el modal está abierto
@@ -319,7 +335,6 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
                     onChange={(e) => handleInputChange(key, e.target.value)}
                     type="text"
                     onClick={(e) => e.target.select()}
-
                   />
                   {!nonDeletableProperties.includes(key) ? (
                     <button
