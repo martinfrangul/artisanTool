@@ -64,8 +64,6 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   const { user } = Authcontext;
   const { reloadData } = Datacontext;
 
-  const normalizeString = (str) => str.toLowerCase().trim();
-
   useEffect(() => {
     const fetchProductData = async () => {
       if (!user || !productIdForEdit) return;
@@ -94,9 +92,11 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
 
   const handleInputChange = (key, value) => {
     if ((key === "productStock" || key === "productPrice") && value !== "") {
-      value = parseInt(value);
-    } else {
-      value = normalizeString(value);
+      if (!isNaN(value)) {
+        value = parseInt(value);
+      } else {
+        value = "";
+      }
     }
 
     setItemData((prevItemData) => ({
