@@ -263,7 +263,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     <div
       id="default-modal"
       tabIndex="-1"
-      className="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full backdrop-blur-sm overflow-auto"
+      className="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full overflow-auto backdrop-blur-sm"
     >
       {alert.visible && (
         <Alert

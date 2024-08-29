@@ -1,9 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 
-import daisyui from "daisyui"
+import daisyui from "daisyui";
 
 export default {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}",
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
     "./node_modules/tailwind-datepicker-react/dist/**/*.js",
   ],
   theme: {
@@ -23,10 +25,16 @@ export default {
       },
     },
   },
-  plugins: [
-    daisyui,
-  ],
+  plugins: [daisyui],
+
   daisyui: {
     darkTheme: false,
+    // themes: [
+    //   {
+    //     myTheme: {
+    //       logo: "#b5235f",
+    //     },
+    //   },
+    // ],
   },
 };

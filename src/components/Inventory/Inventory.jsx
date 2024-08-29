@@ -355,14 +355,20 @@ const Inventory = () => {
     // Guarda el valor en la base de datos de inmediato
     await saveToDo(id, value);
   };
-
+  
   return (
     <div className="w-11/12 md:w-7/12 lg:w-6/12 xl:w-5/12 m-auto pb-28 md:pb-36">
       {alert.visible && (
         <Alert
-          message={alert.message}
-          type={alert.type}
-          onClose={() => setAlert({ ...alert, visible: false })}
+        message={alert.message}
+        type={alert.type}
+        onClose={() => setAlert({ ...alert, visible: false })}
+        />
+      )}
+      {isModalVisible && (
+        <EditProduct
+          productIdForEdit={idForEdit}
+          handleModalToggle={handleModalToggle}
         />
       )}
       {isConfirmationModalVisible && (
@@ -483,12 +489,6 @@ const Inventory = () => {
                 </button>
               </div>
 
-              {isModalVisible && (
-                <EditProduct
-                  productIdForEdit={idForEdit}
-                  handleModalToggle={handleModalToggle}
-                />
-              )}
             </div>
           </div>
         ))

@@ -1,0 +1,9 @@
+input {
+  position: relative; /* O asegúrate de que el contenedor tenga 'relative' */
+  z-index: 1; /* Asegúrate de que el input esté por encima de otros elementos */
+}
+
+datalist {
+  position: absolute; /* Esto no debería ser necesario, pero es para pruebas */
+  z-index: 10;
+}

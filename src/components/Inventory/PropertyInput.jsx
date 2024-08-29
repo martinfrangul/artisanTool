@@ -1,15 +1,19 @@
-import deleteIcon from "../../assets/deleteIcon.png";
 import { motion } from "framer-motion";
 import PropTypes from "prop-types";
+import Select from 'react-select';
+import Creatable from 'react-select/creatable';
 import { useState, useEffect } from "react";
+import deleteIcon from "../../assets/deleteIcon.png";
 
 const PropertyInput = ({ index, input, updatePropertyField, deleteInput, properties, options, existingProperties }) => {
-  const [filteredOptions, setFilteredOptions] = useState(options);
+  const [filteredOptions, setFilteredOptions] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
+  const [currentOption, setCurrentOption] = useState(null);
+  const [inputValue, setInputValue] = useState('');
 
   useEffect(() => {
     const selectedProperties = properties.map(p => p.property);
-    const newFilteredOptions = options.filter(option => 
+    const newFilteredOptions = options.filter(option =>
       option.value === "" || !selectedProperties.includes(option.value) || option.value === input.property
     );
     setFilteredOptions(newFilteredOptions);
@@ -19,20 +23,35 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
     if (input.property && existingProperties[input.property]) {
       setSuggestions(existingProperties[input.property].filter(suggestion =>
         suggestion.toLowerCase().includes(input.option.toLowerCase())
-      ));
+      ).map(suggestion => ({ label: suggestion, value: suggestion })));
     } else {
       setSuggestions([]);
     }
   }, [input.property, input.option, existingProperties]);
 
-  const handleSelectChange = (event) => {
-    const { value } = event.target;
-    updatePropertyField(index, "property", value);
+  const handlePropertyChange = (selectedOption) => {
+    updatePropertyField(index, "property", selectedOption ? selectedOption.value : "");
     updatePropertyField(index, "option", "");
+    setCurrentOption(null);
   };
 
-  const handleInputChange = (event) => {
-    updatePropertyField(index, "option", event.target.value);
+  const handleOptionChange = (selectedOption) => {
+    setCurrentOption(selectedOption);
+    updatePropertyField(index, "option", selectedOption ? selectedOption.value : "");
+  };
+
+  const handleCreateOption = (inputValue) => {
+    const newOption = { label: inputValue, value: inputValue };
+    setSuggestions(prevSuggestions => [...prevSuggestions, newOption]);
+    setCurrentOption(newOption);
+    updatePropertyField(index, "option", inputValue);
+  };
+
+  const handleBlur = () => {
+    if (inputValue && !suggestions.some(option => option.value === inputValue)) {
+      handleCreateOption(inputValue);
+    }
+    setInputValue(''); // Clear input value on blur
   };
 
   return (
@@ -44,40 +63,29 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
       key={index}
     >
       <div className="flex flex-col justify-center items-center px-3 gap-2 w-full md:w-1/4">
-        <label htmlFor="property">Propiedad</label>
-        <select
-          className="border-1 border-solid border-black rounded-md shadow-inner md:w-full p-2 shadow-slate-700 text-center"
-          name="properties"
-          id={index}
-          value={input.property}
-          onChange={handleSelectChange}
-        >
-          {filteredOptions.map((option, idx) => (
-            <option key={idx} value={option.value} disabled={option.disabled}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+        <label htmlFor={`property-${index}`}>Propiedad</label>
+        <Select
+          inputId={`property-${index}`}
+          options={filteredOptions.map(option => ({ label: option.label, value: option.value }))}
+          onChange={handlePropertyChange}
+          value={filteredOptions.find(option => option.value === input.property) || null}
+          className="w-full"
+        />
       </div>
       <div className="flex flex-col justify-center items-center px-3 gap-2 w-full md:w-1/4">
-        <label htmlFor="option">Opción</label>
-        <input
+        <label htmlFor={`option-${index}`}>Opción</label>
+        <Creatable
+          inputId={`option-${index}`}
+          options={suggestions}
+          onChange={handleOptionChange}
+          onCreateOption={handleCreateOption}
+          value={currentOption || (suggestions.find(option => option.value === input.option) || null)}
           placeholder="(Opcional)"
-          id={index}
-          className="border-1 border-solid border-black rounded-md shadow-inner md:w-full p-2 shadow-slate-700"
-          onChange={handleInputChange}
-          type="text"
-          value={input.option}
-          list={`suggestions-${index}`}
+          className="w-full"
+          onBlur={handleBlur}
+          onInputChange={(value) => setInputValue(value)}
         />
-        {suggestions.length > 0 && (
-          <datalist id={`suggestions-${index}`}>
-            {suggestions.map((suggestion, idx) => (
-              <option key={idx} value={suggestion} />
-            ))}
-          </datalist>
-        )}
-        <div className="flex justify-end w-full">
+        <div className="flex justify-end w-full mt-2">
           <button
             className="w-8 h-8 text-white rounded"
             onClick={() => deleteInput(index)}

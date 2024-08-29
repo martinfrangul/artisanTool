@@ -10,7 +10,7 @@ import {
   where,
   getDocs,
   updateDoc,
-  doc
+  doc,
 } from "firebase/firestore";
 
 // CONTEXT
@@ -21,7 +21,6 @@ import { DataContext } from "../../context/DataContext";
 import PropertyInput from "./PropertyInput";
 import PropertySpecs from "./PropertySpecs";
 import Alert from "../Alert";
-
 
 const CreateInventory = () => {
   const [productName, setProductName] = useState("");
@@ -44,9 +43,9 @@ const CreateInventory = () => {
         const productSnapshot = await getDocs(productQuery);
         const allProperties = {};
 
-        productSnapshot.forEach(doc => {
+        productSnapshot.forEach((doc) => {
           const productData = doc.data();
-          Object.keys(productData).forEach(key => {
+          Object.keys(productData).forEach((key) => {
             if (!["id", "productStock", "productPrice", "toDo"].includes(key)) {
               if (!allProperties[key]) {
                 allProperties[key] = new Set();
@@ -57,7 +56,7 @@ const CreateInventory = () => {
         });
 
         const normalizedProperties = {};
-        Object.keys(allProperties).forEach(key => {
+        Object.keys(allProperties).forEach((key) => {
           normalizedProperties[key] = Array.from(allProperties[key]);
         });
 
@@ -77,14 +76,14 @@ const CreateInventory = () => {
       return newProperties;
     });
   };
-  
-  const options =[
+
+  const options = [
     { value: "", label: "(Opcional)", disabled: true },
     { value: "model", label: "Modelo" },
     { value: "size", label: "Tamaño" },
     { value: "design", label: "Diseño" },
     { value: "color", label: "Color" },
-    { value: "type", label: "Tipo" }
+    { value: "type", label: "Tipo" },
   ];
 
   const createInput = () => {
@@ -92,7 +91,7 @@ const CreateInventory = () => {
   };
 
   const deleteInput = (index) => {
-      setProperties((prev) => prev.filter((_, i) => i !== index));
+    setProperties((prev) => prev.filter((_, i) => i !== index));
   };
 
   const normalizeString = (str) => str.toLowerCase().trim();
@@ -102,7 +101,7 @@ const CreateInventory = () => {
 
     try {
       const productQuery = collection(db, `users/${user.uid}/products`);
-      
+
       // Consulta para obtener productos con el mismo nombre
       const baseQuery = query(
         productQuery,
@@ -110,7 +109,7 @@ const CreateInventory = () => {
       );
 
       const baseQuerySnapshot = await getDocs(baseQuery);
-      const existingProducts = baseQuerySnapshot.docs.map(doc => doc.data());
+      const existingProducts = baseQuerySnapshot.docs.map((doc) => doc.data());
 
       // Si no hay productos con el mismo nombre, el producto no existe
       if (existingProducts.length === 0) {
@@ -118,9 +117,17 @@ const CreateInventory = () => {
       }
 
       // Verifica si hay un producto con el mismo nombre y propiedades opcionales
-      const hasSameNameAndProperties = existingProducts.some(product => {
-        const productProperties = Object.keys(product)
-        .filter(key => !["productName", "productPrice", "productStock", "toDo", "id"].includes(key));
+      const hasSameNameAndProperties = existingProducts.some((product) => {
+        const productProperties = Object.keys(product).filter(
+          (key) =>
+            ![
+              "productName",
+              "productPrice",
+              "productStock",
+              "toDo",
+              "id",
+            ].includes(key)
+        );
         const formProperties = properties.reduce((acc, p) => {
           if (p.property) {
             acc[p.property] = normalizeString(p.option);
@@ -129,16 +136,18 @@ const CreateInventory = () => {
         }, {});
 
         // Compara el nombre del producto
-        const hasSameName = product.productName === normalizeString(productName);
+        const hasSameName =
+          product.productName === normalizeString(productName);
 
         // Compara las propiedades opcionales
-        const hasSameProperties = productProperties.every(p => formProperties[p] === product[p]) && Object.keys(formProperties).length === productProperties.length;
+        const hasSameProperties =
+          productProperties.every((p) => formProperties[p] === product[p]) &&
+          Object.keys(formProperties).length === productProperties.length;
 
         return hasSameName && hasSameProperties;
       });
 
       return hasSameNameAndProperties;
-
     } catch (error) {
       console.error("Error checking product existence:", error);
       return false;
@@ -154,7 +163,7 @@ const CreateInventory = () => {
       });
       return;
     }
-  
+
     if (!productName || productStock === "" || !productPrice) {
       setAlert({
         message: "El nombre del producto, stock y precio son obligatorios",
@@ -164,10 +173,9 @@ const CreateInventory = () => {
       return;
     }
 
-  
     // Si `productStock` es una cadena vacía, conviértelo en 0
     const stock = productStock === "" ? 0 : parseInt(productStock, 10);
-    
+
     // Asegúrate de que `stock` es un número y no un NaN
     if (isNaN(stock)) {
       setAlert({
@@ -177,10 +185,10 @@ const CreateInventory = () => {
       });
       return;
     }
-  
+
     // Comprobar si el producto ya existe
     const productExists = await checkIfProductExists();
-  
+
     if (productExists) {
       setAlert({
         message: "El producto ya existe en el inventario",
@@ -189,12 +197,12 @@ const CreateInventory = () => {
       });
       return;
     }
-  
+
     const inputsObject = properties.reduce((acc, input) => {
       acc[input.property] = normalizeString(input.option);
       return acc;
     }, {});
-  
+
     const productData = {
       productName: normalizeString(productName),
       productPrice: parseFloat(productPrice),
@@ -202,13 +210,13 @@ const CreateInventory = () => {
       toDo: 0,
       ...inputsObject,
     };
-  
+
     const filteredProductData = Object.fromEntries(
       Object.entries(productData).filter(
         ([, value]) => value !== "" && value !== undefined && value !== null
       )
     );
-  
+
     try {
       // Añadir el producto a Firestore
       const docRef = await addDoc(
@@ -218,17 +226,13 @@ const CreateInventory = () => {
 
       // Obtener el ID del documento y actualizar el documento con el ID
       await updateDoc(doc(db, `users/${user.uid}/products`, docRef.id), {
-        id: docRef.id
+        id: docRef.id,
       });
       setAlert({
         message: "Guardado correctamente",
         type: "success",
         visible: true,
       });
-      setProductName("");
-      setProductStock("");
-      setProductPrice("");
-      setProperties([{ property: "", option: "" }]);
       reloadData();
     } catch (error) {
       setAlert({
@@ -237,6 +241,13 @@ const CreateInventory = () => {
         visible: true,
       });
     }
+  };
+
+  const onResetHandler = () => {
+    setProductName("");
+    setProductStock("");
+    setProductPrice("");
+    setProperties([{ property: "", option: "" }]);
   };
 
   return (
@@ -249,15 +260,25 @@ const CreateInventory = () => {
             onClose={() => setAlert({ ...alert, visible: false })}
           />
         )}
-        <div className="flex flex-col justify-center items-center p-3 w-full">
-          <label htmlFor="product">Producto</label>
-          <input
-            className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700"
-            onChange={(event) => setProductName(event.target.value)}
-            type="text"
-            value={productName}
-          />
+       <div className="flex flex-row">
+        <div className="w-3/12">
+
         </div>
+         <div className="flex flex-col justify-center items-center p-3 w-6/12">
+           <label htmlFor="product">Producto</label>
+           <input
+             className="border-1 border-solid border-black rounded-md shadow-inner p-2 shadow-slate-700"
+             onChange={(event) => setProductName(event.target.value)}
+             type="text"
+             value={productName}
+           />
+         </div>
+         <div className="w-3/12 p-4">
+           <button className="btn btn-sm btn-outline text-logo border-logo" onClick={onResetHandler}>
+           RESET
+           </button>
+         </div>
+       </div>
         {properties.map((input, index) => (
           <PropertyInput
             key={index}
@@ -271,12 +292,16 @@ const CreateInventory = () => {
           />
         ))}
 
-        {properties.length < options.length - 1 && 
-        <div className="w-full flex justify-start items-start px-3">
-          <button className="w-8 h-8 text-white rounded" onClick={createInput}>
-            <img src={addIcon} alt="add-inputs" />
-          </button>
-        </div>}
+        {properties.length < options.length - 1 && (
+          <div className="w-full flex justify-start items-start px-3">
+            <button
+              className="w-8 h-8 text-white rounded"
+              onClick={createInput}
+            >
+              <img src={addIcon} alt="add-inputs" />
+            </button>
+          </div>
+        )}
         <PropertySpecs
           setProductStock={setProductStock}
           setProductPrice={setProductPrice}
