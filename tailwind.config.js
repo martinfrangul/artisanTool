@@ -20,9 +20,6 @@ export default {
         khaki: "#BCAC9B",
         logo: "#B62361",
       },
-      fontFamily: {
-        AA: ["AccordAlternate", "sans-serif"],
-      },
     },
   },
   plugins: [daisyui],
