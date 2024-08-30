@@ -21,13 +21,18 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
 
   useEffect(() => {
     if (input.property && existingProperties[input.property]) {
-      setSuggestions(existingProperties[input.property].filter(suggestion =>
-        suggestion.toLowerCase().includes(input.option.toLowerCase())
-      ).map(suggestion => ({ label: suggestion, value: suggestion })));
+      const filteredSuggestions = existingProperties[input.property].filter(suggestion =>
+        suggestion.toLowerCase().includes(inputValue.toLowerCase())
+      ).map(suggestion => ({ label: suggestion, value: suggestion }));
+      setSuggestions(filteredSuggestions);
     } else {
       setSuggestions([]);
     }
-  }, [input.property, input.option, existingProperties]);
+  }, [input.property, inputValue, existingProperties]);
+
+  useEffect(() => {
+    setCurrentOption(input.option ? { label: input.option, value: input.option } : null);
+  }, [input.option]);
 
   const handlePropertyChange = (selectedOption) => {
     updatePropertyField(index, "property", selectedOption ? selectedOption.value : "");
@@ -45,6 +50,10 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
     setSuggestions(prevSuggestions => [...prevSuggestions, newOption]);
     setCurrentOption(newOption);
     updatePropertyField(index, "option", inputValue);
+  };
+
+  const handleInputChange = (value) => {
+    setInputValue(value);
   };
 
   const handleBlur = () => {
@@ -82,8 +91,8 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
           value={currentOption || (suggestions.find(option => option.value === input.option) || null)}
           placeholder="(Opcional)"
           className="w-full"
+          onInputChange={handleInputChange}
           onBlur={handleBlur}
-          onInputChange={(value) => setInputValue(value)}
         />
         <div className="flex justify-end w-full mt-2">
           <button

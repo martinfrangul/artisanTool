@@ -60,8 +60,17 @@ const DataContextProvider = ({ children }) => {
     setReload((prev) => !prev);
   };
 
+  const options = [
+    { value: "", label: "(Opcional)", disabled: true },
+    { value: "model", label: "Modelo" },
+    { value: "size", label: "Tamaño" },
+    { value: "design", label: "Diseño" },
+    { value: "color", label: "Color" },
+    { value: "type", label: "Tipo" },
+  ];
+
   return (
-    <DataContext.Provider value={{ sellData, setSellData, inventoryData, setInventoryData, reloadData }}>
+    <DataContext.Provider value={{options, sellData, setSellData, inventoryData, setInventoryData, reloadData }}>
       {children}
     </DataContext.Provider>
   );

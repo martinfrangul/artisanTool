@@ -31,7 +31,7 @@ const CreateInventory = () => {
   const [existingProperties, setExistingProperties] = useState({});
 
   const { user } = useAuth();
-  const { reloadData } = useContext(DataContext);
+  const { reloadData, options } = useContext(DataContext);
   const db = getFirestore();
 
   useEffect(() => {
@@ -76,15 +76,6 @@ const CreateInventory = () => {
       return newProperties;
     });
   };
-
-  const options = [
-    { value: "", label: "(Opcional)", disabled: true },
-    { value: "model", label: "Modelo" },
-    { value: "size", label: "Tamaño" },
-    { value: "design", label: "Diseño" },
-    { value: "color", label: "Color" },
-    { value: "type", label: "Tipo" },
-  ];
 
   const createInput = () => {
     setProperties((prev) => [...prev, { property: "", option: "" }]);
