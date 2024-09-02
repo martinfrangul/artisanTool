@@ -18,6 +18,7 @@ import { database } from "../../../firebase/firebaseConfig";
 import EditProduct from "./EditProduct";
 import Alert from "../Alert";
 import ConfirmationPopup from "../ConfirmationPopup";
+import Summary from "./Summary";
 
 // Mapa de nombre de propiedades mejorado
 const propertyLabels = {
@@ -45,6 +46,7 @@ const Inventory = () => {
     initialSecondarySortProperty
   );
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isModalSummaryVisible, setIsModalSummaryVisible] = useState(false);
   const [idForEdit, setIdForEdit] = useState("");
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
   const [isConfirmationModalVisible, setConfirmationModalVisible] =
@@ -55,7 +57,7 @@ const Inventory = () => {
 
   useEffect(() => {
     // Añadir o quitar la clase no-scroll en el body
-    if (isConfirmationModalVisible) {
+    if (isConfirmationModalVisible || isModalSummaryVisible) {
       document.body.classList.add("no-scroll");
     } else {
       document.body.classList.remove("no-scroll");
@@ -65,7 +67,7 @@ const Inventory = () => {
     return () => {
       document.body.classList.remove("no-scroll");
     };
-  }, [isConfirmationModalVisible]);
+  }, [isConfirmationModalVisible, isModalSummaryVisible]);
 
   // Sincronizar el estado `tempToDo` con `inventoryData`
   useEffect(() => {
@@ -178,41 +180,42 @@ const Inventory = () => {
 
   const sortedData = inventoryData.slice().sort((a, b) => {
     // Obtén los valores para los criterios primarios y secundarios
-    const aPrimary = a[sortProperty] !== undefined ? a[sortProperty] : '';
-    const bPrimary = b[sortProperty] !== undefined ? b[sortProperty] : '';
-    const aSecondary = a[secondarySortProperty] !== undefined ? a[secondarySortProperty] : '';
-    const bSecondary = b[secondarySortProperty] !== undefined ? b[secondarySortProperty] : '';
-  
+    const aPrimary = a[sortProperty] !== undefined ? a[sortProperty] : "";
+    const bPrimary = b[sortProperty] !== undefined ? b[sortProperty] : "";
+    const aSecondary =
+      a[secondarySortProperty] !== undefined ? a[secondarySortProperty] : "";
+    const bSecondary =
+      b[secondarySortProperty] !== undefined ? b[secondarySortProperty] : "";
+
     // Comparar los valores del criterio primario
-    if (aPrimary === '' && bPrimary !== '') {
+    if (aPrimary === "" && bPrimary !== "") {
       return 1; // Mueve los elementos sin valor del criterio primario al final
-    } else if (bPrimary === '' && aPrimary !== '') {
+    } else if (bPrimary === "" && aPrimary !== "") {
       return -1; // Mueve los elementos sin valor del criterio primario al final
     } else {
       let primaryComparison;
-      if (typeof aPrimary === 'string' && typeof bPrimary === 'string') {
+      if (typeof aPrimary === "string" && typeof bPrimary === "string") {
         primaryComparison = aPrimary.localeCompare(bPrimary);
       } else {
-        primaryComparison = aPrimary < bPrimary ? -1 : (aPrimary > bPrimary ? 1 : 0);
+        primaryComparison =
+          aPrimary < bPrimary ? -1 : aPrimary > bPrimary ? 1 : 0;
       }
       if (primaryComparison !== 0) return primaryComparison;
     }
-  
+
     // Comparar los valores del criterio secundario
-    if (aSecondary === '' && bSecondary !== '') {
+    if (aSecondary === "" && bSecondary !== "") {
       return 1; // Mueve los elementos sin valor del criterio secundario al final
-    } else if (bSecondary === '' && aSecondary !== '') {
+    } else if (bSecondary === "" && aSecondary !== "") {
       return -1; // Mueve los elementos sin valor del criterio secundario al final
     } else {
-      if (typeof aSecondary === 'string' && typeof bSecondary === 'string') {
+      if (typeof aSecondary === "string" && typeof bSecondary === "string") {
         return aSecondary.localeCompare(bSecondary);
       } else {
-        return aSecondary < bSecondary ? -1 : (aSecondary > bSecondary ? 1 : 0);
+        return aSecondary < bSecondary ? -1 : aSecondary > bSecondary ? 1 : 0;
       }
     }
   });
-  
-  
 
   // Maneja el cambio en la propiedad de orden y la agrega al localStorage para que perdure
   const handleSortChange = (event) => {
@@ -355,14 +358,18 @@ const Inventory = () => {
     // Guarda el valor en la base de datos de inmediato
     await saveToDo(id, value);
   };
-  
+
+  const handleSummaryModal = () => {
+    setIsModalSummaryVisible(true);
+  };
+
   return (
     <div className="w-11/12 md:w-7/12 lg:w-6/12 xl:w-5/12 m-auto pb-28 md:pb-36">
       {alert.visible && (
         <Alert
-        message={alert.message}
-        type={alert.type}
-        onClose={() => setAlert({ ...alert, visible: false })}
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert({ ...alert, visible: false })}
         />
       )}
       {isModalVisible && (
@@ -371,6 +378,9 @@ const Inventory = () => {
           handleModalToggle={handleModalToggle}
         />
       )}
+      {isModalSummaryVisible && (
+        <Summary setIsModalSummaryVisible={setIsModalSummaryVisible} />
+      )}
       {isConfirmationModalVisible && (
         <ConfirmationPopup
           handleConfirmation={handleConfirmation}
@@ -378,10 +388,8 @@ const Inventory = () => {
         />
       )}
       {/* Dropdown para seleccionar la propiedad de orden */}
-      <div className="flex flex-row justify-end items-center my-3 border-b-[1px] border-solid border-black pb-3">
-        <div className="flex w-1/12 md:w-0">
-          {/* DIV ESTRUCTURAL PARA CENTRAR */}
-        </div>
+      <div className="flex flex-row justify-end items-center mt-3 border-b-[1px] border-solid border-black pb-3">
+        <div className="flex w-1/12 md:w-0"></div>
         <div className="w-8/12 md:w-9/12 lg:w-11/12 flex justify-center">
           <div className="w-full flex flex-col md:flex-row justify-center gap-3">
             <div className="flex flex-row items-center justify-end h-fit">
@@ -431,6 +439,14 @@ const Inventory = () => {
           </div>
         </button>
       </div>
+      <div className="flex justify-center w-full p-2 border-b-[1px] border-solid border-black bg-white bg-opacity-35">
+        <button
+          onClick={() => handleSummaryModal()}
+          className="flex justify-center p-1 text-sm items-center bg-banner border-[1px] border-solid border-black rounded-md shadow-lg shadow-gray-500"
+        >
+          Resumen
+        </button>
+      </div>
 
       {sortedData.length > 0 ? (
         sortedData.map((item) => (
@@ -457,7 +473,7 @@ const Inventory = () => {
                   <input
                     onClick={(e) => e.target.select()}
                     onChange={(e) => handleInputChange(item.id, e.target.value)}
-                    className="w-8 rounded-md text-center bg-slate-100 ring-1 ring-black focus:ring-1 focus:outline-0"
+                    className="w-8 rounded-md text-center bg-slate-100 ring-1 ring-black focus:ring-1 focus:outline-0 custom-input-appearance"
                     id={`to-do-${item.id}`}
                     type="number"
                     value={
@@ -488,7 +504,6 @@ const Inventory = () => {
                   <img className="w-3" src={deleteItemIcon} alt="delete-icon" />
                 </button>
               </div>
-
             </div>
           </div>
         ))
