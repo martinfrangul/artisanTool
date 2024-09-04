@@ -91,6 +91,12 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   }, [user, productIdForEdit]);
 
   const handleInputChange = (key, value) => {
+
+    if (typeof value === "string") {
+      value = value.toLowerCase().trim();
+    }
+
+
     if ((key === "productStock" || key === "productPrice") && value !== "") {
       if (!isNaN(value)) {
         value = parseInt(value);
