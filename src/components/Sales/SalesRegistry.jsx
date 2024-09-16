@@ -63,52 +63,54 @@ const SalesRegistry = () => {
   ////////////////////////
 
   useEffect(() => {
+    const startDateObj = startDate instanceof Date ? new Date(startDate) : new Date(startDate);
+    const endDateObj = endDate instanceof Date ? new Date(endDate) : new Date(endDate);
+  
+    // Ajustar `startDate` al inicio del día
+    startDateObj.setHours(0, 0, 0, 0);
+  
+    // Ajustar `endDate` para incluir todo el día
+    endDateObj.setHours(23, 59, 59, 999);
+  
+    // Filtrar los datos basados en el rango de fechas
     const filteredData = sellData.filter((item) => {
-      const itemDate = formatDate(item.date);
-      return (
-        itemDate >= formatDate(startDate) && itemDate <= formatDate(endDate)
-      );
+      const itemDate = item.date instanceof Timestamp ? item.date.toDate() : new Date(item.date);
+      return itemDate >= startDateObj && itemDate <= endDateObj;
     });
 
-    const groupedData = filteredData.reduce((accumulator, current) => {
-      if (typeof current.quantity === "undefined") {
-        current.quantity = 1;
-      }
+  // Agrupar los datos filtrados
+  const groupedData = filteredData.reduce((accumulator, current) => {
+    if (typeof current.quantity === "undefined") {
+      current.quantity = 1;
+    }
 
-      // Crear una clave única considerando todas las propiedades relevantes
-      const properties = Object.keys(propertyLabels)
-        .filter(
-          (key) =>
-            key !== "quantity" &&
-            key !== "date" &&
-            key !== "productStock" &&
-            key !== "id"
-        )
-        .map((key) => current[key])
-        .join("-");
+    const properties = Object.keys(propertyLabels)
+      .filter(key => key !== "quantity" && key !== "date" && key !== "productStock" && key !== "id")
+      .map(key => current[key])
+      .join("-");
 
-      const key = `${current.productName}-${formatDate(current.date)}-${
-        current.productPrice
-      }-${properties}`;
+    const key = `${current.productName}-${formatDate(current.date)}-${current.productPrice}-${properties}`;
 
-      if (!accumulator[key]) {
-        accumulator[key] = {
-          ...current,
-          quantity: Number(current.quantity),
-        };
-      } else {
-        accumulator[key].quantity += Number(current.quantity);
-      }
+    if (!accumulator[key]) {
+      accumulator[key] = {
+        ...current,
+        quantity: Number(current.quantity),
+      };
+    } else {
+      accumulator[key].quantity += Number(current.quantity);
+    }
 
-      return accumulator;
-    }, {});
+    return accumulator;
+  }, {});
 
-    const groupedDataArray = Object.values(groupedData);
+  const groupedDataArray = Object.values(groupedData);
 
-    groupedDataArray.sort((a, b) => a.date.toDate() - b.date.toDate());
+  // Ordenar los datos agrupados
+  groupedDataArray.sort((a, b) => a.date.toDate() - b.date.toDate());
 
-    setFilteredSellData(groupedDataArray);
-  }, [sellData, startDate, endDate]);
+  setFilteredSellData(groupedDataArray);
+}, [sellData, startDate, endDate]);
+
 
   useEffect(() => {
     // Añadir o quitar la clase no-scroll en el body
@@ -165,7 +167,7 @@ const SalesRegistry = () => {
     });
 
     return (
-      <div className="flex flex-col w-1/2 justify-start gap-1 items-start border-r-[1px] border-solid border-black">
+      <div className="flex flex-col w-8/12 justify-start gap-1 items-start border-r-[1px] border-solid border-black p-2">
         <div className="flex flex-col flex-wrap gap-x-4">
           {orderedProperties.map(([key, value]) =>
             value ? (
@@ -277,9 +279,9 @@ const SalesRegistry = () => {
                     </button>
                   </div>
                 </div>
-                <div className="w-full flex flex-row p-1">
+                <div className="w-full flex flex-row">
                   {renderProductDetails(item)}
-                  <div className="flex flex-col w-1/2 gap-2 p-1">
+                  <div className="flex flex-col w-4/12 gap-2 p-2">
                     <div className="flex flex-col">
                       <h3 className="text-sm font-semibold">
                         {propertyLabels.date}:{" "}

@@ -9,61 +9,83 @@ const Banner = () => {
   switch (location.pathname) {
     case "/create-inventory":
       content = (
-        <div className="flex flex-col justify-center items-center">
-          <img
-            className="w-[4.7rem] md:w-28 flex justify-center px-3 pt-3 items-center"
-            src={logoSinLetras}
-            alt="logo-artisan-tool"
-          />
-          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">Crear inventario</h1>
+        <div className="flex flex-col justify-center items-center p-3 lg:p-0">
+          <div className="hidden lg:block">
+            <img
+              className="w-[4.7rem] md:w-28 flex justify-center px-3 pt-3 items-center"
+              src={logoSinLetras}
+              alt="logo-artisan-tool"
+            />
+          </div>
+          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">
+            Crear inventario
+          </h1>
         </div>
       );
       break;
     case "/inventory":
       content = (
-        <div className="flex flex-col justify-center items-center">
-          <img
-            className="w-[4.7rem] md:w-28 flex justify-center px-3 pt-3 items-center"
-            src={logoSinLetras}
-            alt="logo-artisan-tool"
-          />
-          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">Inventario</h1>
+        <div className="flex flex-col justify-center items-center p-3 lg:p-0">
+          <div className="hidden lg:block">
+            <img
+              className="w-[4.7rem] md:w-28 flex justify-center px-3 pt-3 items-center"
+              src={logoSinLetras}
+              alt="logo-artisan-tool"
+            />
+          </div>
+          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">
+            Inventario
+          </h1>
         </div>
       );
       break;
     case "/sales-manager":
       content = (
-        <div className="flex flex-col justify-center items-center">
-          <img
-            className="w-[4.7rem] md:w-28 flex justify-center px-3 pt-3 items-center"
-            src={logoSinLetras}
-            alt="logo-artisan-tool"
-          />
-          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">Vender</h1>
+        <div className="flex flex-col justify-center items-center p-3 lg:p-0">
+          <div className="hidden lg:block">
+            <img
+              className="w-[4.7rem] md:w-28 flex justify-center px-3 pt-3 items-center"
+              src={logoSinLetras}
+              alt="logo-artisan-tool"
+            />
+          </div>
+          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">
+            Vender
+          </h1>
         </div>
       );
       break;
-      case "/sales-registry":
+    case "/sales-registry":
       content = (
-        <div className="flex flex-col justify-center items-center">
-          <img
-            className="w-[4.7rem] md:w-28 flex justify-center px-3 pt-3 items-center"
-            src={logoSinLetras}
-            alt="logo-artisan-tool"
-          />
-          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">Registro de ventas</h1>
+        <div className="flex flex-col justify-center items-center p-3 lg:p-0">
+          <div className="hidden lg:block">
+            <img
+              className="w-[4.7rem] md:w-28 flex justify-center px-3 pt-3 items-center"
+              src={logoSinLetras}
+              alt="logo-artisan-tool"
+            />
+          </div>
+
+          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">
+            Registro de ventas
+          </h1>
         </div>
       );
       break;
-      case "/sales-charts":
+    case "/sales-charts":
       content = (
-        <div className="flex flex-col justify-center items-center">
-          <img
-            className="w-[4.7rem] md:w-28 flex justify-center px-3 pt-3 items-center"
-            src={logoSinLetras}
-            alt="logo-artisan-tool"
-          />
-          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">Gráficos y estadísiticas</h1>
+        <div className="flex flex-col justify-center items-center p-3 lg:p-0">
+          <div className="hidden lg:block">
+            <img
+              className="w-[4.7rem] md:w-28 flex justify-center px-3 pt-3 items-center"
+              src={logoSinLetras}
+              alt="logo-artisan-tool"
+            />
+          </div>
+
+          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">
+            Gráficos y estadísiticas
+          </h1>
         </div>
       );
       break;
