@@ -1,5 +1,5 @@
 .login-container {
     background-position: 30% center;
     background-size: 100%;
-    background-image: url('../assets/login-bg.jpeg');
+    background-image: url('/assets/login-bg.jpeg');
 }

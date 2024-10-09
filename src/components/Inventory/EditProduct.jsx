@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import deleteItemIconRed from "../../assets/deleteItemIconRed.png";
+import deleteItemIconRed from "/assets/deleteItemIconRed.png";
 import PropTypes from "prop-types";
 
 // CONTEXT

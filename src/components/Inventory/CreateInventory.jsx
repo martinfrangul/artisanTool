@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from "react";
-import addIcon from "../../assets/addIcon.png";
+import addIcon from "/assets/addIcon.png";
 
 // FIREBASE
 import {

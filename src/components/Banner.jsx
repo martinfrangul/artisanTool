@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
-import logo from "../assets/logo-shadow.png";
-import logoSinLetras from "../assets/logo-sin-letras.png";
+import logo from "/assets/logo-shadow.png";
+import logoSinLetras from "/assets/logo-sin-letras.png";
 
 const Banner = () => {
   const location = useLocation();

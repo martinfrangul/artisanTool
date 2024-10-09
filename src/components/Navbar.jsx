@@ -1,10 +1,10 @@
 import { AuthContext } from "../context/AuthContext";
 import { useContext } from "react";
-import logoutIcon from "../assets/logoutIcon.png";
-import salesIcon from "../assets/salesIcon.png";
-import homeIcon from "../assets/homeIcon.png";
-import inventoryIcon from "../assets/inventoryIcon.png";
-import salesRegistryIcon from "../assets/salesRegistryIcon.svg";
+import logoutIcon from "/assets/logoutIcon.png";
+import salesIcon from "/assets/salesIcon.png";
+import homeIcon from "/assets/homeIcon.png";
+import inventoryIcon from "/assets/inventoryIcon.png";
+import salesRegistryIcon from "/assets/salesRegistryIcon.svg";
 import { NavLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 

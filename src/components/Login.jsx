@@ -1,6 +1,6 @@
 import "../styles/Login.css";
-import logo from "../assets/logo.png";
-import googleLogin from "../assets/googleLoginButton.png";
+import logo from "/assets/logo.png";
+import googleLogin from "/assets/googleLoginButton.png";
 import { AuthContext } from "../context/AuthContext";
 import { useContext, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";

@@ -21,10 +21,10 @@ import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
 
 // ICONS
-import editIcon from "../../assets/editIcon.png";
-import sellIcon from "../../assets/sellIcon.svg";
-import sellIconGray from "../../assets/sellIconGray.svg";
-import cancelIcon from "../../assets/cancelIcon.png";
+import editIcon from "/assets/editIcon.png";
+import sellIcon from "/assets/sellIcon.svg";
+import sellIconGray from "/assets/sellIconGray.svg";
+import cancelIcon from "/assets/cancelIcon.png";
 
 // COMPONENTS
 import Alert from "../Alert";

@@ -5,10 +5,10 @@ import { useAuth } from "../../hooks/useAuth";
 import { DataContext } from "../../context/DataContext";
 
 // ICONOS
-import deleteItemIcon from "../../assets/deleteItemIcon.png";
-import editIcon from "../../assets/editIcon.png";
-import checkAllIcon from "../../assets/checkAllIcon.png";
-import acceptIcon from "../../assets/acceptIcon.png";
+import deleteItemIcon from "/assets/deleteItemIcon.png";
+import editIcon from "/assets/editIcon.png";
+import checkAllIcon from "/assets/checkAllIcon.png";
+import acceptIcon from "/assets/acceptIcon.png";
 
 // FIREBASE
 import { doc, deleteDoc, updateDoc, writeBatch } from "firebase/firestore";

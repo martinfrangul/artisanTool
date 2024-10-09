@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import Select from 'react-select';
 import Creatable from 'react-select/creatable';
 import { useState, useEffect } from "react";
-import deleteIcon from "../../assets/deleteIcon.png";
+import deleteIcon from "/assets/deleteIcon.png";
 
 const PropertyInput = ({ index, input, updatePropertyField, deleteInput, properties, options, existingProperties }) => {
   const [filteredOptions, setFilteredOptions] = useState([]);

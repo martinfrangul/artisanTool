@@ -1,5 +1,5 @@
 import "../styles/Login.css"; // Utiliza el mismo CSS que para Login
-import logo from "../assets/logo.png";
+import logo from "/assets/logo.png";
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";

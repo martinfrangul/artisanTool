@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from "react";
 import { DataContext } from "../../context/DataContext.jsx";
-import deleteItemIcon from "../../assets/deleteItemIcon.png";
+import deleteItemIcon from "/assets/deleteItemIcon.png";
 import { useAuth } from "../../hooks/useAuth";
 import Alert from "../Alert";
 import CustomDatePicker from "../CustomDatePicker.jsx";

@@ -1,10 +1,10 @@
 import { NavLink } from "react-router-dom";
-import createInventoryImage from "../assets/createInventoryImage.jpeg";
-import inventoryImage from "../assets/inventoryImage.jpeg";
-import salesImage from "../assets/salesImage.jpeg";
-import salesRegistryImage from "../assets/salesRegistryImage.jpeg";
-import salesChartImage from "../assets/salesChartImage.jpeg";
-import expensesImage from "../assets/expensesImage.jpeg";
+import createInventoryImage from "/assets/createInventoryImage.jpeg";
+import inventoryImage from "/assets/inventoryImage.jpeg";
+import salesImage from "/assets/salesImage.jpeg";
+import salesRegistryImage from "/assets/salesRegistryImage.jpeg";
+import salesChartImage from "/assets/salesChartImage.jpeg";
+import expensesImage from "/assets/expensesImage.jpeg";
 
 const Home = () => {
   return (
