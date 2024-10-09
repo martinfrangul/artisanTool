@@ -18,9 +18,40 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { DataContextProvider } from "./context/DataContext";
 
-// STYLES
+// HOOKS
+import { useState, useEffect } from "react";
 
 function App() {
+  
+  // PARA INSTALAR LA APP (PWA)
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
+
+  // Manejar el evento beforeinstallprompt
+  useEffect(() => {
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault(); // Evita que el navegador muestre el prompt automáticamente
+      setDeferredPrompt(e); // Guarda el evento para usarlo más tarde
+      setShowInstallButton(true); // Muestra el botón para instalar la app
+    });
+  }, []);
+
+  const handleInstallClick = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt(); // Muestra el cuadro de diálogo de instalación
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === "accepted") {
+          console.log("El usuario aceptó instalar la app");
+        } else {
+          console.log("El usuario rechazó la instalación");
+        }
+        setDeferredPrompt(null); // Resetea el evento
+        setShowInstallButton(false); // Oculta el botón
+      });
+    }
+  };
+
+
   return (
     <div className="bg-[#E9E4DB] min-h-screen flex flex-col">
       <Router>
@@ -65,6 +96,15 @@ function App() {
           </DataContextProvider>
         </AuthProvider>
       </Router>
+      {/* Botón de instalación visible solo cuando el prompt esté disponible */}
+      {showInstallButton && (
+        <button
+          onClick={handleInstallClick}
+          className="fixed bottom-5 right-5 bg-logo text-white px-4 py-2 rounded-lg"
+        >
+          Instalar App
+        </button>
+      )}
     </div>
   );
 }
