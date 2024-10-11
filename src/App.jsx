@@ -22,7 +22,6 @@ import { DataContextProvider } from "./context/DataContext";
 import { useState, useEffect } from "react";
 
 function App() {
-  
   // PARA INSTALAR LA APP (PWA)
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
@@ -51,7 +50,6 @@ function App() {
     }
   };
 
-
   return (
     <div className="bg-[#E9E4DB] min-h-screen flex flex-col">
       <Router>
@@ -76,35 +74,37 @@ function App() {
                   }
                 />
                 <Route
-              path="/*"
-              element={
-                <ProtectedRoutes>
-                  <Layout />
-                </ProtectedRoutes>
-              }
-            >
-              {/* Rutas anidadas dentro del Layout */}
-              <Route index element={<Home />} />
-              <Route path="create-inventory" element={<CreateInventory />} />
-              <Route path="inventory" element={<Inventory />} />
-              <Route path="sales-manager" element={<SalesManager />} />
-              <Route path="sales-registry" element={<SalesRegistry />} />
-              <Route path="sales-charts" element={<SalesCharts />} />
-            </Route>
+                  path="/*"
+                  element={
+                    <ProtectedRoutes>
+                      <Layout />
+                    </ProtectedRoutes>
+                  }
+                >
+                  {/* Rutas anidadas dentro del Layout */}
+                  <Route
+                    index
+                    element={
+                      <Home
+                        showInstallButton={showInstallButton}
+                        handleInstallClick={handleInstallClick}
+                      />
+                    }
+                  />
+                  <Route
+                    path="create-inventory"
+                    element={<CreateInventory />}
+                  />
+                  <Route path="inventory" element={<Inventory />} />
+                  <Route path="sales-manager" element={<SalesManager />} />
+                  <Route path="sales-registry" element={<SalesRegistry />} />
+                  <Route path="sales-charts" element={<SalesCharts />} />
+                </Route>
               </Routes>
             </div>
           </DataContextProvider>
         </AuthProvider>
       </Router>
-      {/* Botón de instalación visible solo cuando el prompt esté disponible */}
-      {showInstallButton && (
-        <button
-          onClick={handleInstallClick}
-          className="fixed bottom-5 right-5 bg-logo text-white px-4 py-2 rounded-lg"
-        >
-          Instalar App
-        </button>
-      )}
     </div>
   );
 }

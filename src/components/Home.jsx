@@ -6,7 +6,8 @@ import salesRegistryImage from "/assets/salesRegistryImage.jpeg";
 import salesChartImage from "/assets/salesChartImage.jpeg";
 import expensesImage from "/assets/expensesImage.jpeg";
 
-const Home = () => {
+const Home = ({showInstallButton, handleInstallClick}) => {
+
   return (
       <div className=" w-11/12 md:w-9/12 mx-auto pt-4 flex flex-wrap justify-between lg:justify-normal pb-28 md:pb-36">
           <NavLink
@@ -87,6 +88,17 @@ const Home = () => {
             />
           </div>
         </NavLink>
+        {/* Botón de instalación visible solo cuando el prompt esté disponible */}
+      {showInstallButton && (
+        <div className="flex flex-row justify-center w-full mx-4">
+          <button
+            onClick={handleInstallClick}
+            className="btn btn-sm bg-logo text-white px-4 py-2 rounded-lg"
+          >
+            Instalar App
+          </button>
+        </div>
+      )}
       </div>
   );
 };
