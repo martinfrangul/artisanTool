@@ -4,12 +4,20 @@ import { AuthContext } from "../context/AuthContext";
 import Navbar from "./Navbar";
 import Banner from "./Banner";
 
-const Layout = () => {
+
+
+const Layout = ({showInstallButton, handleInstallClick}) => {
+
+
+  
+
+
   const { user } = useContext(AuthContext);
 
   return (
     <div className="flex flex-col min-h-screen">
-      {user && <Banner />}
+      {user && <Banner showInstallButton={showInstallButton}
+                        handleInstallClick={handleInstallClick} />}
       <div className="flex-grow">
         <Outlet /> {/* Renderiza las rutas hijas */}
       </div>

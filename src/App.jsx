@@ -21,7 +21,10 @@ import { DataContextProvider } from "./context/DataContext";
 // HOOKS
 import { useState, useEffect } from "react";
 
+
 function App() {
+  
+
   // PARA INSTALAR LA APP (PWA)
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
@@ -50,6 +53,7 @@ function App() {
     }
   };
 
+
   return (
     <div className="bg-[#E9E4DB] min-h-screen flex flex-col">
       <Router>
@@ -77,7 +81,8 @@ function App() {
                   path="/*"
                   element={
                     <ProtectedRoutes>
-                      <Layout />
+                      <Layout showInstallButton={showInstallButton}
+                        handleInstallClick={handleInstallClick} />
                     </ProtectedRoutes>
                   }
                 >
@@ -86,8 +91,7 @@ function App() {
                     index
                     element={
                       <Home
-                        showInstallButton={showInstallButton}
-                        handleInstallClick={handleInstallClick}
+                        
                       />
                     }
                   />
