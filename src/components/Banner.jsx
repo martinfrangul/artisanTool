@@ -104,7 +104,7 @@ const Banner = ({ showInstallButton, handleInstallClick }) => {
       <div className="w-1/4"></div>
       <div className="flex justify-center w-2/4">{content}</div>
       {/* Botón de instalación visible solo cuando el prompt esté disponible */}
-      {showInstallButton && (
+      {showInstallButton ? (
         <div className="flex justify-end w-1/4 p-3">
           <button
             onClick={handleInstallClick}
@@ -113,7 +113,10 @@ const Banner = ({ showInstallButton, handleInstallClick }) => {
             Instalar
           </button>
         </div>
-      )}
+      ) : 
+      <div className="w-1/4">
+      </div>
+      }
     </div>
   );
 };
