@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { Timestamp } from "firebase/firestore";
+import { motion } from "framer-motion";
 
 // FIREBASE
 import {
@@ -8,14 +9,13 @@ import {
   collection,
   addDoc,
   doc,
-  updateDoc,
+  runTransaction,
 } from "firebase/firestore";
 
 // CONTEXT
 import { DataContext } from "../../context/DataContext";
 
 // UTILITIES
-import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
@@ -25,6 +25,7 @@ import editIcon from "/assets/editIcon.png";
 import sellIcon from "/assets/sellIcon.svg";
 import sellIconGray from "/assets/sellIconGray.svg";
 import cancelIcon from "/assets/cancelIcon.png";
+import editPriceIcon from "/assets/price-tag-euro.png";
 
 // COMPONENTS
 import Alert from "../Alert";
@@ -47,6 +48,13 @@ const SalesManager = () => {
     productPrice: "Precio",
   };
 
+  const fadeInOutVariants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: { opacity: 1, y: 0 },
+  };
+
+  // STATES
+
   const [enteredData, setEnteredData] = useState("");
   const [tags, setTags] = useState([]);
   const [selectedDates, setSelectedDates] = useState({});
@@ -60,6 +68,8 @@ const SalesManager = () => {
     type: "",
     visible: false,
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [quantity, setQuantity] = useState(1); // Estado para la cantidad
 
   ///////////// UTILITIES ////////////////////
 
@@ -126,64 +136,75 @@ const SalesManager = () => {
       return;
     }
 
-    if (selectedItem.productStock < 1) {
+    if (selectedItem.productStock < quantity) {
       setAlert({
         message: "Stock insuficiente.",
-        subMessage: "No se puede vender este producto.",
+        subMessage: `Solo quedan ${selectedItem.productStock} unidades en stock.`,
         type: "error",
         visible: true,
       });
       return;
     }
 
-    // Reducir el stock localmente
-    const updatedItem = {
-      ...selectedItem,
-      productStock: selectedItem.productStock - 1,
-    };
-
     const saleDate = selectedDates[id] || new Date();
     const saleDateTimestamp = Timestamp.fromDate(saleDate);
     const salePrice = parseInt(prices[id]) || selectedItem.productPrice;
 
-    const selectedItemToSell = {
-      ...Object.fromEntries(
-        Object.entries(updatedItem).filter(
-          ([key]) => key !== "productStock" && key !== "toDo"
-        )
-      ),
-      date: saleDateTimestamp,
-      productPrice: salePrice,
-    };
-
     try {
-      // Actualizar el stock en Firestore
-      const docRef = doc(db, `users/${user.uid}/products`, id);
-      await updateDoc(docRef, { productStock: updatedItem.productStock });
+      await runTransaction(db, async (transaction) => {
+        // Referencia al documento de producto en Firestore
+        const productDocRef = doc(db, `users/${user.uid}/products`, id);
 
-      // Crear la venta y obtener el ID del documento
-      const saleDocRef = await addDoc(
-        collection(db, `users/${user.uid}/sales`),
-        selectedItemToSell
-      );
-      const saleId = saleDocRef.id;
+        // Obtener el documento de producto actual dentro de la transacción
+        const productDoc = await transaction.get(productDocRef);
+        if (!productDoc.exists()) {
+          throw new Error("El producto no existe");
+        }
 
-      await updateDoc(saleDocRef, { id: saleId });
+        // Reducir el stock
+        const newStock = productDoc.data().productStock - quantity;
+        if (newStock < 0) {
+          throw new Error("Stock insuficiente para completar la venta");
+        }
+        transaction.update(productDocRef, { productStock: newStock });
+
+        // Crear múltiples documentos de venta dentro de la transacción
+        for (let i = 0; i < quantity; i++) {
+          const saleDocRef = await addDoc(
+            collection(db, `users/${user.uid}/sales`),
+            {
+              ...Object.fromEntries(
+                Object.entries(selectedItem).filter(
+                  ([key]) => key !== "productStock" && key !== "toDo"
+                )
+              ),
+              date: saleDateTimestamp,
+              productPrice: salePrice,
+            }
+          );
+
+          // Actualizar el campo `id` en cada documento de venta
+          transaction.update(saleDocRef, { id: saleDocRef.id });
+        }
+      });
 
       setAlert({
-        message: "Venta agregada correctamente",
+        message: "Ventas agregadas correctamente",
         type: "success",
         visible: true,
       });
 
+      // Resetear los estados después de la venta
       setTags([]);
       setEnteredData("");
       setSelectedDates({});
       setEditingItemId(null);
       setPrices({});
       setOriginalPrices({});
+      setQuantity(1); // Restablecer cantidad a 1
       reloadData();
     } catch (error) {
+      console.error("Error al procesar la venta:", error);
       setAlert({
         message: "Error al procesar la venta",
         type: "error",
@@ -203,8 +224,6 @@ const SalesManager = () => {
     }));
     setOpenPickerId(null);
   };
-
-  
 
   const handlePriceInput = (id) => {
     // Cancelar la edición previa si hay uno que se está editando
@@ -233,6 +252,10 @@ const SalesManager = () => {
   const handleCancelClick = (id) => {
     setPrices((prev) => ({ ...prev, [id]: originalPrices[id] || "" }));
     setEditingItemId(null);
+  };
+
+  const handleEditProperties = () => {
+    setIsEditing(!isEditing);
   };
 
   const renderProductDetails = (item) => {
@@ -343,87 +366,123 @@ const SalesManager = () => {
                 className="border-[1px] border-solid border-black rounded-xl shadow-lg shadow-gray-500 bg-opacity-45 bg-white px-3"
               >
                 <div className="flex flex-row w-full justify-between items-start pt-3">
-                  <div className="w-3/4 flex flex-col justify-center items-start">
+                  <div className="w-1/2 flex flex-col justify-center items-start">
                     {renderProductDetails(item)}
                   </div>
-                  <div className="flex flex-col items-end">
-                    <div className="flex flex-row items-start gap-2 border-b-[0.5px] border-r-[0.5px] border-black border-solid pr-1">
-                      <h3 className="text-md font-semibold">
-                        {propertyLabels.productPrice}:{" "}
-                      </h3>
-                      {editingItemId === item.id ? (
-                        <div className="flex flex-row gap-1">
-                          <input
-                            onChange={(event) =>
-                              handleChangePriceValue(event, item.id)
-                            }
-                            value={prices[item.id] || ""}
-                            className="w-10 rounded-md"
-                            type="text"
-                          />
-                          <button
-                            className="text-sm"
-                            onClick={() => handleCancelClick(item.id)}
-                          >
-                            <img
-                              className="w-10"
-                              src={cancelIcon}
-                              alt="cancel-icon"
+                  <div className="flex flex-col items-end w-1/2">
+                    <div className="flex flex-row gap-2" id="priceAndEditIcon">
+                      <div className="flex flex-row items-start gap-2 border-b-[0.5px] border-r-[0.5px] border-gray-500 border-solid p-[3px] shadow-gray-700 shadow-sm rounded-md">
+                        {editingItemId === item.id ? (
+                          <div className="flex flex-row gap-1">
+                            <input
+                              onChange={(event) =>
+                                handleChangePriceValue(event, item.id)
+                              }
+                              value={prices[item.id] || ""}
+                              className="w-10 rounded-md"
+                              type="text"
                             />
-                          </button>
-                        </div>
-                      ) : (
-                        <strong>€{prices[item.id] || item.productPrice}</strong>
-                      )}
+                            <button
+                              className="text-sm"
+                              onClick={() => handleCancelClick(item.id)}
+                            >
+                              <img
+                                className="w-5 lg:w-10"
+                                src={cancelIcon}
+                                alt="cancel-icon"
+                              />
+                            </button>
+                          </div>
+                        ) : (
+                          <strong>
+                            €{prices[item.id] || item.productPrice}
+                          </strong>
+                        )}
+                      </div>
+                      <button>
+                        <img
+                          onClick={handleEditProperties}
+                          src={editIcon}
+                          alt="edit-icon"
+                          className="w-5 lg:w-5"
+                        />
+                      </button>
                     </div>
                     <h3 className="font-semibold text-sm text-gray-500">
                       Stock: <strong> {item.productStock}</strong>
                     </h3>
-
-                    <div className="flex justify-end relative items-center gap-3">
-                      <button
-                        onClick={() => handlePriceInput(item.id)}
-                        className="py-2"
-                      >
-                        <img className="w-5" src={editIcon} alt="edit-icon" />
-                      </button>
-                      <FaCalendarAlt
-                        className="text-gray-600 cursor-pointer"
-                        onClick={() => toggleDatePicker(item.id)}
-                      />
-                      {openPickerId === item.id && (
-                        <div className="absolute top-8 right-0 z-10 bg-white p-2 shadow-lg">
-                          <DatePicker
-                            selected={selectedDates[item.id] || new Date()} // Usa la fecha actual por defecto
-                            onChange={(date) => handleDateChange(date, item.id)}
-                            inline
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      {item.productStock < 1 ? (
-                        <button
-                          onClick={() => handleSell(item.id)}
-                          className="bg-opacity-75 rounded-sm text-black font-semibold"
+                    <div className="flex flex-col">
+                      <div className="flex justify-end">
+                        {item.productStock < 1 ? (
+                          <button
+                            onClick={() => handleSell(item.id)}
+                            className="bg-opacity-75 rounded-sm text-black font-semibold"
+                          >
+                            <img
+                              className="w-10"
+                              src={sellIconGray}
+                              alt="sell-icon-grey"
+                            />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleSell(item.id)}
+                            className="bg-opacity-75 rounded-sm text-black font-semibold"
+                          >
+                            <img
+                              className="w-10"
+                              src={sellIcon}
+                              alt="sell-icon"
+                            />
+                          </button>
+                        )}
+                      </div>
+                      {isEditing && (
+                        <motion.div
+                          initial="hidden"
+                          animate="visible"
+                          exit="hidden"
+                          variants={fadeInOutVariants}
+                          transition={{ duration: 0.3 }}
+                          className="flex justify-end relative items-center gap-3"
                         >
-                          <img
-                            className="w-10"
-                            src={sellIconGray}
-                            alt="edit-icon"
+                          <div className="flex flex-row gap-2 justify-center items-center">
+                            <label className="text-xs" htmlFor="quantity">Cantidad:</label>
+                            <input
+                              id="quantity"
+                              type="number"
+                              onChange={(e) =>
+                                setQuantity(parseInt(e.target.value))
+                              }
+                              className="w-8 border-[0.5px] border-black border-solid rounded-md"
+                            />
+                          </div>
+                          <button
+                            onClick={() => handlePriceInput(item.id)}
+                            className="py-2"
+                          >
+                            <img
+                              className="w-5"
+                              src={editPriceIcon}
+                              alt="edit-icon"
+                            />
+                          </button>
+                          <FaCalendarAlt
+                            className="text-gray-600 cursor-pointer"
+                            onClick={() => toggleDatePicker(item.id)}
                           />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleSell(item.id)}
-                          className="bg-opacity-75 rounded-sm text-black font-semibold"
-                        >
-                          <img
-                            className="w-10"
-                            src={sellIcon}
-                            alt="edit-icon"
-                          />
-                        </button>
+                          {openPickerId === item.id && (
+                            <div className="absolute top-8 right-0 z-10 bg-white p-2 shadow-lg">
+                              <DatePicker
+                                selected={selectedDates[item.id] || new Date()} // Usa la fecha actual por defecto
+                                onChange={(date) =>
+                                  handleDateChange(date, item.id)
+                                }
+                                inline
+                              />
+                            </div>
+                          )}
+                        </motion.div>
                       )}
                     </div>
                   </div>
@@ -448,10 +507,6 @@ const SalesManager = () => {
       </div>
     </div>
   );
-};
-
-SalesManager.propTypes = {
-  children: PropTypes.node,
 };
 
 export default SalesManager;

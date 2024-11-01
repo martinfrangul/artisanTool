@@ -66,7 +66,7 @@ const Banner = ({ showInstallButton, handleInstallClick }) => {
             />
           </div>
 
-          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2">
+          <h1 className="mb-2 text-logo text-xl md:text-2xl font-bold pt-2 md:py-2 text-center">
             Registro de ventas
           </h1>
         </div>

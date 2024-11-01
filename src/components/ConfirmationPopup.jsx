@@ -1,6 +1,3 @@
-import PropTypes from "prop-types"
-
-
 const ConfirmationPopup = ({handleConfirmation, confirmationPopupMessage}) => {
     return ( 
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-opacity-30 bg-gray-500">
@@ -26,10 +23,6 @@ const ConfirmationPopup = ({handleConfirmation, confirmationPopupMessage}) => {
      );
 }
 
-ConfirmationPopup.propTypes = {
-  handleConfirmation: PropTypes.func.isRequired,
-  confirmationPopupMessage: PropTypes.string.isRequired,
-};
 
  
 export default ConfirmationPopup;

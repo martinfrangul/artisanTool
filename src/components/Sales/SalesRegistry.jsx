@@ -85,7 +85,7 @@ const SalesRegistry = () => {
     }
 
     const properties = Object.keys(propertyLabels)
-      .filter(key => key !== "quantity" && key !== "date" && key !== "productStock" && key !== "id")
+      .filter(key => key !== "date" && key !== "productStock" && key !== "id")
       .map(key => current[key])
       .join("-");
 
@@ -131,6 +131,8 @@ const SalesRegistry = () => {
 
     try {
       const docRef = doc(database, `users/${user.uid}/sales`, id);
+      console.log("Id del doc a eliminar", id);
+
       await deleteDoc(docRef);
       setAlert({
         message: "Producto eliminado correctamente",
@@ -190,7 +192,7 @@ const SalesRegistry = () => {
       "¿Estás segure que deseas eliminar la venta?"
     );
     setPendingAction(() => () => handleDelete(id));
-    
+    console.log("ID de la venta que se intenta eliminar:", id);
   };
 
   const handleConfirmation = (confirmed) => {

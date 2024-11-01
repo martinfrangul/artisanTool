@@ -5,7 +5,6 @@ import salesImage from "/assets/salesImage.jpeg";
 import salesRegistryImage from "/assets/salesRegistryImage.jpeg";
 import salesChartImage from "/assets/salesChartImage.jpeg";
 import expensesImage from "/assets/expensesImage.jpeg";
-import PropTypes from 'prop-types'
 
 const Home = () => {
 
@@ -92,12 +91,6 @@ const Home = () => {
      
       </div>
   );
-};
-
-
-Home.propTypes = {
-  showInstallButton: PropTypes.bool.isRequired,
-  handleInstallClick: PropTypes.func.isRequired,
 };
 
 export default Home;

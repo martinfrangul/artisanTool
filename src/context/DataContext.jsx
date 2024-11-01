@@ -1,7 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { useAuth } from "../hooks/useAuth";
-import PropTypes from "prop-types";
 
 const DataContext = createContext();
 
@@ -76,8 +75,5 @@ const DataContextProvider = ({ children }) => {
   );
 };
 
-DataContextProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-};
 
 export { DataContext, DataContextProvider };
