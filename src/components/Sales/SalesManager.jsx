@@ -70,6 +70,7 @@ const SalesManager = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [quantity, setQuantity] = useState(1); // Estado para la cantidad
+  const [isLoading, setIsLoading] = useState(false);
 
   ///////////// UTILITIES ////////////////////
 
@@ -116,6 +117,8 @@ const SalesManager = () => {
   const filteredData = filterData(inventoryData, tags);
 
   const handleSell = async (id) => {
+    setIsLoading(true);
+
     if (!user) {
       setAlert({
         message: "Usuario no autenticado",
@@ -210,6 +213,8 @@ const SalesManager = () => {
         type: "error",
         visible: true,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -296,6 +301,11 @@ const SalesManager = () => {
 
   return (
     <div className="pb-28 md:pb-36">
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-2xl z-50">
+          Loading...
+        </div>
+      )}
       {alert.visible && (
         <Alert
           message={alert.message}
@@ -447,7 +457,9 @@ const SalesManager = () => {
                           className="flex justify-end relative items-center gap-3"
                         >
                           <div className="flex flex-row gap-2 justify-center items-center">
-                            <label className="text-xs" htmlFor="quantity">Cantidad:</label>
+                            <label className="text-xs" htmlFor="quantity">
+                              Cantidad:
+                            </label>
                             <input
                               id="quantity"
                               type="number"

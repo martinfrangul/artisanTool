@@ -131,8 +131,6 @@ const SalesRegistry = () => {
 
     try {
       const docRef = doc(database, `users/${user.uid}/sales`, id);
-      console.log("Id del doc a eliminar", id);
-
       await deleteDoc(docRef);
       setAlert({
         message: "Producto eliminado correctamente",
@@ -142,6 +140,11 @@ const SalesRegistry = () => {
       setConfirmationModalVisible(false);
       reloadData();
     } catch (error) {
+      setAlert({
+        message: "Error al eliminar la venta",
+        type: "danger",
+        visible: true,
+      });
       console.error("Error al eliminar la venta: ", error);
     }
     setConfirmationModalVisible(false);
@@ -192,7 +195,6 @@ const SalesRegistry = () => {
       "¿Estás segure que deseas eliminar la venta?"
     );
     setPendingAction(() => () => handleDelete(id));
-    console.log("ID de la venta que se intenta eliminar:", id);
   };
 
   const handleConfirmation = (confirmed) => {
