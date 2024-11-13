@@ -29,7 +29,7 @@ const Navbar = () => {
         {/* BUTTON 1 - Home */}
         <NavLink to="/">
           <div
-            className={`p-3 rounded-full bg-banner w-12 h-12 md:w-16 md:h-16 flex justify-center items-center hover:scale-110 transition-transform duration-300 ${
+            className={`p-3 rounded-full w-12 h-12 md:w-16 md:h-16 flex justify-center items-center hover:scale-110 transition-transform duration-300 ${
               location.pathname === "/" ? "bg-[#93b2ce]" : "bg-banner"
             }`}
           >
@@ -45,7 +45,7 @@ const Navbar = () => {
 
         <NavLink to="/inventory">
           <div
-            className={`p-3 rounded-full bg-banner w-12 h-12 md:w-16 md:h-16 flex justify-center items-center hover:scale-110 transition-transform duration-300 ${
+            className={`p-3 rounded-full w-12 h-12 md:w-16 md:h-16 flex justify-center items-center hover:scale-110 transition-transform duration-300 ${
               location.pathname === "/inventory" ? "bg-[#93b2ce]" : "bg-banner"
             }`}
           >
@@ -60,7 +60,7 @@ const Navbar = () => {
         {/* BUTTON 3 - Sales */}
         <NavLink to="/sales-manager">
           <div
-            className={`p-3 rounded-full bg-banner w-12 h-12 md:w-16 md:h-16 flex justify-center items-center hover:scale-110 transition-transform duration-300 ${
+            className={`p-3 rounded-full w-12 h-12 md:w-16 md:h-16 flex justify-center items-center hover:scale-110 transition-transform duration-300 ${
               location.pathname === "/sales-manager"
                 ? "bg-[#93b2ce]"
                 : "bg-banner"
@@ -77,7 +77,7 @@ const Navbar = () => {
         {/* BUTTON 4 - Sales registry */}
         <NavLink to="/sales-registry">
           <div
-            className={`p-3 rounded-full bg-banner w-12 h-12 md:w-16 md:h-16 flex justify-center items-center hover:scale-110 transition-transform duration-300 ${
+            className={`p-3 rounded-full w-12 h-12 md:w-16 md:h-16 flex justify-center items-center hover:scale-110 transition-transform duration-300 ${
               location.pathname === "/sales-registry"
                 ? "bg-[#93b2ce]"
                 : "bg-banner"
