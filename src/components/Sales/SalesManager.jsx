@@ -19,6 +19,7 @@ import { DataContext } from "../../context/DataContext";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
+import "../../styles/SalesManager.css";
 
 // ICONS
 import editIcon from "/assets/editIcon.png";
@@ -29,6 +30,7 @@ import editPriceIcon from "/assets/price-tag-euro.png";
 
 // COMPONENTS
 import Alert from "../Alert";
+import Loading from "../Loading";
 
 const SalesManager = () => {
   const context = useContext(DataContext);
@@ -119,12 +121,24 @@ const SalesManager = () => {
   const handleSell = async (id) => {
     setIsLoading(true);
 
+    if (quantity < 1) {
+      setAlert({
+        message: "La cantidad no puede ser inferior a 1",
+        type: "warning",
+        visible: true,
+      });
+      setIsLoading(false);
+      setQuantity(1);
+      return;
+    }
+
     if (!user) {
       setAlert({
         message: "Usuario no autenticado",
         type: "error",
         visible: true,
       });
+      setIsLoading(false);
       return;
     }
 
@@ -136,16 +150,24 @@ const SalesManager = () => {
         type: "warning",
         visible: true,
       });
+      setIsLoading(false);
       return;
     }
 
     if (selectedItem.productStock < quantity) {
+      const subMessage =
+        selectedItem.productStock === 0
+          ? "No hay stock"
+          : `Solo quedan ${selectedItem.productStock} unidades en stock.`;
+
       setAlert({
         message: "Stock insuficiente.",
-        subMessage: `Solo quedan ${selectedItem.productStock} unidades en stock.`,
+        subMessage,
         type: "error",
         visible: true,
       });
+      setIsLoading(false);
+      setQuantity(1);
       return;
     }
 
@@ -167,7 +189,9 @@ const SalesManager = () => {
         // Reducir el stock
         const newStock = productDoc.data().productStock - quantity;
         if (newStock < 0) {
+          setIsLoading(false);
           throw new Error("Stock insuficiente para completar la venta");
+          setQuantity(1);
         }
         transaction.update(productDocRef, { productStock: newStock });
 
@@ -200,6 +224,7 @@ const SalesManager = () => {
       // Resetear los estados después de la venta
       setTags([]);
       setEnteredData("");
+      setIsEditing(false);
       setSelectedDates({});
       setEditingItemId(null);
       setPrices({});
@@ -301,11 +326,7 @@ const SalesManager = () => {
 
   return (
     <div className="pb-28 md:pb-36">
-      {isLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-2xl z-50">
-          Loading...
-        </div>
-      )}
+      <Loading isLoading={isLoading} />
       {alert.visible && (
         <Alert
           message={alert.message}
@@ -462,11 +483,13 @@ const SalesManager = () => {
                             </label>
                             <input
                               id="quantity"
+                              value={quantity}
                               type="number"
+                              placeholder="1"
                               onChange={(e) =>
                                 setQuantity(parseInt(e.target.value))
                               }
-                              className="w-8 border-[0.5px] border-black border-solid rounded-md"
+                              className="w-8 border-[0.5px] border-black border-solid rounded-md text-center custom-input-appearance"
                             />
                           </div>
                           <button

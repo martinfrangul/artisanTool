@@ -1,9 +1,3 @@
-.no-scroll {
-  overflow: hidden;
-  position: fixed;
-  width: 100%;
-}
-
 .custom-input-appearance::-webkit-inner-spin-button,
 .custom-input-appearance::-webkit-outer-spin-button {
     -webkit-appearance: none;
