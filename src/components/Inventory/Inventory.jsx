@@ -30,6 +30,7 @@ const propertyLabels = {
   productName: "Producto",
   productStock: "Stock",
   productPrice: "Precio",
+  binding: "Cosido",
 };
 
 const Inventory = () => {

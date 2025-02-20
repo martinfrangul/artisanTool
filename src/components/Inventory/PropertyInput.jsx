@@ -1,29 +1,41 @@
 import { motion } from "framer-motion";
-import PropTypes from "prop-types";
-import Select from 'react-select';
-import Creatable from 'react-select/creatable';
+import Select from "react-select";
+import Creatable from "react-select/creatable";
 import { useState, useEffect } from "react";
 import deleteIcon from "/assets/deleteIcon.png";
 
-const PropertyInput = ({ index, input, updatePropertyField, deleteInput, properties, options, existingProperties }) => {
+const PropertyInput = ({
+  index,
+  input,
+  updatePropertyField,
+  deleteInput,
+  properties,
+  options,
+  existingProperties,
+}) => {
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [currentOption, setCurrentOption] = useState(null);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
-    const selectedProperties = properties.map(p => p.property);
-    const newFilteredOptions = options.filter(option =>
-      option.value === "" || !selectedProperties.includes(option.value) || option.value === input.property
+    const selectedProperties = properties.map((p) => p.property);
+    const newFilteredOptions = options.filter(
+      (option) =>
+        option.value === "" ||
+        !selectedProperties.includes(option.value) ||
+        option.value === input.property
     );
     setFilteredOptions(newFilteredOptions);
   }, [properties, input.property, options]);
 
   useEffect(() => {
     if (input.property && existingProperties[input.property]) {
-      const filteredSuggestions = existingProperties[input.property].filter(suggestion =>
-        suggestion.toLowerCase().includes(inputValue.toLowerCase())
-      ).map(suggestion => ({ label: suggestion, value: suggestion }));
+      const filteredSuggestions = existingProperties[input.property]
+        .filter((suggestion) =>
+          suggestion.toLowerCase().includes(inputValue.toLowerCase())
+        )
+        .map((suggestion) => ({ label: suggestion, value: suggestion }));
       setSuggestions(filteredSuggestions);
     } else {
       setSuggestions([]);
@@ -31,23 +43,33 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
   }, [input.property, inputValue, existingProperties]);
 
   useEffect(() => {
-    setCurrentOption(input.option ? { label: input.option, value: input.option } : null);
+    setCurrentOption(
+      input.option ? { label: input.option, value: input.option } : null
+    );
   }, [input.option]);
 
   const handlePropertyChange = (selectedOption) => {
-    updatePropertyField(index, "property", selectedOption ? selectedOption.value : "");
+    updatePropertyField(
+      index,
+      "property",
+      selectedOption ? selectedOption.value : ""
+    );
     updatePropertyField(index, "option", "");
     setCurrentOption(null);
   };
 
   const handleOptionChange = (selectedOption) => {
     setCurrentOption(selectedOption);
-    updatePropertyField(index, "option", selectedOption ? selectedOption.value : "");
+    updatePropertyField(
+      index,
+      "option",
+      selectedOption ? selectedOption.value : ""
+    );
   };
 
   const handleCreateOption = (inputValue) => {
     const newOption = { label: inputValue, value: inputValue };
-    setSuggestions(prevSuggestions => [...prevSuggestions, newOption]);
+    setSuggestions((prevSuggestions) => [...prevSuggestions, newOption]);
     setCurrentOption(newOption);
     updatePropertyField(index, "option", inputValue);
   };
@@ -57,10 +79,13 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
   };
 
   const handleBlur = () => {
-    if (inputValue && !suggestions.some(option => option.value === inputValue)) {
+    if (
+      inputValue &&
+      !suggestions.some((option) => option.value === inputValue)
+    ) {
       handleCreateOption(inputValue);
     }
-    setInputValue(''); // Clear input value on blur
+    setInputValue(""); // Clear input value on blur
   };
 
   return (
@@ -75,10 +100,25 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
         <label htmlFor={`property-${index}`}>Propiedad</label>
         <Select
           inputId={`property-${index}`}
-          options={filteredOptions.map(option => ({ label: option.label, value: option.value }))}
+          options={filteredOptions.map((option) => ({
+            label: option.label,
+            value: option.value,
+          }))}
           onChange={handlePropertyChange}
-          value={filteredOptions.find(option => option.value === input.property) || null}
+          value={
+            filteredOptions.find((option) => option.value === input.property) ||
+            null
+          }
           className="w-full"
+          menuPortalTarget={document.body} // 👈 Esto mueve el menú al body y evita recortes
+          styles={{
+            menuPortal: (base) => ({ ...base, zIndex: 9999 }), // 👈 Asegura que el menú esté sobre otros elementos
+            menu: (base) => ({
+              ...base,
+              maxHeight: "200px", // 👈 Agrega un límite de altura
+              overflowY: "auto", // 👈 Habilita el scroll
+            }),
+          }}
         />
       </div>
       <div className="flex flex-col justify-center items-center px-3 gap-2 w-full md:w-1/4">
@@ -88,7 +128,11 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
           options={suggestions}
           onChange={handleOptionChange}
           onCreateOption={handleCreateOption}
-          value={currentOption || (suggestions.find(option => option.value === input.option) || null)}
+          value={
+            currentOption ||
+            suggestions.find((option) => option.value === input.option) ||
+            null
+          }
           placeholder="(Opcional)"
           className="w-full"
           onInputChange={handleInputChange}
@@ -105,30 +149,6 @@ const PropertyInput = ({ index, input, updatePropertyField, deleteInput, propert
       </div>
     </motion.div>
   );
-};
-
-PropertyInput.propTypes = {
-  index: PropTypes.number.isRequired,
-  input: PropTypes.shape({
-    property: PropTypes.string.isRequired,
-    option: PropTypes.string.isRequired,
-  }).isRequired,
-  updatePropertyField: PropTypes.func.isRequired,
-  deleteInput: PropTypes.func.isRequired,
-  properties: PropTypes.arrayOf(
-    PropTypes.shape({
-      property: PropTypes.string.isRequired,
-      option: PropTypes.string
-    })
-  ).isRequired,
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.string.isRequired,
-      label: PropTypes.string.isRequired,
-      disabled: PropTypes.bool
-    })
-  ).isRequired,
-  existingProperties: PropTypes.object.isRequired
 };
 
 export default PropertyInput;

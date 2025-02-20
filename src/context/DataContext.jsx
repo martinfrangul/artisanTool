@@ -66,6 +66,7 @@ const DataContextProvider = ({ children }) => {
     { value: "design", label: "Diseño" },
     { value: "color", label: "Color" },
     { value: "type", label: "Tipo" },
+    { value: "binding", label: "Cosido" },
   ];
 
   return (

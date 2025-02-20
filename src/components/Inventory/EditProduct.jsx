@@ -37,6 +37,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     "model",
     "productPrice",
     "productStock",
+    "binding"
   ];
 
   // Mapa de nombre de propiedes mejorado
@@ -49,6 +50,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     productName: "Producto",
     productStock: "Stock",
     productPrice: "Precio",
+    binding: "Cosido",
   };
 
   const nonDeletableProperties = [
