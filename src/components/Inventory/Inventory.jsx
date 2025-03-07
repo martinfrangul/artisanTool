@@ -19,6 +19,7 @@ import EditProduct from "./EditProduct";
 import Alert from "../Alert";
 import ConfirmationPopup from "../ConfirmationPopup";
 import Summary from "./Summary";
+import CustomCheckbox from "../CustomCheckbox";
 
 // Mapa de nombre de propiedades mejorado
 const propertyLabels = {
@@ -55,8 +56,9 @@ const Inventory = () => {
   const [pendingAction, setPendingAction] = useState(null);
   const [confirmationPopupMessage, setConfirmationPopupMessage] = useState("");
   const [tempToDo, setTempToDo] = useState({}); // Estado para manejar el valor temporal del input
+  const [toDoOnlyChecked, setToDoOnlyChecked] = useState(false);
 
-  useEffect(() => {
+ useEffect(() => {
     // Añadir o quitar la clase no-scroll en el body
     if (isConfirmationModalVisible || isModalSummaryVisible) {
       document.body.classList.add("no-scroll");
@@ -176,6 +178,10 @@ const Inventory = () => {
     setModalVisible(true);
   };
 
+  const handleToDoOnlyCheckboxChange = () => {
+    setToDoOnlyChecked((prev) => !prev);
+  };
+
   // MÉTODO SORT QUE ORDENA SEGÚN UN CRITERIO PRIMARIO Y UNO SECUNDARIO TENIENDO EN CUENTA TILDES
   // Y LLEVANDO AL FONDO DE CADA CRITERIO SI NO TIENE LA PROPIEDAD A FILTRAR
 
@@ -217,6 +223,13 @@ const Inventory = () => {
       }
     }
   });
+
+   // Filtrar los productos que tienen un to-do mayor que 0
+   const toDoOnly = sortedData.filter((item) => item.toDo > 0);
+
+   // Datos a renderizar. Si `toDoOnlyChecked` es verdadero, renderiza solo los productos con to-do mayor que 0. Si no, renderiza los datos ordenados sin filtro.
+   const dataToRender = toDoOnlyChecked ? toDoOnly : sortedData;
+   
 
   // Maneja el cambio en la propiedad de orden y la agrega al localStorage para que perdure
   const handleSortChange = (event) => {
@@ -440,7 +453,14 @@ const Inventory = () => {
           </div>
         </button>
       </div>
-      <div className="flex justify-center w-full p-2 border-b-[1px] border-solid border-black bg-white bg-opacity-35">
+      <div className="flex justify-center w-full gap-5 p-2 border-b-[1px] border-solid border-black bg-white bg-opacity-35">
+        <div className="flex flex-row items-center justify-center gap-2 text-center">
+          <h3 className="text-sm font-semibold">To-do only:</h3>
+          <CustomCheckbox
+            checked={toDoOnlyChecked} // Estado manejado externamente
+            onChange={handleToDoOnlyCheckboxChange}
+          />
+        </div>
         <button
           onClick={() => handleSummaryModal()}
           className="flex justify-center p-1 text-sm items-center bg-banner border-[1px] border-solid border-black rounded-md shadow-lg shadow-gray-500"
@@ -449,8 +469,8 @@ const Inventory = () => {
         </button>
       </div>
 
-      {sortedData.length > 0 ? (
-        sortedData.map((item) => (
+      {dataToRender.length > 0 ? (
+        dataToRender.map((item) => (
           <div
             key={item.id}
             className="flex flex-row justify-between items-start pb-5 px-2 pt-2 border-b-[1px] border-solid border-black"
