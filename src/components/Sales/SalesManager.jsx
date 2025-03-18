@@ -34,21 +34,10 @@ import Loading from "../Loading";
 
 const SalesManager = () => {
   const context = useContext(DataContext);
-  const { reloadData, inventoryData } = context;
+  const { reloadData, inventoryData, propertyLabels } = context;
 
   const { user } = useAuth();
   const db = getFirestore();
-
-  const propertyLabels = {
-    design: "Diseño",
-    size: "Tamaño",
-    color: "Color",
-    type: "Tipo",
-    model: "Modelo",
-    productName: "Producto",
-    productStock: "Stock",
-    productPrice: "Precio",
-  };
 
   const fadeInOutVariants = {
     hidden: { opacity: 0, y: -10 },
@@ -70,7 +59,7 @@ const SalesManager = () => {
     type: "",
     visible: false,
   });
-  const [isEditing, setIsEditing] = useState(false);
+  const [editingItems, setEditingItems] = useState({});
   const [quantity, setQuantity] = useState(1); // Estado para la cantidad
   const [isLoading, setIsLoading] = useState(false);
 
@@ -190,8 +179,8 @@ const SalesManager = () => {
         const newStock = productDoc.data().productStock - quantity;
         if (newStock < 0) {
           setIsLoading(false);
-          throw new Error("Stock insuficiente para completar la venta");
           setQuantity(1);
+          throw new Error("Stock insuficiente para completar la venta");
         }
         transaction.update(productDocRef, { productStock: newStock });
 
@@ -224,12 +213,15 @@ const SalesManager = () => {
       // Resetear los estados después de la venta
       setTags([]);
       setEnteredData("");
-      setIsEditing(false);
       setSelectedDates({});
       setEditingItemId(null);
       setPrices({});
       setOriginalPrices({});
       setQuantity(1); // Restablecer cantidad a 1
+      setEditingItems((prev) => ({
+        ...prev,
+        [id]: false, // Cerrar edición solo para este producto
+      }));
       reloadData();
     } catch (error) {
       console.error("Error al procesar la venta:", error);
@@ -284,8 +276,11 @@ const SalesManager = () => {
     setEditingItemId(null);
   };
 
-  const handleEditProperties = () => {
-    setIsEditing(!isEditing);
+  const handleEditProperties = (id) => {
+    setEditingItems((prev) => ({
+      ...prev,
+      [id]: !prev[id], // Alternar edición solo para este producto
+    }));
   };
 
   const renderProductDetails = (item) => {
@@ -432,7 +427,7 @@ const SalesManager = () => {
                       </div>
                       <button>
                         <img
-                          onClick={handleEditProperties}
+                          onClick={() => handleEditProperties(item.id)}
                           src={editIcon}
                           alt="edit-icon"
                           className="w-5 lg:w-5"
@@ -468,7 +463,7 @@ const SalesManager = () => {
                           </button>
                         )}
                       </div>
-                      {isEditing && (
+                      {editingItems[item.id] && (
                         <motion.div
                           initial="hidden"
                           animate="visible"

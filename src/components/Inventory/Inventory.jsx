@@ -21,22 +21,9 @@ import ConfirmationPopup from "../ConfirmationPopup";
 import Summary from "./Summary";
 import CustomCheckbox from "../CustomCheckbox";
 
-// Mapa de nombre de propiedades mejorado
-const propertyLabels = {
-  design: "Diseño",
-  size: "Tamaño",
-  color: "Color",
-  type: "Tipo",
-  model: "Modelo",
-  productName: "Producto",
-  productStock: "Stock",
-  productPrice: "Precio",
-  binding: "Cosido",
-};
-
 const Inventory = () => {
   const context = useContext(DataContext);
-  const { inventoryData, reloadData } = context;
+  const { inventoryData, reloadData, propertyLabels} = context;
   const { user } = useAuth(); // Obtén el usuario actual
 
   const initialSortProperty =

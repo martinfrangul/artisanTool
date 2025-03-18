@@ -12,23 +12,10 @@ import { doc, deleteDoc } from "firebase/firestore";
 import { database } from "../../../firebase/firebaseConfig";
 import { Timestamp } from "firebase/firestore";
 
-// Mapa de nombre de propiedes mejorado
-const propertyLabels = {
-  design: "Diseño",
-  size: "Tamaño",
-  color: "Color",
-  type: "Tipo",
-  model: "Modelo",
-  productName: "Producto",
-  productStock: "Stock",
-  productPrice: "Precio",
-  date: "Fecha",
-  quantity: "Cantidad",
-};
 
 const SalesRegistry = () => {
   const context = useContext(DataContext);
-  const { sellData, reloadData } = context;
+  const { sellData, reloadData, propertyLabels } = context;
   const { user } = useAuth(); // Obtén el usuario actual
 
   // STATES
@@ -109,6 +96,7 @@ const SalesRegistry = () => {
   groupedDataArray.sort((a, b) => a.date.toDate() - b.date.toDate());
 
   setFilteredSellData(groupedDataArray);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [sellData, startDate, endDate]);
 
 

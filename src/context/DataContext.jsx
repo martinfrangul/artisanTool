@@ -59,18 +59,36 @@ const DataContextProvider = ({ children }) => {
     setReload((prev) => !prev);
   };
 
+
+  // Mapa de nombre de propiedades mejorado
+  const propertyLabels = {
+    design: "Diseño",
+    size: "Tamaño",
+    color: "Color",
+    type: "Tipo",
+    model: "Modelo",
+    binding: "Cosido",
+    productName: "Producto",
+    productStock: "Stock",
+    productPrice: "Precio",
+    date: "Fecha",
+    quantity: "Cantidad",
+  };
+
+
+  //La librería react-select requiere que las opciones sean un array de objetos con las propiedades value y label
   const options = [
     { value: "", label: "(Opcional)", disabled: true },
-    { value: "model", label: "Modelo" },
-    { value: "size", label: "Tamaño" },
-    { value: "design", label: "Diseño" },
-    { value: "color", label: "Color" },
-    { value: "type", label: "Tipo" },
-    { value: "binding", label: "Cosido" },
+    { value: "model", label: propertyLabels.model },
+    { value: "size", label: propertyLabels.size },
+    { value: "design", label: propertyLabels.design },
+    { value: "color", label: propertyLabels.color },
+    { value: "type", label: propertyLabels.type },
+    { value: "binding", label: propertyLabels.binding },
   ];
 
   return (
-    <DataContext.Provider value={{options, sellData, setSellData, inventoryData, setInventoryData, reloadData }}>
+    <DataContext.Provider value={{options, sellData, setSellData, inventoryData, setInventoryData, reloadData, propertyLabels }}>
       {children}
     </DataContext.Provider>
   );

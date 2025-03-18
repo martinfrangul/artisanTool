@@ -27,6 +27,12 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   const [errors, setErrors] = useState({});
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
   const [availableProperties, setAvailableProperties] = useState([]);
+  
+  const Authcontext = useContext(AuthContext);
+  const Datacontext = useContext(DataContext);
+
+  const { user } = Authcontext;
+  const { reloadData, propertyLabels } = Datacontext;
 
   const customOrder = [
     "productName",
@@ -41,17 +47,6 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   ];
 
   // Mapa de nombre de propiedes mejorado
-  const propertyLabels = {
-    design: "Diseño",
-    size: "Tamaño",
-    color: "Color",
-    type: "Tipo",
-    model: "Modelo",
-    productName: "Producto",
-    productStock: "Stock",
-    productPrice: "Precio",
-    binding: "Cosido",
-  };
 
   const nonDeletableProperties = [
     "productName",
@@ -60,11 +55,6 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   ];
   const allProperties = Object.keys(propertyLabels);
 
-  const Authcontext = useContext(AuthContext);
-  const Datacontext = useContext(DataContext);
-
-  const { user } = Authcontext;
-  const { reloadData } = Datacontext;
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -119,6 +109,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   };
 
   const handleDeleteProperty = (key) => {
+    // eslint-disable-next-line no-unused-vars
     const { [key]: _, ...rest } = itemData;
     setItemData(rest);
     setAvailableProperties([...availableProperties, key]);
