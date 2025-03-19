@@ -27,7 +27,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   const [errors, setErrors] = useState({});
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
   const [availableProperties, setAvailableProperties] = useState([]);
-  
+
   const Authcontext = useContext(AuthContext);
   const Datacontext = useContext(DataContext);
 
@@ -43,7 +43,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     "model",
     "productPrice",
     "productStock",
-    "binding"
+    "binding",
   ];
 
   // Mapa de nombre de propiedes mejorado
@@ -54,7 +54,6 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     "productPrice",
   ];
   const allProperties = Object.keys(propertyLabels);
-
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -83,12 +82,6 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   }, [user, productIdForEdit]);
 
   const handleInputChange = (key, value) => {
-
-    if (typeof value === "string") {
-      value = value.toLowerCase().trim();
-    }
-
-
     if ((key === "productStock" || key === "productPrice") && value !== "") {
       if (!isNaN(value)) {
         value = parseInt(value);
@@ -207,7 +200,16 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
       return;
     }
 
-    const updates = { ...itemData };
+    // Crear un objeto de actualizaciones (aplicando el trim y toLowerCase solo al guardar)
+    const updates = {};
+
+    Object.entries(itemData).forEach(([key, value]) => {
+      if (typeof value === "string") {
+        updates[key] = value.toLowerCase().trim(); // Convertir a minúsculas y eliminar espacios al principio y al final solo al guardar
+      } else {
+        updates[key] = value; // Mantener los valores numéricos tal cual
+      }
+    });
 
     // Revisar las propiedades que faltan en itemData y eliminarlas en Firebase
     const docRef = doc(
