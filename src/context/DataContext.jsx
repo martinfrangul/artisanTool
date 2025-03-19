@@ -71,8 +71,6 @@ const DataContextProvider = ({ children }) => {
     productName: "Producto",
     productStock: "Stock",
     productPrice: "Precio",
-    date: "Fecha",
-    quantity: "Cantidad",
   };
 
 

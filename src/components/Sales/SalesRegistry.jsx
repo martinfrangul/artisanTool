@@ -28,7 +28,11 @@ const SalesRegistry = () => {
   const [confirmationPopupMessage, setConfirmationPopupMessage] = useState("");
   const [pendingAction, setPendingAction] = useState(null);
 
-
+  const salesRegistryPropertyLabels = {
+    ...propertyLabels,
+    date: "Fecha",
+    quantity: "Cantidad",
+  }
   ////// UTILITIES ///////
   const capitalizeFirstLetter = (string) => {
     if (typeof string !== "string") {
@@ -71,7 +75,7 @@ const SalesRegistry = () => {
       current.quantity = 1;
     }
 
-    const properties = Object.keys(propertyLabels)
+    const properties = Object.keys(salesRegistryPropertyLabels)
       .filter(key => key !== "date" && key !== "productStock" && key !== "id")
       .map(key => current[key])
       .join("-");
@@ -154,8 +158,8 @@ const SalesRegistry = () => {
     );
 
     const orderedProperties = filteredProperties.sort(([keyA], [keyB]) => {
-      const indexA = Object.keys(propertyLabels).indexOf(keyA);
-      const indexB = Object.keys(propertyLabels).indexOf(keyB);
+      const indexA = Object.keys(salesRegistryPropertyLabels).indexOf(keyA);
+      const indexB = Object.keys(salesRegistryPropertyLabels).indexOf(keyB);
       return indexA - indexB;
     });
 
@@ -166,7 +170,7 @@ const SalesRegistry = () => {
             value ? (
               <h4 className="text-md flex flex-row gap-1" key={key}>
                 <strong>
-                  {propertyLabels[key] || capitalizeFirstLetter(key)}:
+                  {salesRegistryPropertyLabels[key] || capitalizeFirstLetter(key)}:
                 </strong>
                 <div className="break-all">{capitalizeFirstLetter(value)}</div>
               </h4>
@@ -276,19 +280,19 @@ const SalesRegistry = () => {
                   <div className="flex flex-col w-4/12 gap-2 p-2">
                     <div className="flex flex-col">
                       <h3 className="text-sm font-semibold">
-                        {propertyLabels.date}:{" "}
+                        {salesRegistryPropertyLabels.date}:{" "}
                         <strong>{formatDate(item.date)}</strong>
                       </h3>
                     </div>
                     <div className="flex flex-col gap-3">
                       <h3 className="text-sm font-semibold">
-                        {propertyLabels.productPrice}:{" "}
+                        {salesRegistryPropertyLabels.productPrice}:{" "}
                         <strong>€{item.productPrice}</strong>
                       </h3>
                     </div>
                     <div className="flex flex-col gap-3">
                       <h3 className="text-sm font-semibold">
-                        {propertyLabels.quantity}:{" "}
+                        {salesRegistryPropertyLabels.quantity}:{" "}
                         <strong>{item.quantity}</strong>
                       </h3>
                     </div>

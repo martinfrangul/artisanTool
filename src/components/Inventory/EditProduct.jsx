@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import deleteItemIconRed from "/assets/deleteItemIconRed.png";
-import PropTypes from "prop-types";
 
 // CONTEXT
 import { AuthContext } from "../../context/AuthContext";
@@ -204,7 +203,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     const updates = {};
 
     Object.entries(itemData).forEach(([key, value]) => {
-      if (typeof value === "string") {
+      if (key !== 'id' && typeof value === "string") {
         updates[key] = value.toLowerCase().trim(); // Convertir a minúsculas y eliminar espacios al principio y al final solo al guardar
       } else {
         updates[key] = value; // Mantener los valores numéricos tal cual
@@ -386,11 +385,6 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
       </div>
     </div>
   );
-};
-
-EditProduct.propTypes = {
-  handleModalToggle: PropTypes.func.isRequired,
-  productIdForEdit: PropTypes.string.isRequired,
 };
 
 export default EditProduct;
