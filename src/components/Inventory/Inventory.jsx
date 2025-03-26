@@ -20,10 +20,11 @@ import Alert from "../Alert";
 import ConfirmationPopup from "../ConfirmationPopup";
 import Summary from "./Summary";
 import CustomCheckbox from "../CustomCheckbox";
+import SortSelector from "../SortSelector";
 
 const Inventory = () => {
   const context = useContext(DataContext);
-  const { inventoryData, reloadData, propertyLabels} = context;
+  const { inventoryData, reloadData, propertyLabels } = context;
   const { user } = useAuth(); // Obtén el usuario actual
 
   const initialSortProperty =
@@ -44,8 +45,9 @@ const Inventory = () => {
   const [confirmationPopupMessage, setConfirmationPopupMessage] = useState("");
   const [tempToDo, setTempToDo] = useState({}); // Estado para manejar el valor temporal del input
   const [toDoOnlyChecked, setToDoOnlyChecked] = useState(false);
+  const [editModes, setEditModes] = useState({}); // Estado para manejar el modo de edición por cada elemento
 
- useEffect(() => {
+  useEffect(() => {
     // Añadir o quitar la clase no-scroll en el body
     if (isConfirmationModalVisible || isModalSummaryVisible) {
       document.body.classList.add("no-scroll");
@@ -211,25 +213,11 @@ const Inventory = () => {
     }
   });
 
-   // Filtrar los productos que tienen un to-do mayor que 0
-   const toDoOnly = sortedData.filter((item) => item.toDo > 0);
+  // Filtrar los productos que tienen un to-do mayor que 0
+  const toDoOnly = sortedData.filter((item) => item.toDo > 0);
 
-   // Datos a renderizar. Si `toDoOnlyChecked` es verdadero, renderiza solo los productos con to-do mayor que 0. Si no, renderiza los datos ordenados sin filtro.
-   const dataToRender = toDoOnlyChecked ? toDoOnly : sortedData;
-   
-
-  // Maneja el cambio en la propiedad de orden y la agrega al localStorage para que perdure
-  const handleSortChange = (event) => {
-    const newSortProperty = event.target.value;
-    setSortProperty(newSortProperty);
-    localStorage.setItem("sortProperty", newSortProperty);
-  };
-
-  const handleSecondarySortChange = (event) => {
-    const newSecondarySortProperty = event.target.value;
-    setSecondarySortProperty(newSecondarySortProperty);
-    localStorage.setItem("secondarySortProperty", newSecondarySortProperty);
-  };
+  // Datos a renderizar. Si `toDoOnlyChecked` es verdadero, renderiza solo los productos con to-do mayor que 0. Si no, renderiza los datos ordenados sin filtro.
+  const dataToRender = toDoOnlyChecked ? toDoOnly : sortedData;
 
   // Actualiza el TODO en la base de datos
   const saveToDo = async (id, value) => {
@@ -305,6 +293,14 @@ const Inventory = () => {
     setConfirmationModalVisible(false);
     setPendingAction(null);
     setConfirmationPopupMessage("");
+  };
+
+  // Activar/desactivar el modo de edición para el ítem dado
+  const toggleEditMode = (itemId) => {
+    setEditModes((prevModes) => ({
+      ...prevModes,
+      [itemId]: !prevModes[itemId], // Invierte el modo de edición para el itemId dado
+    }));
   };
 
   const resolveToDo = async (id) => {
@@ -389,48 +385,31 @@ const Inventory = () => {
         />
       )}
       {/* Dropdown para seleccionar la propiedad de orden */}
-      <div className="flex flex-row justify-end items-center mt-3 border-b-[1px] border-solid border-black pb-3">
-        <div className="flex w-1/12 md:w-0"></div>
-        <div className="w-8/12 md:w-9/12 lg:w-11/12 flex justify-center">
-          <div className="w-full flex flex-col md:flex-row justify-center gap-3">
-            <div className="flex flex-row items-center justify-end h-fit">
-              <label className="px-3" htmlFor="sort-property">
-                Ordenar por:
-              </label>
-              <select
-                className="p-1 rounded-md shadow-md shadow-gray-500 h-fit"
-                id="sort-property"
-                onChange={handleSortChange}
-                value={sortProperty}
-              >
-                {availableProperties.map((property) => (
-                  <option key={property} value={property}>
-                    {propertyLabels[property] || property}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-row items-center justify-end h-fit">
-              <label className="px-3" htmlFor="secondary-sort-property">
-                Luego por:
-              </label>
-              <select
-                className="p-1 rounded-md shadow-md shadow-gray-500 h-fit"
-                id="secondary-sort-property"
-                onChange={handleSecondarySortChange}
-                value={secondarySortProperty}
-              >
-                {availableProperties.map((property) => (
-                  <option key={property} value={property}>
-                    {propertyLabels[property] || property}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+      <div className="flex flex-row justify-center items-center mt-3 border-b-[1px] border-solid border-black pb-3">
+        {/* <div className="flex w-1/12 md:w-0"></div> */}
+        <SortSelector
+          sortProperty={sortProperty}
+          setSortProperty={setSortProperty}
+          secondarySortProperty={secondarySortProperty}
+          setSecondarySortProperty={setSecondarySortProperty}
+          availableProperties={availableProperties}
+          propertyLabels={propertyLabels}
+        />
+        <button
+          onClick={() => handleSummaryModal()}
+          className="flex justify-center p-1 text-sm items-center bg-banner border-[1px] border-solid border-black rounded-md shadow-lg shadow-gray-500"
+        >
+          Resumen
+        </button>
+      </div>
+      <div className="flex justify-between w-full gap-5 p-2 border-b-[1px] border-solid border-black bg-white bg-opacity-35">
+        <div className="flex flex-row items-center justify-center gap-2 text-center">
+          <h3 className="text-sm font-semibold">To-do only:</h3>
+          <CustomCheckbox
+            checked={toDoOnlyChecked} // Estado manejado externamente
+            onChange={handleToDoOnlyCheckboxChange}
+          />
         </div>
-
         <button
           className="flex w-3/12 md:w-2/12 lg:w-1/12 justify-end"
           onClick={confirmResolveAllTodos}
@@ -440,43 +419,30 @@ const Inventory = () => {
           </div>
         </button>
       </div>
-      <div className="flex justify-center w-full gap-5 p-2 border-b-[1px] border-solid border-black bg-white bg-opacity-35">
-        <div className="flex flex-row items-center justify-center gap-2 text-center">
-          <h3 className="text-sm font-semibold">To-do only:</h3>
-          <CustomCheckbox
-            checked={toDoOnlyChecked} // Estado manejado externamente
-            onChange={handleToDoOnlyCheckboxChange}
-          />
-        </div>
-        <button
-          onClick={() => handleSummaryModal()}
-          className="flex justify-center p-1 text-sm items-center bg-banner border-[1px] border-solid border-black rounded-md shadow-lg shadow-gray-500"
-        >
-          Resumen
-        </button>
-      </div>
 
       {dataToRender.length > 0 ? (
         dataToRender.map((item) => (
           <div
             key={item.id}
-            className="flex flex-row justify-between items-start pb-5 px-2 pt-2 border-b-[1px] border-solid border-black"
+            className="flex flex-row justify-between items-start  px-2 pt-2 border-b-[1px] border-solid border-black"
           >
-            <div className="flex flex-col justify-start items-start">
+            <div className="flex flex-col justify-start items-start pb-5">
               {renderProductDetails(item)}
             </div>
 
-            <div className="flex flex-row gap-6 items-center">
+            <div className="flex flex-row gap-2 items-center">
               <div className="min-w-24 flex flex-col gap-3">
-                <h3 className="text-md font-semibold">
-                  {propertyLabels.productStock}:{" "}
-                  <strong>{item.productStock}</strong>
-                </h3>
-                <h3 className="text-md font-semibold">
-                  {propertyLabels.productPrice}:{" "}
-                  <strong>€{item.productPrice}</strong>
-                </h3>
-                <div className="flex flex-row gap-1">
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-sm font-semibold">
+                    {propertyLabels.productStock}:{" "}
+                    <strong>{item.productStock}</strong>
+                  </h3>
+                  <h3 className="text-sm font-semibold">
+                    {propertyLabels.productPrice}:{" "}
+                    <strong>€{item.productPrice}</strong>
+                  </h3>
+                </div>
+                <div className="flex flex-row gap-3">
                   <label htmlFor={`to-do-${item.id}`}>Hacer:</label>
                   <input
                     onClick={(e) => e.target.select()}
@@ -490,27 +456,47 @@ const Inventory = () => {
                         : item.toDo
                     }
                   />
+                  <button
+                    onClick={() => resolveToDo(item.id)}
+                    className="flex justify-center items-center bg-success w-8 h-8 rounded-full border-[1px] border-solid border-black shadow-lg shadow-gray-500"
+                  >
+                    <img className="w-3" src={acceptIcon} alt="edit-icon" />
+                  </button>
                 </div>
               </div>
               <div className="flex flex-col justify-end items-center gap-2">
                 <button
-                  onClick={() => resolveToDo(item.id)}
-                  className="flex justify-center items-center bg-success w-8 h-8 rounded-full border-[1px] border-solid border-black shadow-lg shadow-gray-500"
+                  onClick={() => toggleEditMode(item.id)}
+                  className="flex justify-center p-1 text-sm items-center bg-banner border-[1px] border-solid border-black rounded-md shadow-lg shadow-gray-500"
                 >
-                  <img className="w-3" src={acceptIcon} alt="edit-icon" />
+                  Edit
                 </button>
-                <button
-                  onClick={() => openEditModal(item.id)}
-                  className="flex justify-center items-center bg-banner w-8 h-8 rounded-full border-[1px] border-solid border-black shadow-lg shadow-gray-500"
-                >
-                  <img className="w-3" src={editIcon} alt="edit-icon" />
-                </button>
-                <button
-                  onClick={() => confirmDeleteItem(item.id)}
-                  className="flex justify-center items-center bg-danger w-8 h-8 rounded-full border-[0.5px] border-solid border-black shadow-lg shadow-gray-500"
-                >
-                  <img className="w-3" src={deleteItemIcon} alt="delete-icon" />
-                </button>
+                {editModes[item.id] ? (
+                  <div className="flex flex-col justify-end items-center gap-2 pb-3">
+                    <button
+                      onClick={() => openEditModal(item.id)}
+                      className="flex justify-center items-center bg-banner w-8 h-8 rounded-full border-[1px] border-solid border-black shadow-lg shadow-gray-500"
+                    >
+                      <img className="w-3" src={editIcon} alt="edit-icon" />
+                    </button>
+                    <button
+                      onClick={() => confirmDeleteItem(item.id)}
+                      className="flex justify-center items-center bg-danger w-8 h-8 rounded-full border-[0.5px] border-solid border-black shadow-lg shadow-gray-500"
+                    >
+                      <img
+                        className="w-3"
+                        src={deleteItemIcon}
+                        alt="delete-icon"
+                      />
+                    </button>
+                  </div>
+                ) : (
+                  // Si no está en modo de edición, renderiza un contenedor vacío para mantener el diseño
+                  <div className="flex flex-col justify-end items-center gap-2 pb-3">
+                    <div className="flex justify-center items-center w-8 h-8"></div>
+                    <div className="flex justify-center items-center w-8 h-8"></div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

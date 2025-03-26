@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { Timestamp } from "firebase/firestore";
 import { motion } from "framer-motion";
@@ -31,6 +31,7 @@ import editPriceIcon from "/assets/price-tag-euro.png";
 // COMPONENTS
 import Alert from "../Alert";
 import Loading from "../Loading";
+import FilterWithTags from "../FilterWithTags";
 
 const SalesManager = () => {
   const context = useContext(DataContext);
@@ -46,8 +47,6 @@ const SalesManager = () => {
 
   // STATES
 
-  const [enteredData, setEnteredData] = useState("");
-  const [tags, setTags] = useState([]);
   const [selectedDates, setSelectedDates] = useState({});
   const [openPickerId, setOpenPickerId] = useState(null);
   const [editingItemId, setEditingItemId] = useState(null);
@@ -62,6 +61,26 @@ const SalesManager = () => {
   const [editingItems, setEditingItems] = useState({});
   const [quantity, setQuantity] = useState(1); // Estado para la cantidad
   const [isLoading, setIsLoading] = useState(false);
+   // Estado para los productos filtrados
+   const [filteredData, setFilteredData] = useState([]);
+
+
+// useEffect para actualizar filteredData cuando inventoryData cambie
+useEffect(() => {
+  // Solo actualizamos filteredData si inventoryData ya está disponible
+  if (inventoryData.length > 0) {
+    setFilteredData(inventoryData);
+    setIsLoading(false); // Cambiar a false cuando los datos estén listos
+  }
+}, [inventoryData]); // Este effect depende de inventoryData
+
+if (isLoading) {
+  return (
+    <div className="flex justify-center w-full h-screen items-center">
+      <span className="loading loading-dots loading-md"></span>
+    </div>
+  );
+}
 
   ///////////// UTILITIES ////////////////////
 
@@ -80,32 +99,7 @@ const SalesManager = () => {
     return `${day}/${month}/${year}`;
   };
 
-  ////////////////////////////////////////////
-
-  const handleAddTag = (event) => {
-    event.preventDefault();
-    if (enteredData && !tags.includes(enteredData)) {
-      setTags([...tags, enteredData]);
-      setEnteredData("");
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove) => {
-    setTags(tags.filter((tag) => tag !== tagToRemove));
-  };
-
-  const filterData = (data, tags) => {
-    if (tags.length === 0) return data;
-    return data.filter((item) => {
-      return tags.every((tag) => {
-        return Object.values(item).some((value) =>
-          value.toString().toLowerCase().includes(tag.toLowerCase())
-        );
-      });
-    });
-  };
-
-  const filteredData = filterData(inventoryData, tags);
+  // MANEJO DE VENTAS
 
   const handleSell = async (id) => {
     setIsLoading(true);
@@ -211,8 +205,6 @@ const SalesManager = () => {
       });
 
       // Resetear los estados después de la venta
-      setTags([]);
-      setEnteredData("");
       setSelectedDates({});
       setEditingItemId(null);
       setPrices({});
@@ -331,59 +323,9 @@ const SalesManager = () => {
         />
       )}
 
-      <form
-        onSubmit={handleAddTag}
-        className="max-w-md mt-5 mx-auto w-4/5 mb-5"
-      >
-        <label
-          htmlFor="default-search"
-          className="mb-2 text-sm font-medium text-gray-900 sr-only"
-        >
-          Search
-        </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-            <svg
-              className="w-4 h-4 text-gray-500"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 20 20"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-              />
-            </svg>
-          </div>
-          <input
-            type="search"
-            id="default-search"
-            className="block w-full p-4 ps-10 text-gray-900 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-khaki focus:border-khaki"
-            placeholder="Ingresa algún tag..."
-            value={enteredData}
-            onChange={(e) => setEnteredData(e.target.value)}
-            required
-          />
-        </div>
-      </form>
+      <FilterWithTags inventoryData={inventoryData} setFilteredData={setFilteredData} />
 
       <div className="w-11/12 md:w-6/12 lg:w-5/12 xl:w-4/12 m-auto">
-        <div className="flex flex-row gap-3 mb-3">
-          {tags.map((tag, index) => (
-            <div
-              className="bg-black text-navbar font-semibold rounded-md w-fit p-2 bg-opacity-10"
-              key={index}
-            >
-              <h3>
-                {tag} <button onClick={() => handleRemoveTag(tag)}>x</button>
-              </h3>
-            </div>
-          ))}
-        </div>
-
         <div className="flex flex-col gap-3">
           {filteredData.length > 0 ? (
             filteredData.map((item) => (
