@@ -342,16 +342,16 @@ const SalesManager = () => {
           onClose={() => setAlert({ ...alert, visible: false })}
         />
       )}
-      <div className="my-3">
-        <FilterWithTags
-          inventoryData={inventoryData}
-          setFilteredData={setFilteredData}
-          filters={filters}
-          setFilters={setFilters}
-        />
-      </div>
 
       <div className="w-11/12 md:w-6/12 lg:w-5/12 xl:w-4/12 m-auto">
+        <div className="my-3">
+          <FilterWithTags
+            inventoryData={inventoryData}
+            setFilteredData={setFilteredData}
+            filters={filters}
+            setFilters={setFilters}
+          />
+        </div>
         <div className="flex flex-col gap-3">
           {filteredData.length > 0 ? (
             filteredData.map((item) => (
