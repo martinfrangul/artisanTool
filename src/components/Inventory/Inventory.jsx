@@ -21,6 +21,7 @@ import ConfirmationPopup from "../ConfirmationPopup";
 import Summary from "./Summary";
 import CustomCheckbox from "../CustomCheckbox";
 import SortSelector from "../SortSelector";
+import FilterWithTags from "../FilterWithTags";
 
 const Inventory = () => {
   const context = useContext(DataContext);
@@ -35,6 +36,7 @@ const Inventory = () => {
   const [secondarySortProperty, setSecondarySortProperty] = useState(
     initialSecondarySortProperty
   );
+  const [filteredData, setFilteredData] = useState([]); // Filtramos los datos
   const [isModalVisible, setModalVisible] = useState(false);
   const [isModalSummaryVisible, setIsModalSummaryVisible] = useState(false);
   const [idForEdit, setIdForEdit] = useState("");
@@ -44,8 +46,74 @@ const Inventory = () => {
   const [pendingAction, setPendingAction] = useState(null);
   const [confirmationPopupMessage, setConfirmationPopupMessage] = useState("");
   const [tempToDo, setTempToDo] = useState({}); // Estado para manejar el valor temporal del input
-  const [toDoOnlyChecked, setToDoOnlyChecked] = useState(false);
   const [editModes, setEditModes] = useState({}); // Estado para manejar el modo de edición por cada elemento
+  const [filters, setFilters] = useState({
+    tags: [],
+    toDoOnlyChecked: false,
+    sortProperty: initialSortProperty,
+    secondarySortProperty: initialSecondarySortProperty,
+  });
+
+  useEffect(() => {
+    // Filtrar los datos según los filtros actuales
+    const filterByTags = (data, tags) => {
+      return data.filter((item) =>
+        tags.every((tag) =>
+          Object.values(item).some((value) =>
+            value.toString().toLowerCase().includes(tag.toLowerCase())
+          )
+        )
+      );
+    };
+
+    let dataToDisplay = inventoryData;
+
+    // Primero, aplicamos el filtro por tags si hay tags seleccionados
+    if (filters.tags.length > 0) {
+      dataToDisplay = filterByTags(dataToDisplay, filters.tags);
+    }
+
+    // Luego, aplicamos el filtro `toDoOnly` si está activado
+    if (filters.toDoOnlyChecked) {
+      dataToDisplay = dataToDisplay.filter((item) => item.toDo > 0);
+    }
+
+    // Ordenar los productos después de aplicar ambos filtros
+    dataToDisplay = dataToDisplay.slice().sort((a, b) => {
+      const aPrimary =
+        a[filters.sortProperty] !== undefined ? a[filters.sortProperty] : "";
+      const bPrimary =
+        b[filters.sortProperty] !== undefined ? b[filters.sortProperty] : "";
+      const aSecondary =
+        a[filters.secondarySortProperty] !== undefined
+          ? a[filters.secondarySortProperty]
+          : "";
+      const bSecondary =
+        b[filters.secondarySortProperty] !== undefined
+          ? b[filters.secondarySortProperty]
+          : "";
+
+      let primaryComparison;
+      // Si no tienen valor en el campo de orden, deben ir al final
+      if (aPrimary === "" && bPrimary !== "") return 1; // Mover a al final
+      if (bPrimary === "" && aPrimary !== "") return -1; // Mover b al final
+
+      if (typeof aPrimary === "string" && typeof bPrimary === "string") {
+        primaryComparison = aPrimary.localeCompare(bPrimary);
+      } else {
+        primaryComparison =
+          aPrimary < bPrimary ? -1 : aPrimary > bPrimary ? 1 : 0;
+      }
+      if (primaryComparison !== 0) return primaryComparison;
+
+      // Comparar los valores del criterio secundario
+      if (aSecondary === "" && bSecondary !== "") return 1; // Mover a al final
+      if (bSecondary === "" && aSecondary !== "") return -1; // Mover b al final
+      return aSecondary < bSecondary ? -1 : aSecondary > bSecondary ? 1 : 0;
+    });
+
+    setFilteredData(dataToDisplay); // Actualizamos el estado de los productos filtrados
+  }, [inventoryData, filters]); // Dependencias: inventoryData y los filtros
 
   useEffect(() => {
     // Añadir o quitar la clase no-scroll en el body
@@ -158,6 +226,13 @@ const Inventory = () => {
     );
   };
 
+  const handleToDoOnlyCheckboxChange = () => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      toDoOnlyChecked: !prevFilters.toDoOnlyChecked,
+    }));
+  };
+
   const handleModalToggle = (closeModal) => {
     setModalVisible(closeModal);
   };
@@ -166,58 +241,6 @@ const Inventory = () => {
     setIdForEdit(id);
     setModalVisible(true);
   };
-
-  const handleToDoOnlyCheckboxChange = () => {
-    setToDoOnlyChecked((prev) => !prev);
-  };
-
-  // MÉTODO SORT QUE ORDENA SEGÚN UN CRITERIO PRIMARIO Y UNO SECUNDARIO TENIENDO EN CUENTA TILDES
-  // Y LLEVANDO AL FONDO DE CADA CRITERIO SI NO TIENE LA PROPIEDAD A FILTRAR
-
-  const sortedData = inventoryData.slice().sort((a, b) => {
-    // Obtén los valores para los criterios primarios y secundarios
-    const aPrimary = a[sortProperty] !== undefined ? a[sortProperty] : "";
-    const bPrimary = b[sortProperty] !== undefined ? b[sortProperty] : "";
-    const aSecondary =
-      a[secondarySortProperty] !== undefined ? a[secondarySortProperty] : "";
-    const bSecondary =
-      b[secondarySortProperty] !== undefined ? b[secondarySortProperty] : "";
-
-    // Comparar los valores del criterio primario
-    if (aPrimary === "" && bPrimary !== "") {
-      return 1; // Mueve los elementos sin valor del criterio primario al final
-    } else if (bPrimary === "" && aPrimary !== "") {
-      return -1; // Mueve los elementos sin valor del criterio primario al final
-    } else {
-      let primaryComparison;
-      if (typeof aPrimary === "string" && typeof bPrimary === "string") {
-        primaryComparison = aPrimary.localeCompare(bPrimary);
-      } else {
-        primaryComparison =
-          aPrimary < bPrimary ? -1 : aPrimary > bPrimary ? 1 : 0;
-      }
-      if (primaryComparison !== 0) return primaryComparison;
-    }
-
-    // Comparar los valores del criterio secundario
-    if (aSecondary === "" && bSecondary !== "") {
-      return 1; // Mueve los elementos sin valor del criterio secundario al final
-    } else if (bSecondary === "" && aSecondary !== "") {
-      return -1; // Mueve los elementos sin valor del criterio secundario al final
-    } else {
-      if (typeof aSecondary === "string" && typeof bSecondary === "string") {
-        return aSecondary.localeCompare(bSecondary);
-      } else {
-        return aSecondary < bSecondary ? -1 : aSecondary > bSecondary ? 1 : 0;
-      }
-    }
-  });
-
-  // Filtrar los productos que tienen un to-do mayor que 0
-  const toDoOnly = sortedData.filter((item) => item.toDo > 0);
-
-  // Datos a renderizar. Si `toDoOnlyChecked` es verdadero, renderiza solo los productos con to-do mayor que 0. Si no, renderiza los datos ordenados sin filtro.
-  const dataToRender = toDoOnlyChecked ? toDoOnly : sortedData;
 
   // Actualiza el TODO en la base de datos
   const saveToDo = async (id, value) => {
@@ -394,6 +417,8 @@ const Inventory = () => {
           setSecondarySortProperty={setSecondarySortProperty}
           availableProperties={availableProperties}
           propertyLabels={propertyLabels}
+          filters={filters}
+          setFilters={setFilters}
         />
         <button
           onClick={() => handleSummaryModal()}
@@ -403,25 +428,33 @@ const Inventory = () => {
         </button>
       </div>
       <div className="flex justify-between w-full gap-5 p-2 border-b-[1px] border-solid border-black bg-white bg-opacity-35">
-        <div className="flex flex-row items-center justify-center gap-2 text-center">
-          <h3 className="text-sm font-semibold">To-do only:</h3>
-          <CustomCheckbox
-            checked={toDoOnlyChecked} // Estado manejado externamente
-            onChange={handleToDoOnlyCheckboxChange}
-          />
-        </div>
-        <button
-          className="flex w-3/12 md:w-2/12 lg:w-1/12 justify-end"
-          onClick={confirmResolveAllTodos}
-        >
-          <div className="rounded-full bg-success w-12 h-12 flex justify-center items-center">
-            <img className="w-8" src={checkAllIcon} alt="check-all-icon" />
+        {/* Filtro de productos */}
+        <FilterWithTags
+          inventoryData={inventoryData}
+          setFilteredData={setFilteredData}
+          filters={filters}
+          setFilters={setFilters}
+        />
+        <div className="flex flex-col items-center justify-start gap-3">
+          <div className="flex flex-row items-center justify-center gap-1 text-center">
+            <h3 className="text-xs font-semibold">ToDo only:</h3>
+            <CustomCheckbox
+              checked={filters.toDoOnlyChecked} // Estado controlado externamente
+              onChange={handleToDoOnlyCheckboxChange} // Llama a la función para cambiar el estado
+            />
           </div>
-        </button>
+          <button
+            className="flex w-full justify-end items-center"
+            onClick={confirmResolveAllTodos}
+          >
+              <img className="w-8" src={checkAllIcon} alt="check-all-icon" />
+          </button>
+        </div>
       </div>
 
-      {dataToRender.length > 0 ? (
-        dataToRender.map((item) => (
+      {/* Mostrar productos filtrados */}
+      {filteredData.length > 0 ? (
+        filteredData.map((item) => (
           <div
             key={item.id}
             className="flex flex-row justify-between items-start  px-2 pt-2 border-b-[1px] border-solid border-black"

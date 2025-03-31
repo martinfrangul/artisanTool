@@ -61,26 +61,46 @@ const SalesManager = () => {
   const [editingItems, setEditingItems] = useState({});
   const [quantity, setQuantity] = useState(1); // Estado para la cantidad
   const [isLoading, setIsLoading] = useState(false);
-   // Estado para los productos filtrados
-   const [filteredData, setFilteredData] = useState([]);
+  // Estado para los productos filtrados
+  const [filteredData, setFilteredData] = useState([]);
+  const [filters, setFilters] = useState({
+    tags: [], // Estado para los tags
+  });
 
+  // Este useEffect actualiza los productos filtrados cuando los filtros cambian
+  useEffect(() => {
+    let dataToDisplay = inventoryData;
 
-// useEffect para actualizar filteredData cuando inventoryData cambie
-useEffect(() => {
-  // Solo actualizamos filteredData si inventoryData ya está disponible
-  if (inventoryData.length > 0) {
-    setFilteredData(inventoryData);
-    setIsLoading(false); // Cambiar a false cuando los datos estén listos
+    // Si hay tags seleccionados, filtramos los productos por tags
+    if (filters.tags.length > 0) {
+      dataToDisplay = dataToDisplay.filter((item) =>
+        filters.tags.every((tag) =>
+          Object.values(item).some((value) =>
+            value.toString().toLowerCase().includes(tag.toLowerCase())
+          )
+        )
+      );
+    }
+
+    setFilteredData(dataToDisplay);
+  }, [inventoryData, filters]);
+
+  // useEffect para actualizar filteredData cuando inventoryData cambie
+  useEffect(() => {
+    // Solo actualizamos filteredData si inventoryData ya está disponible
+    if (inventoryData.length > 0) {
+      setFilteredData(inventoryData);
+      setIsLoading(false); // Cambiar a false cuando los datos estén listos
+    }
+  }, [inventoryData]); // Este effect depende de inventoryData
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center w-full h-screen items-center">
+        <span className="loading loading-dots loading-md"></span>
+      </div>
+    );
   }
-}, [inventoryData]); // Este effect depende de inventoryData
-
-if (isLoading) {
-  return (
-    <div className="flex justify-center w-full h-screen items-center">
-      <span className="loading loading-dots loading-md"></span>
-    </div>
-  );
-}
 
   ///////////// UTILITIES ////////////////////
 
@@ -322,8 +342,14 @@ if (isLoading) {
           onClose={() => setAlert({ ...alert, visible: false })}
         />
       )}
-
-      <FilterWithTags inventoryData={inventoryData} setFilteredData={setFilteredData} />
+      <div className="my-3">
+        <FilterWithTags
+          inventoryData={inventoryData}
+          setFilteredData={setFilteredData}
+          filters={filters}
+          setFilters={setFilters}
+        />
+      </div>
 
       <div className="w-11/12 md:w-6/12 lg:w-5/12 xl:w-4/12 m-auto">
         <div className="flex flex-col gap-3">
