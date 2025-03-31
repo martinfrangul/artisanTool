@@ -46,7 +46,6 @@ const Inventory = () => {
   const [pendingAction, setPendingAction] = useState(null);
   const [confirmationPopupMessage, setConfirmationPopupMessage] = useState("");
   const [tempToDo, setTempToDo] = useState({}); // Estado para manejar el valor temporal del input
-  const [editModes, setEditModes] = useState({}); // Estado para manejar el modo de edición por cada elemento
   const [filters, setFilters] = useState({
     tags: [],
     toDoOnlyChecked: false,
@@ -318,14 +317,6 @@ const Inventory = () => {
     setConfirmationPopupMessage("");
   };
 
-  // Activar/desactivar el modo de edición para el ítem dado
-  const toggleEditMode = (itemId) => {
-    setEditModes((prevModes) => ({
-      ...prevModes,
-      [itemId]: !prevModes[itemId], // Invierte el modo de edición para el itemId dado
-    }));
-  };
-
   const resolveToDo = async (id) => {
     if (!user) {
       setAlert({
@@ -447,7 +438,7 @@ const Inventory = () => {
             className="flex w-full justify-end items-center"
             onClick={confirmResolveAllTodos}
           >
-              <img className="w-8" src={checkAllIcon} alt="check-all-icon" />
+            <img className="w-8" src={checkAllIcon} alt="check-all-icon" />
           </button>
         </div>
       </div>
@@ -489,6 +480,26 @@ const Inventory = () => {
                         : item.toDo
                     }
                   />
+                </div>
+              </div>
+              <div className="flex flex-col justify-end items-center gap-2">
+                <div className="flex flex-col justify-end items-center gap-2 pb-3">
+                  <button
+                    onClick={() => openEditModal(item.id)}
+                    className="flex justify-center items-center bg-banner w-8 h-8 rounded-full border-[1px] border-solid border-black shadow-lg shadow-gray-500"
+                  >
+                    <img className="w-3" src={editIcon} alt="edit-icon" />
+                  </button>
+                  <button
+                    onClick={() => confirmDeleteItem(item.id)}
+                    className="flex justify-center items-center bg-danger w-8 h-8 rounded-full border-[0.5px] border-solid border-black shadow-lg shadow-gray-500"
+                  >
+                    <img
+                      className="w-3"
+                      src={deleteItemIcon}
+                      alt="delete-icon"
+                    />
+                  </button>
                   <button
                     onClick={() => resolveToDo(item.id)}
                     className="flex justify-center items-center bg-success w-8 h-8 rounded-full border-[1px] border-solid border-black shadow-lg shadow-gray-500"
@@ -496,40 +507,6 @@ const Inventory = () => {
                     <img className="w-3" src={acceptIcon} alt="edit-icon" />
                   </button>
                 </div>
-              </div>
-              <div className="flex flex-col justify-end items-center gap-2">
-                <button
-                  onClick={() => toggleEditMode(item.id)}
-                  className="flex justify-center p-1 text-sm items-center bg-banner border-[1px] border-solid border-black rounded-md shadow-lg shadow-gray-500"
-                >
-                  Edit
-                </button>
-                {editModes[item.id] ? (
-                  <div className="flex flex-col justify-end items-center gap-2 pb-3">
-                    <button
-                      onClick={() => openEditModal(item.id)}
-                      className="flex justify-center items-center bg-banner w-8 h-8 rounded-full border-[1px] border-solid border-black shadow-lg shadow-gray-500"
-                    >
-                      <img className="w-3" src={editIcon} alt="edit-icon" />
-                    </button>
-                    <button
-                      onClick={() => confirmDeleteItem(item.id)}
-                      className="flex justify-center items-center bg-danger w-8 h-8 rounded-full border-[0.5px] border-solid border-black shadow-lg shadow-gray-500"
-                    >
-                      <img
-                        className="w-3"
-                        src={deleteItemIcon}
-                        alt="delete-icon"
-                      />
-                    </button>
-                  </div>
-                ) : (
-                  // Si no está en modo de edición, renderiza un contenedor vacío para mantener el diseño
-                  <div className="flex flex-col justify-end items-center gap-2 pb-3">
-                    <div className="flex justify-center items-center w-8 h-8"></div>
-                    <div className="flex justify-center items-center w-8 h-8"></div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
