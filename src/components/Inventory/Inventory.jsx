@@ -1,5 +1,6 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { motion, AnimatePresence } from "framer-motion";
 
 // CONTEXT
 import { DataContext } from "../../context/DataContext";
@@ -52,6 +53,18 @@ const Inventory = () => {
     sortProperty: initialSortProperty,
     secondarySortProperty: initialSecondarySortProperty,
   });
+  // Estados para manejar el estado de guardado y error de los inputs
+  const [savedStatus, setSavedStatus] = useState({});
+  const [errorStatus, setErrorStatus] = useState({});
+
+  // Utilitarios para mejoras en la UX de los inputs de toDo
+  const [userTypedZero, setUserTypedZero] = useState({});
+  const [hideZeroUntilBlur, setHideZeroUntilBlur] = useState({});
+  const [inputHasFocus, setInputHasFocus] = useState({});
+
+  //Ref para manejar los timeouts de guardado de los inputs
+  const saveTimeouts = useRef({});
+  
 
   useEffect(() => {
     // Filtrar los datos según los filtros actuales
@@ -127,6 +140,13 @@ const Inventory = () => {
       document.body.classList.remove("no-scroll");
     };
   }, [isConfirmationModalVisible, isModalSummaryVisible]);
+
+  //Limpia los timeouts al desmontar el componente
+  useEffect(() => {
+    return () => {
+      Object.values(saveTimeouts.current).forEach(clearTimeout);
+    };
+  }, []);
 
   // Sincronizar el estado `tempToDo` con `inventoryData`
   useEffect(() => {
@@ -242,16 +262,49 @@ const Inventory = () => {
   };
 
   // Actualiza el TODO en la base de datos
-  const saveToDo = async (id, value) => {
+  const saveToDo = async (id, value, options = {}) => {
+    const { userTypedZero = false, hasFocus = false } = options;
+
     if (!user) return;
+
+    const originalItem = inventoryData.find((item) => item.id === id);
+    if (!originalItem) return;
+
+    const currentToDo = originalItem.toDo;
+
+    // Evitamos guardar si no hubo cambios
+    if (value === currentToDo) return;
+
     try {
       const docRef = doc(database, `users/${user.uid}/products`, id);
-      await updateDoc(docRef, {
-        toDo: value === "" ? 0 : parseInt(value),
-      });
+      await updateDoc(docRef, { toDo: value });
+
       reloadData();
+
+      /**
+       *  Mostrar "✓ Guardado" solo si:
+       *
+       * - Se guardó un número distinto de 0        (valor !== 0)
+       * - O el usuario escribió el 0 a mano        (userTypedZero)
+       * - O el input ya perdió el foco             (!hasFocus)
+       *
+       * Esto evita mostrar el mensaje si se guarda un 0 automático
+       * mientras el usuario aún está pensando o editando.
+       */
+      const shouldShowSavedMessage = value !== 0 || userTypedZero || !hasFocus;
+
+      if (shouldShowSavedMessage) {
+        setSavedStatus((prev) => ({ ...prev, [id]: true }));
+        setTimeout(() => {
+          setSavedStatus((prev) => ({ ...prev, [id]: false }));
+        }, 1500);
+      }
     } catch (error) {
-      console.error("Error al editar el to-do del producto: ", error);
+      console.error("Error al guardar:", error);
+      setErrorStatus((prev) => ({ ...prev, [id]: true }));
+      setTimeout(() => {
+        setErrorStatus((prev) => ({ ...prev, [id]: false }));
+      }, 1500);
     }
   };
 
@@ -448,7 +501,7 @@ const Inventory = () => {
         filteredData.map((item) => (
           <div
             key={item.id}
-            className="flex flex-row justify-between items-start  px-2 pt-2 border-b-[1px] border-solid border-black"
+            className="flex flex-row justify-between items-start px-2 pt-2 border-b-[1px] border-solid border-black"
           >
             <div className="flex flex-col justify-start items-start pb-5">
               {renderProductDetails(item)}
@@ -466,20 +519,145 @@ const Inventory = () => {
                     <strong>€{item.productPrice}</strong>
                   </h3>
                 </div>
-                <div className="flex flex-row gap-3">
-                  <label htmlFor={`to-do-${item.id}`}>Hacer:</label>
-                  <input
-                    onClick={(e) => e.target.select()}
-                    onChange={(e) => handleInputChange(item.id, e.target.value)}
-                    className="w-8 rounded-md text-center bg-slate-100 ring-1 ring-black focus:ring-1 focus:outline-0 custom-input-appearance"
-                    id={`to-do-${item.id}`}
-                    type="number"
-                    value={
-                      tempToDo[item.id] !== undefined
-                        ? tempToDo[item.id]
-                        : item.toDo
-                    }
-                  />
+                <div className="relative flex flex-col items-start gap-1">
+                  <div className="flex flex-row gap-3">
+                    <label htmlFor={`to-do-${item.id}`}>Hacer:</label>
+                    <input
+                      id={`to-do-${item.id}`}
+                      type="number"
+                      onClick={(e) => e.target.select()}
+                      onFocus={() => {
+                        setHideZeroUntilBlur((prev) => ({
+                          ...prev,
+                          [item.id]: false,
+                        }));
+                        setInputHasFocus((prev) => ({
+                          ...prev,
+                          [item.id]: true,
+                        }));
+                      }}
+                      onBlur={(e) => {
+                        setHideZeroUntilBlur((prev) => ({
+                          ...prev,
+                          [item.id]: false,
+                        }));
+                        setInputHasFocus((prev) => ({
+                          ...prev,
+                          [item.id]: false,
+                        }));
+                        const value = e.target.value;
+                        const finalValue = value === "" ? 0 : parseInt(value);
+
+                        if (saveTimeouts.current[item.id]) {
+                          clearTimeout(saveTimeouts.current[item.id]);
+                          saveTimeouts.current[item.id] = null;
+                        }
+
+                        setTempToDo((prev) => ({
+                          ...prev,
+                          [item.id]: finalValue,
+                        }));
+                        saveToDo(item.id, finalValue);
+                      }}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        if (value === "0") {
+                          setUserTypedZero((prev) => ({
+                            ...prev,
+                            [item.id]: true,
+                          }));
+                        } else {
+                          setUserTypedZero((prev) => ({
+                            ...prev,
+                            [item.id]: false,
+                          }));
+                        }
+
+                        if (value === "" || parseInt(value) >= 0) {
+                          setTempToDo((prev) => ({
+                            ...prev,
+                            [item.id]: value,
+                          }));
+
+                          if (saveTimeouts.current[item.id]) {
+                            clearTimeout(saveTimeouts.current[item.id]);
+                          }
+
+                          saveTimeouts.current[item.id] = setTimeout(() => {
+                            const finalValue =
+                              value === "" ? 0 : parseInt(value);
+                            saveToDo(item.id, finalValue, {
+                              userTypedZero: value === "0",
+                              hasFocus: inputHasFocus[item.id],
+                            });
+
+                            if (value === "") {
+                              setUserTypedZero((prev) => ({
+                                ...prev,
+                                [item.id]: false,
+                              }));
+                              setHideZeroUntilBlur((prev) => ({
+                                ...prev,
+                                [item.id]: true,
+                              }));
+                            }
+                          }, 3000);
+                        }
+                      }}
+                      onWheel={(e) => e.target.blur()}
+                      min="0"
+                      className={`w-8 rounded-md text-center bg-slate-100 ring-1 focus:ring-2 focus:outline-0 custom-input-appearance transition-all duration-300
+                        ${
+                          errorStatus[item.id]
+                            ? "ring-red-500"
+                            : savedStatus[item.id]
+                            ? "ring-green-500"
+                            : "ring-black"
+                        }`}
+                      value={
+                        tempToDo?.[item.id] === 0 &&
+                        hideZeroUntilBlur?.[item.id] &&
+                        !userTypedZero?.[item.id]
+                          ? ""
+                          : tempToDo?.[item.id] !== undefined
+                          ? tempToDo[item.id]
+                          : item.toDo
+                      }
+                    />
+                  </div>
+                  {/* Mensajes */}
+                  {/* Guardado */}
+                  <AnimatePresence mode="wait">
+                    {savedStatus[item.id] && (
+                      <motion.span
+                        key="saved"
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        transition={{ duration: 0.4 }}
+                        className="absolute left-0 -bottom-6 text-green-600 text-sm px-2 py-[1px] bg-white bg-opacity-90 rounded shadow whitespace-nowrap"
+                      >
+                        ✓ Guardado
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Error */}
+                  <AnimatePresence mode="wait">
+                    {errorStatus[item.id] && (
+                      <motion.span
+                        key="error"
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        transition={{ duration: 0.4 }}
+                        className="absolute left-0 -bottom-6 text-red-600 text-sm px-2 py-[1px] bg-white bg-opacity-90 rounded shadow whitespace-nowrap"
+                      >
+                        ✗ Error al guardar
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
               <div className="flex flex-col justify-end items-center gap-2">

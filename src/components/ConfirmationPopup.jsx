@@ -1,6 +1,6 @@
 const ConfirmationPopup = ({handleConfirmation, confirmationPopupMessage}) => {
     return ( 
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-opacity-30 bg-gray-500">
+        <div className="fixed z-50 inset-0 flex items-center justify-center backdrop-blur-sm bg-opacity-30 bg-gray-500">
           <div className="bg-banner p-5 rounded-lg shadow-lg w-[90%] max-w-2xl">
             <h2 className="text-lg font-bold">Confirmación</h2>
             <p>{confirmationPopupMessage}</p>
