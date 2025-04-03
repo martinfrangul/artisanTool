@@ -70,11 +70,12 @@ const Inventory = () => {
     // Filtrar los datos según los filtros actuales
     const filterByTags = (data, tags) => {
       return data.filter((item) =>
-        tags.every((tag) =>
-          Object.values(item).some((value) =>
-            value.toString().toLowerCase().includes(tag.toLowerCase())
-          )
-        )
+        tags.every((tag) => {
+          const cleanedTag = tag.trim().toLowerCase();
+          return Object.values(item).some((value) =>
+            value.toString().toLowerCase().includes(cleanedTag)
+          );
+        })
       );
     };
 

@@ -110,13 +110,19 @@ const PropertyInput = ({
             null
           }
           className="w-full"
-          menuPortalTarget={document.body} // 👈 Esto mueve el menú al body y evita recortes
+          menuPortalTarget={document.body} // Esto mueve el menú al body y evita recortes
           styles={{
-            menuPortal: (base) => ({ ...base, zIndex: 9999 }), // 👈 Asegura que el menú esté sobre otros elementos
+            menuPortal: (base) => ({ ...base, zIndex: 9999 }), // Asegura que el menú esté sobre otros elementos
             menu: (base) => ({
               ...base,
-              maxHeight: "200px", // 👈 Agrega un límite de altura
-              overflowY: "auto", // 👈 Habilita el scroll
+              maxHeight: "200px", // Agrega un límite de altura
+              overflowY: "auto", // Habilita el scroll
+            }),
+            menuList: (base) => ({
+              ...base,
+              maxHeight: "200px", // Asegura que el contenido del menú también tenga un límite de altura
+              overflowY: "auto", // Habilita el scroll en el contenido del menú
+              WebkitOverflowScrolling: "touch", // Mejora el scroll en dispositivos táctiles
             }),
           }}
         />
