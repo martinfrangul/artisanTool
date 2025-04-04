@@ -64,7 +64,6 @@ const Inventory = () => {
 
   //Ref para manejar los timeouts de guardado de los inputs
   const saveTimeouts = useRef({});
-  
 
   useEffect(() => {
     // Filtrar los datos según los filtros actuales
@@ -372,47 +371,48 @@ const Inventory = () => {
   };
 
   const resolveToDo = async (id) => {
-    if (!user) {
-      setAlert({
-        message: "Usuario no autenticado",
-        type: "error",
-        visible: true,
-      });
-
-      return;
+    if (!user) return;
+  
+    // 1. Cancelar timeout pendiente
+    if (saveTimeouts.current[id]) {
+      clearTimeout(saveTimeouts.current[id]);
+      saveTimeouts.current[id] = null;
     }
-
-    let selectedItem = inventoryData.find((item) => item.id === id);
-
-    if (!selectedItem) {
-      setAlert({
-        message: "Producto no encontrado",
-        type: "error",
-        visible: true,
-      });
-
-      return;
-    }
-
-    const updatedItem = {
-      ...selectedItem,
-      productStock: selectedItem.productStock + selectedItem.toDo,
-      toDo: 0,
-    };
-
+  
+    // 2. Leer el toDo más reciente desde el input (estado local)
+    const latestToDo = tempToDo[id] !== undefined ? parseInt(tempToDo[id]) : 0;
+  
+    // Si es 0, no tiene sentido hacer nada
+    if (latestToDo <= 0) return;
+  
+    const selectedItem = inventoryData.find((item) => item.id === id);
+    if (!selectedItem) return;
+  
     try {
-      // Actualizar el stock en Firestore
+      const updatedItem = {
+        productStock: selectedItem.productStock + latestToDo,
+        toDo: 0,
+      };
+  
       const docRef = doc(database, `users/${user.uid}/products`, id);
       await updateDoc(docRef, updatedItem);
+  
+      // 3. Actualizar el estado local del input para que también se vea reflejado
+      setTempToDo((prev) => ({
+        ...prev,
+        [id]: 0,
+      }));
+  
+      // 4. Limpiar mensajes por si quedaron
+      setSavedStatus((prev) => ({ ...prev, [id]: false }));
+      setErrorStatus((prev) => ({ ...prev, [id]: false }));
+  
       reloadData();
     } catch (error) {
-      setAlert({
-        message: "Error al editar el item",
-        type: "error",
-        visible: true,
-      });
+      console.error("Error al resolver ToDo:", error);
     }
   };
+  
 
   const handleInputChange = async (id, value) => {
     if (value === "") return;
