@@ -371,48 +371,51 @@ const Inventory = () => {
   };
 
   const resolveToDo = async (id) => {
-    if (!user) return;
-  
-    // 1. Cancelar timeout pendiente
+    if (!user || inventoryData.length === 0) return;
+
+    // 1. Cancelar cualquier timeout pendiente de guardado automático
     if (saveTimeouts.current[id]) {
       clearTimeout(saveTimeouts.current[id]);
       saveTimeouts.current[id] = null;
     }
-  
-    // 2. Leer el toDo más reciente desde el input (estado local)
-    const latestToDo = tempToDo[id] !== undefined ? parseInt(tempToDo[id]) : 0;
-  
-    // Si es 0, no tiene sentido hacer nada
-    if (latestToDo <= 0) return;
-  
+
+    // 2. Obtener el valor más reciente del input (sin esperar guardado en Firebase)
+    const latestToDoRaw = tempToDo[id];
+    if (latestToDoRaw === undefined) return;
+
+    const latestToDo = parseInt(latestToDoRaw);
+    if (isNaN(latestToDo) || latestToDo <= 0) return;
+
+    // 3. Obtener el producto actual desde el inventario
     const selectedItem = inventoryData.find((item) => item.id === id);
     if (!selectedItem) return;
-  
+
     try {
+      // 4. Crear el nuevo objeto con el stock actualizado y toDo en 0
       const updatedItem = {
         productStock: selectedItem.productStock + latestToDo,
         toDo: 0,
       };
-  
+
       const docRef = doc(database, `users/${user.uid}/products`, id);
       await updateDoc(docRef, updatedItem);
-  
-      // 3. Actualizar el estado local del input para que también se vea reflejado
+
+      // 5. Actualizar el estado local del input para reflejar el cambio
       setTempToDo((prev) => ({
         ...prev,
         [id]: 0,
       }));
-  
-      // 4. Limpiar mensajes por si quedaron
+
+      // 6. Limpiar cualquier cartel de guardado/error
       setSavedStatus((prev) => ({ ...prev, [id]: false }));
       setErrorStatus((prev) => ({ ...prev, [id]: false }));
-  
+
+      // 7. Recargar los datos
       reloadData();
     } catch (error) {
       console.error("Error al resolver ToDo:", error);
     }
   };
-  
 
   const handleInputChange = async (id, value) => {
     if (value === "") return;
@@ -427,6 +430,17 @@ const Inventory = () => {
   const handleSummaryModal = () => {
     setIsModalSummaryVisible(true);
   };
+
+  const isDataLoaded =
+    inventoryData.length > 0 && Object.keys(tempToDo).length > 0;
+
+  if (!isDataLoaded) {
+    return (
+      <div className="flex justify-center w-full h-screen items-center">
+        <span className="loading loading-dots loading-md"></span>
+      </div>
+    );
+  }
 
   return (
     <div className="w-11/12 md:w-7/12 lg:w-6/12 xl:w-5/12 m-auto pb-28 md:pb-36">
