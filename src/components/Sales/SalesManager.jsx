@@ -200,6 +200,12 @@ const SalesManager = () => {
 
         // Crear múltiples documentos de venta dentro de la transacción
         for (let i = 0; i < quantity; i++) {
+          const saleDate = saleDateTimestamp.toDate(); // convertimos a Date para formatear
+
+          const dateString = `${saleDate.getFullYear()}-${String(
+            saleDate.getMonth() + 1
+          ).padStart(2, "0")}-${String(saleDate.getDate()).padStart(2, "0")}`;
+
           const saleDocRef = await addDoc(
             collection(db, `users/${user.uid}/sales`),
             {
@@ -209,6 +215,7 @@ const SalesManager = () => {
                 )
               ),
               date: saleDateTimestamp,
+              dateString,
               productPrice: salePrice,
             }
           );
