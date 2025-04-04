@@ -264,7 +264,6 @@ const SalesRegistry = () => {
       setSingleDeleteDocId(allMatchingDocs[0].id);
       setSingleDeleteConfirmationVisible(true);
     } else if (allMatchingDocs.length > 1) {
-      // Guardamos el array exacto para borrarlo luego si querés
       setSelectedItemForDelete({ ...item, matchingDocs: allMatchingDocs });
       setDeletePopupVisible(true);
     } else {

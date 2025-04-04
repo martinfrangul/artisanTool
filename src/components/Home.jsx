@@ -6,7 +6,11 @@ import salesRegistryImage from "/assets/salesRegistryImage.jpeg";
 import salesChartImage from "/assets/salesChartImage.jpeg";
 import expensesImage from "/assets/expensesImage.jpeg";
 
+import useIsAdmin from "../hooks/useIsAdmin";
+
 const Home = () => {
+
+  const isAdmin = useIsAdmin();
 
   return (
       <div className=" w-11/12 md:w-9/12 mx-auto pt-4 flex flex-wrap justify-between lg:justify-normal pb-28 md:pb-36">
@@ -88,7 +92,21 @@ const Home = () => {
             />
           </div>
         </NavLink>
-     
+        {isAdmin && (
+        <NavLink
+          className="w-1/2 md:1/3 lg:w-1/4 flex flex-col justify-end items-center my-3"
+          to="/admin-tools"
+        >
+          <div className="text-md text-center md:text-2xl pb-3 font-thin">Admin Tools</div>
+          <div className="w-20 md:w-40 lg:w-32">
+            <img
+              className="rounded-xl border-[1px] border-solid border-black"
+              src="/ruta/a/una-imagen.png"
+              alt="admin-tools-icon"
+            />
+          </div>
+        </NavLink>
+      )}
       </div>
   );
 };

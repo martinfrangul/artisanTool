@@ -8,6 +8,8 @@ import SalesManager from "./components/Sales/SalesManager";
 import SalesRegistry from "./components/Sales/SalesRegistry";
 import SalesCharts from "./components/Sales/SalesCharts";
 import Layout from "./components/Layout";
+import AdminRoute from "./protectedRoutes/AdminRoute";
+import AdminTools from "./components/admin/AdminTools";
 
 // UTILS
 import ProtectedRoutes from "./ProtectedRoutes";
@@ -21,10 +23,7 @@ import { DataContextProvider } from "./context/DataContext";
 // HOOKS
 import { useState, useEffect } from "react";
 
-
 function App() {
-  
-
   // PARA INSTALAR LA APP (PWA)
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
@@ -53,7 +52,6 @@ function App() {
     }
   };
 
-
   return (
     <div className="bg-[#E9E4DB] min-h-screen flex flex-col">
       <Router>
@@ -81,20 +79,15 @@ function App() {
                   path="/*"
                   element={
                     <ProtectedRoutes>
-                      <Layout showInstallButton={showInstallButton}
-                        handleInstallClick={handleInstallClick} />
+                      <Layout
+                        showInstallButton={showInstallButton}
+                        handleInstallClick={handleInstallClick}
+                      />
                     </ProtectedRoutes>
                   }
                 >
                   {/* Rutas anidadas dentro del Layout */}
-                  <Route
-                    index
-                    element={
-                      <Home
-                        
-                      />
-                    }
-                  />
+                  <Route index element={<Home />} />
                   <Route
                     path="create-inventory"
                     element={<CreateInventory />}
@@ -103,6 +96,14 @@ function App() {
                   <Route path="sales-manager" element={<SalesManager />} />
                   <Route path="sales-registry" element={<SalesRegistry />} />
                   <Route path="sales-charts" element={<SalesCharts />} />
+                  <Route
+                    path="admin-tools"
+                    element={
+                      <AdminRoute>
+                        <AdminTools />
+                      </AdminRoute>
+                    }
+                  />
                 </Route>
               </Routes>
             </div>
