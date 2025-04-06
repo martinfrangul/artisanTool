@@ -145,6 +145,16 @@ const CreateInventory = () => {
     }
   };
 
+  const isValidPrice = (value) => {
+    if (typeof value !== "string" && typeof value !== "number") return false;
+  
+    const normalized = value.toString().replace(",", ".").trim();
+  
+    const regex = /^\d+(\.\d{1,2})?$/;
+    return regex.test(normalized);
+  };
+  
+
   const saveData = async () => {
     if (!user) {
       setAlert({
@@ -163,6 +173,16 @@ const CreateInventory = () => {
       });
       return;
     }
+
+    if (!isValidPrice(productPrice)) {
+      setAlert({
+        message: "El precio debe ser un número positivo con hasta dos decimales (ej: 12.99)",
+        type: "error",
+        visible: true,
+      });
+      return;
+    }
+    
 
     // Si `productStock` es una cadena vacía, conviértelo en 0
     const stock = productStock === "" ? 0 : parseInt(productStock, 10);
@@ -196,7 +216,7 @@ const CreateInventory = () => {
 
     const productData = {
       productName: normalizeString(productName),
-      productPrice: parseFloat(productPrice),
+      productPrice: parseFloat(productPrice.toString().replace(",", ".")),
       productStock: stock,
       toDo: 0,
       ...inputsObject,

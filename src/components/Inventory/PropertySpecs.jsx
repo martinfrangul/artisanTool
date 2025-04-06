@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState } from "react";
 import PropTypes from "prop-types";
-import '../../styles/PropertySpecs.css';
+import "../../styles/PropertySpecs.css";
 
 import Alert from "../Alert";
 
@@ -14,62 +14,78 @@ const PropertySpecs = ({
   const [isPriceEmpty, setIsPriceEmpty] = useState(false);
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
 
-
   // Handler para el stock
   const handleStockChange = (event) => {
-    const value = event.target.value;
+    const value = event.target.value.trim();
 
-    // Verifica si el campo está vacío
     if (value === "") {
       setIsStockEmpty(true);
-      setProductStock(""); // Permite que el campo quede vacío
+      setProductStock("");
       return;
     }
 
-    const numericValue = Number(value);
-
-    if (numericValue < 0) {
-      setAlert({ message: "El stock no puede ser negativo", type: "warning", visible: true});
-
-      setProductStock(""); // Restablece el valor a cadena vacía
-      setIsStockEmpty(false);
+    // Aceptar solo enteros positivos
+    if (!/^\d+$/.test(value)) {
+      setAlert({
+        message: "El stock debe ser un número entero positivo",
+        type: "warning",
+        visible: true,
+      });
       return;
     }
 
-    setProductStock(numericValue); // Actualiza el estado solo si el valor es válido
+    const numericValue = parseInt(value, 10);
+    setProductStock(numericValue);
     setIsStockEmpty(false);
   };
 
   // Handler para el precio
   const handlePriceChange = (event) => {
-    const value = event.target.value;
+    const rawValue = event.target.value.replace(",", ".").trim();
 
-    // Verifica si el campo está vacío
-    if (value === "") {
+    if (rawValue === "") {
       setIsPriceEmpty(true);
-      setProductPrice(""); // Permite que el campo quede vacío
+      setProductPrice("");
       return;
     }
 
-    const numericValue = Number(value);
-
-    if (numericValue < 0) {
-      setAlert({ message: "El precio no puede ser negativo", type: "warning", visible: true});
-      setProductPrice(""); // Restablece el valor a cadena vacía
-      setIsPriceEmpty(false);
+    if (!/^\d*\.?\d{0,2}$/.test(rawValue)) {
+      setAlert({
+        message: "El precio debe ser un número positivo con hasta 2 decimales",
+        type: "warning",
+        visible: true,
+      });
       return;
     }
 
-    setProductPrice(numericValue); // Actualiza el estado sólo si el valor es válido
+    const numberValue = Number(rawValue);
+    if (isNaN(numberValue) || numberValue < 0) {
+      setAlert({
+        message: "El precio no puede ser negativo",
+        type: "warning",
+        visible: true,
+      });
+      return;
+    }
+
+    setProductPrice(numberValue);
     setIsPriceEmpty(false);
   };
 
   return (
     <div className="w-full flex flex-row justify-center items-center p-3 m-auto gap-4">
-      {alert.visible && <Alert message={alert.message} type={alert.type} onClose={() => setAlert({ ...alert, visible: false })} />}
+      {alert.visible && (
+        <Alert
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert({ ...alert, visible: false })}
+        />
+      )}
 
       <div className="flex flex-col w-24 justify-center items-center">
-        <label className="text-center" htmlFor="productStock">Stock inicial</label>
+        <label className="text-center" htmlFor="productStock">
+          Stock inicial
+        </label>
         <input
           className="custom-input-appearance w-10 border-1 border-solid border-black rounded-md p-2 shadow-inner shadow-slate-700"
           onChange={handleStockChange}
@@ -78,11 +94,15 @@ const PropertySpecs = ({
         />
       </div>
       <div className="flex flex-col w-24 justify-center items-center">
-        <label className="text-center" htmlFor="productPrice">Precio</label>
+        <label className="text-center" htmlFor="productPrice">
+          Precio
+        </label>
         <input
-          className="custom-input-appearance w-10 border-1 border-solid border-black rounded-md p-2 shadow-inner shadow-slate-700"
+          className="custom-input-appearance w-10 border-1 border-solid border-black rounded-md p-2 shadow-inner shadow-slate-700 text-right"
           onChange={handlePriceChange}
           type="number"
+          step="0.01"
+          min="0"
           value={isPriceEmpty ? "" : productPrice}
         />
       </div>

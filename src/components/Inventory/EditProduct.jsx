@@ -81,19 +81,12 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   }, [user, productIdForEdit]);
 
   const handleInputChange = (key, value) => {
-    if ((key === "productStock" || key === "productPrice") && value !== "") {
-      if (!isNaN(value)) {
-        value = parseInt(value);
-      } else {
-        value = "";
-      }
-    }
-
     setItemData((prevItemData) => ({
       ...prevItemData,
       [key]: value,
     }));
 
+    // Limpia el error al empezar a escribir (opcional)
     setErrors((prevErrors) => ({
       ...prevErrors,
       [key]: "",
@@ -114,18 +107,63 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     }));
     setAvailableProperties(availableProperties.filter((prop) => prop !== key));
   };
-
+//Validación de campos de entrada al hacer submit
   const validateFields = () => {
+    const validationErrors = {};
     let isValid = true;
-    let validationErrors = {};
 
     Object.entries(itemData).forEach(([key, value]) => {
-      if (typeof value === "string" && !value.trim()) {
-        validationErrors[key] = "Este campo no puede estar vacío";
-        isValid = false;
-      } else if (typeof value !== "string" && value === null) {
-        validationErrors[key] = "Este campo no puede estar vacío";
-        isValid = false;
+      if (key === "id" || key === "toDo") return;
+
+      const cleaned =
+        typeof value === "string" ? value.replace(",", ".").trim() : value;
+
+      if (key === "productPrice") {
+        if (!cleaned || isNaN(cleaned)) {
+          validationErrors[key] = "Debe ser un número";
+          isValid = false;
+          return;
+        }
+
+        const num = parseFloat(cleaned);
+        if (num < 0) {
+          validationErrors[key] = "Debe ser positivo";
+          isValid = false;
+          return;
+        }
+
+        if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) {
+          validationErrors[key] = "Máximo 2 decimales";
+          isValid = false;
+          return;
+        }
+      }
+
+      if (key === "productStock") {
+        if (cleaned === "") {
+          validationErrors[key] = "Este campo es obligatorio";
+          isValid = false;
+          return;
+        }
+
+        const number = Number(cleaned);
+
+        if (isNaN(number)) {
+          validationErrors[key] = "Debe ser un número";
+          isValid = false;
+          return;
+        }
+
+        if (!Number.isInteger(number)) {
+          validationErrors[key] = "Debe ser un número entero";
+          isValid = false;
+          return;
+        }
+
+        if (number < 0) {
+          validationErrors[key] = "No puede ser negativo";
+          isValid = false;
+        }
       }
     });
 
@@ -133,6 +171,10 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     return isValid;
   };
 
+
+  // Verificar si el producto ya existe en la base de datos
+  // Excluyendo el producto que se está editando
+  // y comparando propiedades
   const checkIfProductExists = async (excludeId) => {
     if (!user || !itemData.productName) return false;
 
@@ -186,6 +228,16 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     if (!user || !productIdForEdit) return;
     if (!validateFields()) return;
 
+    // Si hay errores visibles, no guardar
+    if (Object.values(errors).some((msg) => msg)) {
+      setAlert({
+        message: "Corrige los errores antes de guardar",
+        type: "error",
+        visible: true,
+      });
+      return;
+    }
+
     // Verificar si el producto ya existe, excluyendo el producto en edición
     const productExists = await checkIfProductExists(productIdForEdit);
 
@@ -203,7 +255,7 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     const updates = {};
 
     Object.entries(itemData).forEach(([key, value]) => {
-      if (key !== 'id' && typeof value === "string") {
+      if (key !== "id" && typeof value === "string") {
         updates[key] = value.toLowerCase().trim(); // Convertir a minúsculas y eliminar espacios al principio y al final solo al guardar
       } else {
         updates[key] = value; // Mantener los valores numéricos tal cual
@@ -229,6 +281,12 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
           fieldsToDelete[key] = deleteField();
         }
       });
+
+      if ("productPrice" in updates) {
+        updates.productPrice = parseFloat(
+          updates.productPrice.toString().replace(",", ".")
+        );
+      }
 
       // Combinar los campos a eliminar con los campos a actualizar
       const finalUpdate = { ...updates, ...fieldsToDelete };
@@ -269,10 +327,14 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
         <Alert
           message={alert.message}
           type={alert.type}
-          onClose={() => [
-            setAlert({ ...alert, visible: false }),
-            handleModalToggle(false),
-          ]}
+          onClose={() => {
+            setAlert((prev) => ({ ...prev, visible: false }));
+
+            // Solo cerrar el modal si fue un guardado exitoso
+            if (alert.type === "success") {
+              handleModalToggle(false);
+            }
+          }}
         />
       )}
 
