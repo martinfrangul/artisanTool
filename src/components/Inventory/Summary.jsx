@@ -10,31 +10,54 @@ const Summary = ({ setIsModalSummaryVisible }) => {
   const context = useContext(DataContext);
   const { inventoryData, options } = context;
 
+  ///////////// UTILITIES ////////////////////
+
+  const toNumber = (value) => {
+    const num = parseFloat(value);
+    return isNaN(num) ? 0 : num;
+  };
+
+  /////////////////////////////////
+
   const isSelectionValid = selectedXOption && selectedYOption;
 
   const xAxisKeys = isSelectionValid
-    ? [...new Set(inventoryData
-        .map(item => item[selectedXOption.value])
-        .filter(xKey => xKey !== undefined && xKey !== null))]
+    ? [
+        ...new Set(
+          inventoryData
+            .map((item) => item[selectedXOption.value])
+            .filter((xKey) => xKey !== undefined && xKey !== null)
+        ),
+      ]
     : [];
 
   const yAxisKeys = isSelectionValid
-    ? [...new Set(inventoryData
-        .map(item => item[selectedYOption.value])
-        .filter(yKey => yKey !== undefined && yKey !== null))]
+    ? [
+        ...new Set(
+          inventoryData
+            .map((item) => item[selectedYOption.value])
+            .filter((yKey) => yKey !== undefined && yKey !== null)
+        ),
+      ]
     : [];
 
   const tableData = isSelectionValid
     ? xAxisKeys.reduce((acc, xKey) => {
         acc[xKey] = yAxisKeys.reduce((yAcc, yKey) => {
           const matchingItems = inventoryData.filter(
-            item =>
+            (item) =>
               item[selectedXOption.value] === xKey &&
               item[selectedYOption.value] === yKey
           );
 
-          const totalStock = matchingItems.reduce((sum, item) => sum + item.productStock, 0);
-          const totalToDo = matchingItems.reduce((sum, item) => sum + item.toDo, 0);
+          const totalStock = matchingItems.reduce(
+            (sum, item) => sum + toNumber(item.productStock),
+            0
+          );
+          const totalToDo = matchingItems.reduce(
+            (sum, item) => sum + toNumber(item.toDo),
+            0
+          );
 
           yAcc[yKey] = { stock: totalStock, toDo: totalToDo };
           return yAcc;
@@ -45,13 +68,25 @@ const Summary = ({ setIsModalSummaryVisible }) => {
 
   const totalStock = isSelectionValid
     ? Object.values(tableData).reduce((acc, yValues) => {
-        return acc + Object.values(yValues).reduce((sum, { stock }) => sum + stock, 0);
+        return (
+          acc +
+          Object.values(yValues).reduce(
+            (sum, { stock }) => sum + toNumber(stock),
+            0
+          )
+        );
       }, 0)
     : 0;
 
   const totalToDo = isSelectionValid
     ? Object.values(tableData).reduce((acc, yValues) => {
-        return acc + Object.values(yValues).reduce((sum, { toDo }) => sum + toDo, 0);
+        return (
+          acc +
+          Object.values(yValues).reduce(
+            (sum, { toDo }) => sum + toNumber(toDo),
+            0
+          )
+        );
       }, 0)
     : 0;
 
@@ -128,7 +163,9 @@ const Summary = ({ setIsModalSummaryVisible }) => {
             <h3 className="text-lg font-semibold text-gray-700">
               Resumen Total
             </h3>
-            <p className="text-sm text-gray-600">Stock en total: {totalStock}</p>
+            <p className="text-sm text-gray-600">
+              Stock en total: {totalStock}
+            </p>
             <p className="text-sm text-gray-600">Hacer en total: {totalToDo}</p>
           </div>
         )}
@@ -157,19 +194,17 @@ const Summary = ({ setIsModalSummaryVisible }) => {
                     <td className="px-4 py-2 border-b text-sm font-medium text-gray-700">
                       {xKey || "-"}
                     </td>
-                    {Object.entries(yValues).map(
-                      ([yKey, { stock, toDo }]) => (
-                        <td
-                          key={yKey}
-                          className="px-4 py-2 border-b text-sm text-gray-500 whitespace-nowrap"
-                        >
-                          <div className="flex flex-col items-start">
-                            <span>Stock: {stock}</span>
-                            <span>Hacer: {toDo}</span>
-                          </div>
-                        </td>
-                      )
-                    )}
+                    {Object.entries(yValues).map(([yKey, { stock, toDo }]) => (
+                      <td
+                        key={yKey}
+                        className="px-4 py-2 border-b text-sm text-gray-500 whitespace-nowrap"
+                      >
+                        <div className="flex flex-col items-start">
+                          <span>Stock: {stock}</span>
+                          <span>Hacer: {toDo}</span>
+                        </div>
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
