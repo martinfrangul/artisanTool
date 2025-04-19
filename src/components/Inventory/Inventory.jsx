@@ -143,8 +143,11 @@ const Inventory = () => {
 
   //Limpia los timeouts al desmontar el componente
   useEffect(() => {
+
+    const timeouts = saveTimeouts.current;
+
     return () => {
-      Object.values(saveTimeouts.current).forEach(clearTimeout);
+      Object.values(timeouts).forEach(clearTimeout);
     };
   }, []);
 
@@ -415,16 +418,6 @@ const Inventory = () => {
     } catch (error) {
       console.error("Error al resolver ToDo:", error);
     }
-  };
-
-  const handleInputChange = async (id, value) => {
-    if (value === "") return;
-
-    // Actualiza el estado local
-    setTempToDo((prev) => ({ ...prev, [id]: value }));
-
-    // Guarda el valor en la base de datos de inmediato
-    await saveToDo(id, value);
   };
 
   const handleSummaryModal = () => {

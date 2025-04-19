@@ -288,6 +288,11 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
         );
       }
 
+      if ("productStock" in updates) {
+        const stockNum = parseInt(updates.productStock.toString(), 10);
+        updates.productStock = Number.isNaN(stockNum) ? 0 : stockNum;
+      }
+
       // Combinar los campos a eliminar con los campos a actualizar
       const finalUpdate = { ...updates, ...fieldsToDelete };
 
