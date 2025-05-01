@@ -78,6 +78,11 @@ const Inventory = () => {
       );
     };
 
+    // Función para quitar acentos
+    const quitarAcentos = (str) => {
+      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    };
+
     let dataToDisplay = inventoryData;
 
     // Primero, aplicamos el filtro por tags si hay tags seleccionados
@@ -111,7 +116,7 @@ const Inventory = () => {
       if (bPrimary === "" && aPrimary !== "") return -1; // Mover b al final
 
       if (typeof aPrimary === "string" && typeof bPrimary === "string") {
-        primaryComparison = aPrimary.localeCompare(bPrimary);
+        primaryComparison = quitarAcentos(aPrimary).localeCompare(quitarAcentos(bPrimary));
       } else {
         primaryComparison =
           aPrimary < bPrimary ? -1 : aPrimary > bPrimary ? 1 : 0;
@@ -121,7 +126,7 @@ const Inventory = () => {
       // Comparar los valores del criterio secundario
       if (aSecondary === "" && bSecondary !== "") return 1; // Mover a al final
       if (bSecondary === "" && aSecondary !== "") return -1; // Mover b al final
-      return aSecondary < bSecondary ? -1 : aSecondary > bSecondary ? 1 : 0;
+      return quitarAcentos(aSecondary).localeCompare(quitarAcentos(bSecondary));
     });
 
     setFilteredData(dataToDisplay); // Actualizamos el estado de los productos filtrados
@@ -143,7 +148,6 @@ const Inventory = () => {
 
   //Limpia los timeouts al desmontar el componente
   useEffect(() => {
-
     const timeouts = saveTimeouts.current;
 
     return () => {
