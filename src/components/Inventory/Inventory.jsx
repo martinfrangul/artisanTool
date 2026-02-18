@@ -116,17 +116,25 @@ const Inventory = () => {
       if (bPrimary === "" && aPrimary !== "") return -1; // Mover b al final
 
       if (typeof aPrimary === "string" && typeof bPrimary === "string") {
-        primaryComparison = quitarAcentos(aPrimary).localeCompare(quitarAcentos(bPrimary));
+        primaryComparison = quitarAcentos(aPrimary).localeCompare(
+          quitarAcentos(bPrimary)
+        );
       } else {
         primaryComparison =
           aPrimary < bPrimary ? -1 : aPrimary > bPrimary ? 1 : 0;
       }
+
       if (primaryComparison !== 0) return primaryComparison;
 
       // Comparar los valores del criterio secundario
       if (aSecondary === "" && bSecondary !== "") return 1; // Mover a al final
       if (bSecondary === "" && aSecondary !== "") return -1; // Mover b al final
-      return quitarAcentos(aSecondary).localeCompare(quitarAcentos(bSecondary));
+
+      if (typeof aSecondary === "string" && typeof bSecondary === "string") {
+        return quitarAcentos(aSecondary).localeCompare(quitarAcentos(bSecondary));
+      } else {
+        return aSecondary < bSecondary ? -1 : aSecondary > bSecondary ? 1 : 0;
+      }
     });
 
     setFilteredData(dataToDisplay); // Actualizamos el estado de los productos filtrados

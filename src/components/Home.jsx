@@ -1,10 +1,12 @@
 import { NavLink } from "react-router-dom";
 import createInventoryImage from "/assets/createInventoryImage.jpeg";
 import inventoryImage from "/assets/inventoryImage.jpeg";
-import salesImage from "/assets/salesImage.jpeg";
-import salesRegistryImage from "/assets/salesRegistryImage.jpeg";
+import salesImage from "/assets/salesImage.png";
+import salesRegistryImage from "/assets/salesRegistryImage.png";
 import salesChartImage from "/assets/salesChartImage.jpeg";
 import expensesImage from "/assets/expensesImage.jpeg";
+import adminToolImage from "/assets/adminToolsImage.png";
+import checklistMaterialsNeeded from "/assets/checklistMaterialsNeeded.png";
 
 import useIsAdmin from "../hooks/useIsAdmin";
 
@@ -48,7 +50,7 @@ const Home = () => {
           <div className="w-20 md:w-40 lg:w-32">
             <img
               className="rounded-xl border-[1px] border-solid border-black"
-              src={salesRegistryImage}
+              src={salesImage}
               alt="creat-inventory-seccion"
             />
           </div>
@@ -61,7 +63,7 @@ const Home = () => {
           <div className="w-20 md:w-40 lg:w-32">
             <img
               className="rounded-xl border-[1px] border-solid border-gray-600"
-              src={salesImage}
+              src={salesRegistryImage}
               alt="creat-inventory-seccion"
             />
           </div>
@@ -70,11 +72,24 @@ const Home = () => {
           className="w-1/2 md:1/3 lg:w-1/4 flex flex-col justify-end items-center my-3"
           to="/sales-charts"
         >
-          <div className="text-md pb-3 text-center md:text-2xl font-thin">Gráficos y estadísticas</div>
+          <div className="text-md pb-3 text-center md:text-2xl font-thin">Gráficos</div>
           <div className="w-20 md:w-40 lg:w-32">
             <img
               className="rounded-xl border-[1px] border-solid border-gray-600"
               src={salesChartImage}
+              alt="creat-inventory-seccion"
+            />
+          </div>
+        </NavLink>
+        {/* <NavLink
+          className="w-1/2 md:1/3 lg:w-1/4 flex flex-col justify-end items-center my-3"
+          to="/shop-list"
+        >
+          <div className="text-md text-center md:text-2xl pb-3 font-thin">Compra de materiales</div>
+          <div className="w-20 md:w-40 lg:w-32">
+            <img
+              className="rounded-xl border-[1px] border-solid border-gray-600"
+              src={checklistMaterialsNeeded}
               alt="creat-inventory-seccion"
             />
           </div>
@@ -91,7 +106,7 @@ const Home = () => {
               alt="creat-inventory-seccion"
             />
           </div>
-        </NavLink>
+        </NavLink> */}
         {isAdmin && (
         <NavLink
           className="w-1/2 md:1/3 lg:w-1/4 flex flex-col justify-end items-center my-3"
@@ -101,8 +116,8 @@ const Home = () => {
           <div className="w-20 md:w-40 lg:w-32">
             <img
               className="rounded-xl border-[1px] border-solid border-black"
-              src="/ruta/a/una-imagen.png"
-              alt="admin-tools-icon"
+              src={adminToolImage}
+              alt="admin-tools-image"
             />
           </div>
         </NavLink>

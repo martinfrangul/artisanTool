@@ -22,6 +22,8 @@ import { DataContextProvider } from "./context/DataContext";
 
 // HOOKS
 import { useState, useEffect } from "react";
+import ShopList from "./components/Expenses/ShopList";
+import Expenses from "./components/Expenses/Expenses";
 
 function App() {
   // PARA INSTALAR LA APP (PWA)
@@ -96,6 +98,8 @@ function App() {
                   <Route path="sales-manager" element={<SalesManager />} />
                   <Route path="sales-registry" element={<SalesRegistry />} />
                   <Route path="sales-charts" element={<SalesCharts />} />
+                  <Route path="shop-list" element={<ShopList />} />
+                  <Route path="expenses" element={<Expenses />} />
                   <Route
                     path="admin-tools"
                     element={
