@@ -33,10 +33,15 @@ const Inventory = () => {
     localStorage.getItem("sortProperty") || "productName";
   const initialSecondarySortProperty =
     localStorage.getItem("secondarySortProperty") || "productName";
+  const initialSortOrder = localStorage.getItem("sortOrder") || "asc";
+  const initialSecondarySortOrder =
+    localStorage.getItem("secondarySortOrder") || "asc";
+
   const [sortProperty, setSortProperty] = useState(initialSortProperty);
   const [secondarySortProperty, setSecondarySortProperty] = useState(
     initialSecondarySortProperty
   );
+
   const [filteredData, setFilteredData] = useState([]); // Filtramos los datos
   const [isModalVisible, setModalVisible] = useState(false);
   const [isModalSummaryVisible, setIsModalSummaryVisible] = useState(false);
@@ -52,6 +57,8 @@ const Inventory = () => {
     toDoOnlyChecked: false,
     sortProperty: initialSortProperty,
     secondarySortProperty: initialSecondarySortProperty,
+    sortOrder: initialSortOrder,
+    secondarySortOrder: initialSecondarySortOrder,
   });
   // Estados para manejar el estado de guardado y error de los inputs
   const [savedStatus, setSavedStatus] = useState({});
@@ -124,17 +131,33 @@ const Inventory = () => {
           aPrimary < bPrimary ? -1 : aPrimary > bPrimary ? 1 : 0;
       }
 
+      // Aplicar orden ascendente o descendente
+      if (filters.sortOrder === "desc") {
+        primaryComparison *= -1;
+      }
+
       if (primaryComparison !== 0) return primaryComparison;
 
       // Comparar los valores del criterio secundario
       if (aSecondary === "" && bSecondary !== "") return 1; // Mover a al final
       if (bSecondary === "" && aSecondary !== "") return -1; // Mover b al final
 
+      let secondaryComparison;
       if (typeof aSecondary === "string" && typeof bSecondary === "string") {
-        return quitarAcentos(aSecondary).localeCompare(quitarAcentos(bSecondary));
+        secondaryComparison = quitarAcentos(aSecondary).localeCompare(
+          quitarAcentos(bSecondary)
+        );
       } else {
-        return aSecondary < bSecondary ? -1 : aSecondary > bSecondary ? 1 : 0;
+        secondaryComparison =
+          aSecondary < bSecondary ? -1 : aSecondary > bSecondary ? 1 : 0;
       }
+
+      // Aplicar orden ascendente o descendente al secundario
+      if (filters.secondarySortOrder === "desc") {
+        secondaryComparison *= -1;
+      }
+      
+      return secondaryComparison;
     });
 
     setFilteredData(dataToDisplay); // Actualizamos el estado de los productos filtrados
@@ -460,6 +483,7 @@ const Inventory = () => {
         <EditProduct
           productIdForEdit={idForEdit}
           handleModalToggle={handleModalToggle}
+          productToEdit={inventoryData.find((item) => item.id === idForEdit)}
         />
       )}
       {isModalSummaryVisible && (

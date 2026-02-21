@@ -21,7 +21,7 @@ import { database } from "../../../firebase/firebaseConfig";
 // COMPONENTS
 import Alert from "../Alert";
 
-const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
+const EditProduct = ({ handleModalToggle, productIdForEdit, productToEdit }) => {
   const [itemData, setItemData] = useState({});
   const [errors, setErrors] = useState({});
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
@@ -55,30 +55,17 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
   const allProperties = Object.keys(propertyLabels);
 
   useEffect(() => {
-    const fetchProductData = async () => {
-      if (!user || !productIdForEdit) return;
-      const docRef = doc(
-        database,
-        `users/${user.uid}/products`,
-        productIdForEdit
+    if (productToEdit) {
+      setItemData(productToEdit);
+      // Propiedades usadas y propiedades disponibles
+      const usedProperties = Object.keys(productToEdit);
+      const available = allProperties.filter(
+        (prop) => !usedProperties.includes(prop)
       );
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setItemData(data);
-        // Propiedades usadas y propiedades disponibles
-        const usedProperties = Object.keys(data);
-        const available = allProperties.filter(
-          (prop) => !usedProperties.includes(prop)
-        );
-        setAvailableProperties(available);
-      } else {
-        console.log("No existe el documento");
-      }
-    };
-    fetchProductData();
+      setAvailableProperties(available);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, productIdForEdit]);
+  }, [productToEdit]);
 
   const handleInputChange = (key, value) => {
     setItemData((prevItemData) => ({
@@ -255,7 +242,9 @@ const EditProduct = ({ handleModalToggle, productIdForEdit }) => {
     const updates = {};
 
     Object.entries(itemData).forEach(([key, value]) => {
-      if (key !== "id" && typeof value === "string") {
+      if (key === "id") return; // Excluir la propiedad 'id' al actualizar FireStore
+
+      if (typeof value === "string") {
         updates[key] = value.toLowerCase().trim(); // Convertir a minúsculas y eliminar espacios al principio y al final solo al guardar
       } else {
         updates[key] = value; // Mantener los valores numéricos tal cual
