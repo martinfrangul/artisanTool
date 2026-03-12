@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 // CONTEXT
 import { DataContext } from "../../context/DataContext";
@@ -19,7 +20,6 @@ import { database } from "../../../firebase/firebaseConfig";
 import EditProduct from "./EditProduct";
 import Alert from "../Alert";
 import ConfirmationPopup from "../ConfirmationPopup";
-import Summary from "./Summary";
 import CustomCheckbox from "../CustomCheckbox";
 import SortSelector from "../SortSelector";
 import FilterWithTags from "../FilterWithTags";
@@ -28,6 +28,7 @@ const Inventory = () => {
   const context = useContext(DataContext);
   const { inventoryData, reloadData, propertyLabels } = context;
   const { user } = useAuth(); // Obtén el usuario actual
+  const navigate = useNavigate();
 
   const initialSortProperty =
     localStorage.getItem("sortProperty") || "productName";
@@ -44,7 +45,6 @@ const Inventory = () => {
 
   const [filteredData, setFilteredData] = useState([]); // Filtramos los datos
   const [isModalVisible, setModalVisible] = useState(false);
-  const [isModalSummaryVisible, setIsModalSummaryVisible] = useState(false);
   const [idForEdit, setIdForEdit] = useState("");
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
   const [isConfirmationModalVisible, setConfirmationModalVisible] =
@@ -165,7 +165,7 @@ const Inventory = () => {
 
   useEffect(() => {
     // Añadir o quitar la clase no-scroll en el body
-    if (isConfirmationModalVisible || isModalSummaryVisible) {
+    if (isConfirmationModalVisible) {
       document.body.classList.add("no-scroll");
     } else {
       document.body.classList.remove("no-scroll");
@@ -175,7 +175,7 @@ const Inventory = () => {
     return () => {
       document.body.classList.remove("no-scroll");
     };
-  }, [isConfirmationModalVisible, isModalSummaryVisible]);
+  }, [isConfirmationModalVisible]);
 
   //Limpia los timeouts al desmontar el componente
   useEffect(() => {
@@ -290,9 +290,7 @@ const Inventory = () => {
     }));
   };
 
-  const handleModalToggle = (closeModal) => {
-    setModalVisible(closeModal);
-  };
+
 
   const openEditModal = (id) => {
     setIdForEdit(id);
@@ -455,8 +453,8 @@ const Inventory = () => {
     }
   };
 
-  const handleSummaryModal = () => {
-    setIsModalSummaryVisible(true);
+  const handleSummaryNavigate = () => {
+    navigate("/inventory-summary");
   };
 
   const isDataLoaded =
@@ -481,13 +479,9 @@ const Inventory = () => {
       )}
       {isModalVisible && (
         <EditProduct
-          productIdForEdit={idForEdit}
-          handleModalToggle={handleModalToggle}
+          setModalVisible={setModalVisible}
           productToEdit={inventoryData.find((item) => item.id === idForEdit)}
         />
-      )}
-      {isModalSummaryVisible && (
-        <Summary setIsModalSummaryVisible={setIsModalSummaryVisible} />
       )}
       {isConfirmationModalVisible && (
         <ConfirmationPopup
@@ -509,7 +503,7 @@ const Inventory = () => {
           setFilters={setFilters}
         />
         <button
-          onClick={() => handleSummaryModal()}
+          onClick={() => handleSummaryNavigate()}
           className="flex justify-center p-1 text-sm items-center bg-banner border-[1px] border-solid border-black rounded-md shadow-lg shadow-gray-500"
         >
           Resumen

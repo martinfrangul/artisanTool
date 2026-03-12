@@ -4,6 +4,7 @@ import Home from "./components/Home";
 import Register from "./components/Register";
 import Inventory from "./components/Inventory/Inventory";
 import CreateInventory from "./components/Inventory/CreateInventory";
+import InventorySummary from "./components/Inventory/InventorySummary";
 import SalesManager from "./components/Sales/SalesManager";
 import SalesRegistry from "./components/Sales/SalesRegistry";
 import SalesCharts from "./components/Sales/SalesCharts";
@@ -95,6 +96,7 @@ function App() {
                     element={<CreateInventory />}
                   />
                   <Route path="inventory" element={<Inventory />} />
+                  <Route path="inventory-summary" element={<InventorySummary />} />
                   <Route path="sales-manager" element={<SalesManager />} />
                   <Route path="sales-registry" element={<SalesRegistry />} />
                   <Route path="sales-charts" element={<SalesCharts />} />
